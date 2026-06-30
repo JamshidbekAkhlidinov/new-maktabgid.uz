@@ -65,3 +65,12 @@ Route::get('/vakansiyalar/{id}', function (int $id) {
 
     return view('vacancy', ['vacancy' => $vacancy]);
 })->name('careers.show');
+
+/* ---------------- Kabinet ---------------- */
+Route::get('/cabinet', function () {
+    return view('cabinet');
+})->name('cabinet.index');
+
+Route::get('/institution-cabinet', function () {
+    return view('institution-cabinet');
+})->name('institution.cabinet');

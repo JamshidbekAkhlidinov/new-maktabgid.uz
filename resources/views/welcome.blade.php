@@ -21,6 +21,7 @@
         $schools = MaktabgidData::schools();
         $vacancies = MaktabgidData::vacancies();
         $blog = MaktabgidData::blog();
+        $specializations = MaktabgidData::specializations();
         $defaultCat = $categories[0]['key'];
         $defaultResults = array_values(array_filter($schools, fn ($s) => $s['cat'] === $defaultCat));
     @endphp
@@ -29,6 +30,8 @@
     <div class="desktop-shell">
         <x-maktabgid.nav :categories="$categories" />
         <x-maktabgid.hero :categories="$categories" :districts="$districts" :total="103" />
+
+        <x-maktabgid.spec-strip :specs="$specializations" />
 
         <main class="results" id="natijalar">
             <div class="wrap">
