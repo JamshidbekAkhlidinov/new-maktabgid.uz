@@ -201,4 +201,51 @@
             });
         });
     }
+
+    /* ===================== DETAIL PAGE: modals + fake forms ===================== */
+    var modals = Array.prototype.slice.call(document.querySelectorAll(".js-modal"));
+    if (modals.length) {
+        function openModal(id) {
+            var modal = document.getElementById(id);
+            if (!modal) return;
+            modal.hidden = false;
+            document.body.classList.add("modal-open");
+        }
+        function closeModal(modal) {
+            modal.hidden = true;
+            document.body.classList.remove("modal-open");
+        }
+
+        document.querySelectorAll("[data-modal-open]").forEach(function (btn) {
+            btn.addEventListener("click", function () { openModal(btn.dataset.modalOpen); });
+        });
+
+        modals.forEach(function (modal) {
+            modal.addEventListener("click", function (e) {
+                if (e.target === modal) closeModal(modal);
+            });
+            modal.querySelectorAll(".js-modal-close").forEach(function (btn) {
+                btn.addEventListener("click", function () { closeModal(modal); });
+            });
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key !== "Escape") return;
+            modals.forEach(function (modal) { if (!modal.hidden) closeModal(modal); });
+        });
+    }
+
+    /* fake submit -> success swap (no backend target exists for these forms) */
+    document.querySelectorAll(".js-fake-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var wrap = form.closest(".js-inline-enroll") || form.parentElement;
+            if (!wrap) return;
+            form.style.display = "none";
+            var head = wrap.querySelector(".js-fake-form-head");
+            if (head) head.style.display = "none";
+            var success = wrap.querySelector(".js-fake-success");
+            if (success) success.style.display = "";
+        });
+    });
 })();

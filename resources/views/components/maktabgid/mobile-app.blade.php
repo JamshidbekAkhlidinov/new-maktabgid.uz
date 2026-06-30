@@ -63,7 +63,7 @@
                     </div>
                     <div class="m-near">
                         @foreach ($byCat[$c['key']]['near'] as $s)
-                            <article class="m-ncard">
+                            <a href="{{ route('maktabgid.school', $s['id']) }}" class="m-ncard">
                                 <div class="media" style="background:linear-gradient(140deg, {{ $s['g'][0] }}, {{ $s['g'][1] }})">
                                     <span class="mono">{{ MaktabgidData::monogram($s['name']) }}</span>
                                     @if (!empty($s['badge']))
@@ -76,7 +76,7 @@
                                     <div class="sub"><x-maktabgid.icon name="star" :width="13" :height="13" fill="var(--accent)" stroke="var(--accent)" /> {{ $s['rating'] }} · {{ $s['district'] }} · {{ $s['dist'] }} km</div>
                                     <div class="pr">{{ MaktabgidData::formatPrice($s['price']) }} <span>soʻm/oy</span></div>
                                 </div>
-                            </article>
+                            </a>
                         @endforeach
                     </div>
                 </section>
@@ -88,7 +88,7 @@
                     </div>
                     <div class="m-list">
                         @foreach ($byCat[$c['key']]['popular'] as $s)
-                            <article class="m-row">
+                            <a href="{{ route('maktabgid.school', $s['id']) }}" class="m-row">
                                 <div class="media" style="background:linear-gradient(140deg, {{ $s['g'][0] }}, {{ $s['g'][1] }})">
                                     <span class="mono">{{ MaktabgidData::monogram($s['name']) }}</span>
                                     <button type="button" class="m-fav js-fav" style="width:28px;height:28px"><x-maktabgid.icon name="heart" :width="14" :height="14" /></button>
@@ -113,7 +113,7 @@
                                         <span class="chev"><x-maktabgid.icon name="arrowR" :width="16" :height="16" /></span>
                                     </div>
                                 </div>
-                            </article>
+                            </a>
                         @endforeach
                     </div>
                 </section>

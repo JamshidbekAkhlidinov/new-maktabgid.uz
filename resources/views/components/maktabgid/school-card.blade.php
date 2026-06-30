@@ -16,6 +16,7 @@
     data-price="{{ $s['price'] }}"
     data-rating="{{ $s['rating'] }}"
     data-sat="{{ $s['sat'] ? '1' : '0' }}"
+    data-specs="{{ implode(',', $s['specs'] ?? []) }}"
 >
     <div class="scard-media" style="background: linear-gradient(140deg, {{ $s['g'][0] }}, {{ $s['g'][1] }})">
         <span class="scard-mono">{{ MaktabgidData::monogram($s['name']) }}</span>
@@ -47,7 +48,7 @@
         </div>
         <div class="scard-foot">
             <div class="price"><b>{{ MaktabgidData::formatPrice($s['price']) }}</b> <span>soʻm / oy</span></div>
-            <button type="button" class="btn btn-ghost scard-cta">Batafsil <x-maktabgid.icon name="arrowR" :width="16" :height="16" /></button>
+            <a href="{{ route('maktabgid.school', $s['id']) }}" class="btn btn-ghost scard-cta">Batafsil <x-maktabgid.icon name="arrowR" :width="16" :height="16" /></a>
         </div>
     </div>
 </article>

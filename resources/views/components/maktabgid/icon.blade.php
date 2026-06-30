@@ -92,5 +92,109 @@
         @case('shield')
             <path d="M12 3l7 2.5v5c0 4.6-3 8.4-7 9.5-4-1.1-7-4.9-7-9.5v-5L12 3z" /><path d="M9 12l2 2 4-4" />
             @break
+        @case('chat')
+            <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4h13A1.5 1.5 0 0 1 20 5.5v9A1.5 1.5 0 0 1 18.5 16H9l-4 4v-4H5.5A1.5 1.5 0 0 1 4 14.5z" /><path d="M8 9h8" /><path d="M8 12h5" />
+            @break
+        @case('robot')
+            <rect x="4" y="8" width="16" height="11" rx="3" /><path d="M12 8V4.5" /><circle cx="12" cy="3.5" r="1.2" />
+            <circle cx="9" cy="13" r="1.1" fill="currentColor" stroke="none" /><circle cx="15" cy="13" r="1.1" fill="currentColor" stroke="none" />
+            <path d="M2 12v3" /><path d="M22 12v3" />
+            @break
+        @case('news')
+            <rect x="3.5" y="5" width="13" height="14" rx="1.5" /><path d="M16.5 9H20a1 1 0 0 1 1 1v7a2 2 0 0 1-2 2H6" />
+            <path d="M6.5 8.5h6" /><path d="M6.5 12h6" /><path d="M6.5 15.5h4" />
+            @break
+        @case('forum')
+            <path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h10A1.5 1.5 0 0 1 16 6.5v5A1.5 1.5 0 0 1 14.5 13H8l-3 3v-3H4.5A1.5 1.5 0 0 1 3 11.5z" />
+            <path d="M9 19h7.5l3 2.5v-2.5h.5a1.5 1.5 0 0 0 1.5-1.5V13" />
+            @break
+        @case('edit')
+            <path d="M4 20h4l10-10-4-4L4 16z" /><path d="M13.5 6.5l4 4" />
+            @break
+        @case('mail')
+            <rect x="3" y="5" width="18" height="14" rx="2" /><path d="M4 7l8 6 8-6" />
+            @break
+        @case('lock')
+            <rect x="5" y="10" width="14" height="10" rx="2" /><path d="M8 10V7.5a4 4 0 0 1 8 0V10" />
+            @break
+        @case('user')
+            <circle cx="12" cy="8" r="3.6" /><path d="M5 20a7 7 0 0 1 14 0" />
+            @break
+        @case('arrowL')
+            <path d="M19 12H5" /><path d="M11 6l-6 6 6 6" />
+            @break
+        @case('building')
+            <rect x="5" y="3.5" width="14" height="17" rx="1.5" /><path d="M9 8h2" /><path d="M13 8h2" /><path d="M9 12h2" /><path d="M13 12h2" /><path d="M10 20.5v-3.5h4v3.5" />
+            @break
+        @case('upload')
+            <path d="M12 16V4" /><path d="M8 8l4-4 4 4" /><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16" />
+            @break
+        @case('ticket')
+            <path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4z" /><path d="M13 6v12" />
+            @break
+        @case('like')
+            <path d="M7 11v8H4.5A1.5 1.5 0 0 1 3 17.5V12a1 1 0 0 1 1-1z" /><path d="M7 11l3.5-7A2 2 0 0 1 14 5.5V9h4.5a2 2 0 0 1 2 2.4l-1.3 6A2 2 0 0 1 17 19H7" />
+            @break
+        @case('logout')
+            <path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" /><path d="M15 8l4 4-4 4" /><path d="M19 12H9" />
+            @break
+        @case('eye')
+            <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" /><circle cx="12" cy="12" r="2.6" />
+            @break
+        @case('award')
+            <circle cx="12" cy="9" r="5" /><path d="M9 13.5L7.5 21l4.5-2.5L16.5 21 15 13.5" />
+            @break
+        @case('flask')
+            <path d="M9 3h6" /><path d="M10 3v5.5L5.5 17a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 8.5V3" /><path d="M7.5 14h9" />
+            @break
+        @case('palette')
+            <path d="M12 3a9 9 0 0 0 0 18c1.5 0 2-1 2-2 0-1.5 1-2 2.5-2H18a3 3 0 0 0 3-3c0-5-4-9-9-9z" />
+            <circle cx="7.5" cy="11" r="1" fill="currentColor" stroke="none" /><circle cx="10" cy="7.5" r="1" fill="currentColor" stroke="none" /><circle cx="14.5" cy="7.5" r="1" fill="currentColor" stroke="none" />
+            @break
+        @case('code')
+            <path d="M9 8l-4 4 4 4" /><path d="M15 8l4 4-4 4" />
+            @break
+        @case('music')
+            <path d="M9 18V6l10-2v12" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="16.5" cy="16" r="2.5" />
+            @break
+        @case('trophy')
+            <path d="M7 4h10v4a5 5 0 0 1-10 0z" /><path d="M7 6H4v1.5A3.5 3.5 0 0 0 7 11" /><path d="M17 6h3v1.5A3.5 3.5 0 0 1 17 11" /><path d="M10 13h4l.5 4h-5z" /><path d="M8.5 20h7" />
+            @break
+        @case('dumbbell')
+            <path d="M6.5 8v8" /><path d="M4 9.5v5" /><path d="M17.5 8v8" /><path d="M20 9.5v5" /><path d="M6.5 12h11" />
+            @break
+        @case('paperclip')
+            <path d="M19 11l-7.5 7.5a4 4 0 0 1-5.7-5.7l8-8a2.6 2.6 0 0 1 3.7 3.7l-8 8a1.2 1.2 0 0 1-1.7-1.7l7-7" />
+            @break
+        @case('play')
+            <path d="M8 5.5v13l11-6.5z" />
+            @break
+        @case('camera')
+            <path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2L9 5h6l1.5 2h2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z" /><circle cx="12" cy="13" r="3.2" />
+            @break
+        @case('image')
+            <rect x="4" y="5" width="16" height="14" rx="2" /><circle cx="9" cy="10" r="1.6" /><path d="M5 17l4.5-4 3 2.5L16 11l3 3.5" />
+            @break
+        @case('bus')
+            <rect x="4" y="4.5" width="16" height="13" rx="2.5" /><path d="M4 11h16" /><path d="M4 8h16" /><circle cx="8" cy="17.5" r="1.6" /><circle cx="16" cy="17.5" r="1.6" /><path d="M7 20l1-2.5" /><path d="M17 20l-1-2.5" />
+            @break
+        @case('cup')
+            <path d="M5 8h11v5a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5z" /><path d="M16 9h2.5a2 2 0 0 1 0 4H16" /><path d="M7 3v2" /><path d="M10.5 3v2" /><path d="M14 3v2" />
+            @break
+        @case('cross')
+            <rect x="4" y="4" width="16" height="16" rx="4" /><path d="M12 8.5v7" /><path d="M8.5 12h7" />
+            @break
+        @case('wifi')
+            <path d="M3.5 9.5a13 13 0 0 1 17 0" /><path d="M6.5 13a8.5 8.5 0 0 1 11 0" /><path d="M9.5 16.3a4 4 0 0 1 5 0" /><circle cx="12" cy="19" r="1" fill="currentColor" stroke="none" />
+            @break
+        @case('leaf')
+            <path d="M20 4c0 9-5.5 14-14 14 0-9 5.5-14 14-14z" /><path d="M9 15c3-3 6-4 9-4" />
+            @break
+        @case('target')
+            <circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+            @break
+        @case('badge')
+            <circle cx="12" cy="9" r="5.5" /><path d="M12 6.5l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2L9.1 8.6l2-.3z" /><path d="M8 14l-1 7 5-2.5L17 21l-1-7" />
+            @break
     @endswitch
 </svg>
