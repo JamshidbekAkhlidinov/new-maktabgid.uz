@@ -74,3 +74,7 @@ Route::get('/cabinet', function () {
 Route::get('/institution-cabinet', function () {
     return view('institution-cabinet');
 })->name('institution.cabinet');
+
+Route::get('/chat', function () {
+    return view('chat');
+})->name('chat.index');

@@ -172,9 +172,9 @@
                 <div class="panel">
                     <div class="panel-head">
                         <h3>Suhbatlar</h3>
-                        <button class="btn btn-ghost" type="button">
+                        <a href="{{ route('chat.index') }}" class="btn btn-ghost">
                             Hammasini ochish <x-maktabgid.icon name="arrowR" :width="15" :height="15" />
-                        </button>
+                        </a>
                     </div>
                     <div class="cab-list">
                         <button class="cab-item" type="button">
