@@ -1,14 +1,17 @@
 <?php
 
+use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\LogoutController;
 use App\Http\Controllers\Auth\OtpController;
 use App\Http\Controllers\Auth\RegisterInstitutionController;
 use App\Http\Controllers\Auth\RegisterParentController;
+use App\Http\Controllers\Cabinet\StatsController as CabinetStatsController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Institution\AcceptingController;
 use App\Http\Controllers\Institution\MediaController;
 use App\Http\Controllers\Institution\ProfileController;
-use App\Http\Controllers\Institution\StatsController;
+use App\Http\Controllers\Institution\StatsController as InstitutionStatsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,7 +41,21 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::post('media', [MediaController::class, 'store']);
         Route::delete('media/{media}', [MediaController::class, 'destroy']);
         Route::patch('accepting', AcceptingController::class);
-        Route::get('stats', StatsController::class);
+        Route::get('stats', InstitutionStatsController::class);
+    });
+
+    // Arizalar — mehmon ham yubora oladi (backend.md Phase 4)
+    Route::post('applications', [ApplicationController::class, 'store']);
+
+    // Ota-ona tomoni (role=parent) — backend.md Phase 4
+    Route::middleware(['auth', 'role:parent'])->group(function () {
+        Route::get('favorites', [FavoriteController::class, 'index']);
+        Route::post('favorites/{institution}', [FavoriteController::class, 'store']);
+        Route::delete('favorites/{institution}', [FavoriteController::class, 'destroy']);
+
+        Route::get('applications/me', [ApplicationController::class, 'mine']);
+
+        Route::get('me/stats', CabinetStatsController::class);
     });
 
 });
