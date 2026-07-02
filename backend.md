@@ -364,9 +364,9 @@ Chat boshidanoq **Reverb** bilan quriladi (polling yo'q):
   ],
   ```
 - Composer paket: `composer require league/flysystem-aws-s3-v3` (Laravel S3 driver buni talab qiladi; R2 S3-compatible bo'lgani uchun shu driver ishlaydi).
-- Yangi `.env` kaliti: **`MEDIA_DISK`** (default `local`). `MediaUploadService` va `InstitutionMedia` yaratishda doim `Storage::disk(config('filesystems.media_disk'))` ishlatiladi — kod hech qachon `'local'` yoki `'r2'`ni qattiq yozmaydi.
-- `config/filesystems.php`da: `'media_disk' => env('MEDIA_DISK', 'local'),`
-- Ya'ni: hozir `MEDIA_DISK=local` bilan ishga tushamiz (`storage/app/public`, `php artisan storage:link`), R2 hisobi tayyor bo'lgach faqat `.env`da `MEDIA_DISK=r2` + R2 kalitlarini qo'yish kifoya — kodni qayta yozish shart emas.
+- Yangi `.env` kaliti: **`MEDIA_DISK`** (default `public`). `MediaUploadService` va `InstitutionMedia` yaratishda doim `Storage::disk(config('filesystems.media_disk'))` ishlatiladi — kod hech qachon `'public'` yoki `'r2'`ni qattiq yozmaydi.
+- `config/filesystems.php`da: `'media_disk' => env('MEDIA_DISK', 'public'),`
+- Eslatma: Laravel'ning standart `'local'` diski (`storage/app/private`) brauzerdan ko'rinmaydi — shu sababli "hozircha mahalliy" holat uchun aynan `'public'` disk (`storage/app/public`, `php artisan storage:link` bilan ulanadi) ishlatiladi. R2 hisobi tayyor bo'lgach faqat `.env`da `MEDIA_DISK=r2` + R2 kalitlarini qo'yish kifoya — kodni qayta yozish shart emas.
 - Validatsiya: rasm `image|max:5120` (5MB). Video — MVP'da fayl emas, YouTube/Vimeo link (og'ir video R2 xarajatini oshiradi).
 
 ---
@@ -407,7 +407,7 @@ Hozir `cabinet.blade.php`/`school.blade.php` ichida `aiAnswer()` — brauzerda i
 | `REVERB_HOST` | `localhost` | |
 | `REVERB_PORT` | `8080` | |
 | `REVERB_SCHEME` | `http` (dev) / `https` (prod) | |
-| `MEDIA_DISK` | `local` | `local` yoki `r2` |
+| `MEDIA_DISK` | `public` | `public` (mahalliy, brauzerdan ko'rinadi) yoki `r2` |
 | `R2_ACCESS_KEY_ID` | *(bo'sh)* | faqat `MEDIA_DISK=r2` bo'lganda kerak |
 | `R2_SECRET_ACCESS_KEY` | *(bo'sh)* | |
 | `R2_BUCKET` | *(bo'sh)* | |
@@ -438,7 +438,7 @@ Hozir `cabinet.blade.php`/`school.blade.php` ichida `aiAnswer()` — brauzerda i
 
 1. **Sxema** — barcha migratsiyalar + modellar + seederlar (MaktabgidData → real DB, ko'rinish o'zgarmaydi)
 2. **Auth + Telegram OTP** — bot yaratish/webhook, telefon+parol ro'yxatdan o'tish/login/logout, rol middleware, localStorage fake auth olib tashlanadi
-3. **Muassasa kabineti** — profil CRUD, media upload (`MEDIA_DISK=local`), 2GIS geocoding orqali `lat`/`lng`, qabul holati
+3. **Muassasa kabineti** — profil CRUD, media upload (`MEDIA_DISK=public`), 2GIS geocoding orqali `lat`/`lng`, qabul holati
 4. **Ota-ona tomoni** — favorites, ariza yuborish (ekskursiya/joylashtirish), kabinet real statistikasi
 5. **Arizalar inbox** — muassasa tomonidan tasdiqlash/rad etish + bildirishnoma
 6. **Chat** — Reverb o'rnatiladi, conversations/messages real-time

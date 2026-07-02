@@ -41,4 +41,8 @@ return [
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
     ],
 
+    'twogis' => [
+        'key' => env('TWOGIS_API_KEY'),
+    ],
+
 ];

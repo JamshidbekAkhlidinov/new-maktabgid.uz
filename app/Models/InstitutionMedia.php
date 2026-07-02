@@ -10,7 +10,7 @@ class InstitutionMedia extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['institution_id', 'type', 'disk', 'url', 'caption', 'duration', 'sort_order'];
+    protected $fillable = ['institution_id', 'type', 'disk', 'url', 'path', 'caption', 'duration', 'sort_order'];
 
     public function institution(): BelongsTo
     {
