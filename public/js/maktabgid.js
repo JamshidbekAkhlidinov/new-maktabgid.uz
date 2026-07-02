@@ -3,12 +3,52 @@
 
     var CAT_LABEL = { maktab: "maktab", bogcha: "bogʻcha", markaz: "oʻquv markazi", mutaxassis: "mutaxassis" };
 
-    /* ---------------- shared: favorite heart toggle ---------------- */
+    /* ---------------- shared: favorite heart toggle (real API, backend.md Phase 4) ---------------- */
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.content : "";
+    }
+
+    function jsonFetch(url, method, data) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-CSRF-TOKEN": csrfToken(),
+            },
+            body: data !== undefined ? JSON.stringify(data) : undefined,
+        }).then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (body) {
+                return { ok: res.ok, status: res.status, body: body };
+            });
+        });
+    }
+
     document.addEventListener("click", function (e) {
         var fav = e.target.closest(".js-fav");
         if (!fav) return;
         e.stopPropagation();
-        fav.classList.toggle("on");
+
+        var card = fav.closest("[data-id]");
+        var institutionId = card ? card.dataset.id : null;
+
+        if (!institutionId) {
+            fav.classList.toggle("on");
+            return;
+        }
+
+        var willBeOn = !fav.classList.contains("on");
+        var url = "/ajax/favorites/" + institutionId;
+
+        jsonFetch(url, willBeOn ? "POST" : "DELETE").then(function (res) {
+            if (res.status === 401 || res.status === 403) {
+                var openBtn = document.getElementById("js-kirish-btn");
+                if (openBtn) openBtn.click();
+                return;
+            }
+            if (res.ok) fav.classList.toggle("on", willBeOn);
+        });
     });
 
     /* ===================== DESKTOP RESULTS ===================== */
@@ -216,7 +256,7 @@
         });
     }
 
-    /* ===================== DETAIL PAGE: modals + fake forms ===================== */
+    /* ===================== DETAIL PAGE: modals ===================== */
     var modals = Array.prototype.slice.call(document.querySelectorAll(".js-modal"));
     if (modals.length) {
         function openModal(id) {
@@ -249,7 +289,8 @@
         });
     }
 
-    /* fake submit -> success swap (no backend target exists for these forms) */
+    /* generic "fake" success-swap forms that still have no backend target
+       (masalan careers.blade.php dagi vakansiya/rezyume post modali — Phase 6+) */
     document.querySelectorAll(".js-fake-form").forEach(function (form) {
         form.addEventListener("submit", function (e) {
             e.preventDefault();
@@ -263,47 +304,58 @@
         });
     });
 
-    /* ===================== AUTH MODAL ===================== */
-    (function () {
-        /* --- helpers: localStorage user --- */
-        function getUser() {
-            try { return JSON.parse(localStorage.getItem("mg_user") || "null"); } catch (e) { return null; }
-        }
-        function saveUser(u) {
-            try { localStorage.setItem("mg_user", JSON.stringify(u)); } catch (e) {}
-        }
-        function clearUser() {
-            try { localStorage.removeItem("mg_user"); } catch (e) {}
-        }
+    /* real ariza (excursion/enrollment) forms: POST /ajax/applications, real DB ga saqlanadi */
+    document.querySelectorAll(".js-application-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
 
-        /* --- monogram helper --- */
-        function monogram(name) {
-            if (!name) return "?";
-            var parts = name.trim().split(/\s+/);
-            if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-            return name.slice(0, 2).toUpperCase();
-        }
-
-        /* --- update nav buttons based on auth state --- */
-        function syncNav() {
-            var user = getUser();
-            var kirishBtn = document.getElementById("js-kirish-btn");
-            var userNav   = document.getElementById("js-user-nav");
-            var navAvatar = document.getElementById("js-nav-avatar");
-            var navName   = document.getElementById("js-nav-name");
-            if (!kirishBtn || !userNav) return;
-            if (user) {
-                kirishBtn.style.display = "none";
-                userNav.style.display = "";
-                if (navAvatar) navAvatar.textContent = monogram(user.name || user.org || "");
-                if (navName) navName.textContent = (user.name || user.org || "").split(" ")[0];
-            } else {
-                kirishBtn.style.display = "";
-                userNav.style.display = "none";
+            var data = {};
+            var els = form.elements;
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].name) data[els[i].name] = els[i].value;
             }
-        }
 
-        /* --- dropdown helpers --- */
+            var oldError = form.querySelector(".js-app-error");
+            if (oldError) oldError.remove();
+
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            jsonFetch("/ajax/applications", "POST", data).then(function (res) {
+                if (submitBtn) submitBtn.disabled = false;
+
+                if (!res.ok) {
+                    var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                    if (res.body) {
+                        if (res.body.errors) {
+                            var firstKey = Object.keys(res.body.errors)[0];
+                            if (firstKey) msg = res.body.errors[firstKey][0];
+                        } else if (res.body.message) {
+                            msg = res.body.message;
+                        }
+                    }
+                    var box = document.createElement("div");
+                    box.className = "js-app-error";
+                    box.style.cssText = "color:#dc2626;font-size:13px;font-weight:600;margin-top:10px";
+                    box.textContent = msg;
+                    form.appendChild(box);
+                    return;
+                }
+
+                var wrap = form.closest(".js-inline-enroll") || form.parentElement;
+                if (!wrap) return;
+                form.style.display = "none";
+                var head = wrap.querySelector(".js-fake-form-head");
+                if (head) head.style.display = "none";
+                var success = wrap.querySelector(".js-fake-success");
+                if (success) success.style.display = "";
+            });
+        });
+    });
+
+    /* ===================== AUTH MODAL & SESSION (real backend, backend.md §5) ===================== */
+    (function () {
+        /* --- dropdown helpers (auth holatidan mustaqil) --- */
         var _userMenu = document.getElementById("js-user-menu");
         var _langMenu = document.getElementById("js-lang-menu");
 
@@ -312,7 +364,6 @@
             if (_langMenu) _langMenu.style.display = "none";
         }
 
-        /* user menu toggle */
         var userMenuBtn = document.getElementById("js-user-menu-btn");
         if (userMenuBtn && _userMenu) {
             userMenuBtn.addEventListener("click", function (e) {
@@ -323,7 +374,6 @@
             });
         }
 
-        /* lang menu toggle */
         var langBtn = document.getElementById("js-lang-btn");
         var langLabel = document.getElementById("js-lang-label");
         if (langBtn && _langMenu) {
@@ -341,19 +391,9 @@
             });
         }
 
-        /* close all dropdowns when clicking outside */
         document.addEventListener("click", function () { closeAll(); });
 
-        /* nav cabinet link */
-        var navCabinetBtn = document.getElementById("js-nav-cabinet");
-        if (navCabinetBtn) {
-            navCabinetBtn.addEventListener("click", function () {
-                var u = getUser();
-                window.location.href = u && u.kind === "institution" ? "/institution-cabinet" : "/cabinet";
-            });
-        }
-
-        /* --- auth panel switching --- */
+        /* --- auth panel switching (login/parent/institution) --- */
         document.querySelectorAll(".js-auth-switch").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 var target = btn.dataset.target;
@@ -363,231 +403,303 @@
             });
         });
 
-        /* --- logout (event delegation: catches nav, cabinet, institution sidebars) --- */
+        /* --- logout: real session tugatiladi --- */
         document.addEventListener("click", function (e) {
             var btn = e.target.closest("#js-nav-logout, #js-logout-btn, #js-inst-logout");
             if (!btn) return;
-            clearUser();
-            window.location.href = "/";
+            jsonFetch("/ajax/auth/logout", "POST", {}).then(function () {
+                window.location.href = "/";
+            });
         });
 
-        /* --- fake auth form submit --- */
+        /* --- muassasa kabineti: ekskursiya arizasini tasdiqlash/rad etish (real PATCH) --- */
+        document.addEventListener("click", function (e) {
+            var btn = e.target.closest("[data-app-status]");
+            if (!btn) return;
+            var row = btn.closest("[data-app-id]");
+            if (!row) return;
+            var id = row.dataset.appId;
+            var status = btn.dataset.appStatus;
+
+            jsonFetch("/ajax/institution/me/applications/" + id + "/status", "PATCH", { status: status }).then(function (res) {
+                if (res.ok) window.location.reload();
+            });
+        });
+
+        /* --- real auth form submit: login / ro'yxatdan o'tish (parent, institution) --- */
+        var AUTH_ENDPOINTS = {
+            login: "/ajax/auth/login",
+            parent: "/ajax/auth/register/parent",
+            institution: "/ajax/auth/register/institution",
+        };
+
         document.querySelectorAll(".js-fake-auth").forEach(function (form) {
             form.addEventListener("submit", function (e) {
                 e.preventDefault();
                 var mode = form.dataset.mode;
+                var url = AUTH_ENDPOINTS[mode] || AUTH_ENDPOINTS.login;
                 var data = {};
                 var els = form.elements;
                 for (var i = 0; i < els.length; i++) {
                     if (els[i].name) data[els[i].name] = els[i].value;
                 }
-                var user = { kind: mode === "institution" ? "institution" : "parent" };
-                if (mode === "institution") {
-                    user.name = data.name || data.org || "Muassasa";
-                    user.org = data.org || "";
-                    user.phone = data.phone || "";
-                } else {
-                    user.name = data.name || "Foydalanuvchi";
-                    user.phone = data.phone || "";
-                    user.age = data.age || "";
-                    user.district = data.district || "";
-                }
-                saveUser(user);
-                syncNav();
-                /* close modal */
-                var modal = document.getElementById("auth-modal");
-                if (modal) {
-                    modal.hidden = true;
-                    document.body.classList.remove("modal-open");
-                }
-                /* redirect: institution → /institution-cabinet, parent/login → /cabinet */
-                window.location.href = user.kind === "institution" ? "/institution-cabinet" : "/cabinet";
+
+                var oldError = form.querySelector(".js-auth-error");
+                if (oldError) oldError.remove();
+
+                var submitBtn = form.querySelector(".form-submit");
+                if (submitBtn) submitBtn.disabled = true;
+
+                jsonFetch(url, "POST", data).then(function (res) {
+                    if (submitBtn) submitBtn.disabled = false;
+
+                    if (!res.ok) {
+                        var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                        if (res.body) {
+                            if (res.body.errors) {
+                                var firstKey = Object.keys(res.body.errors)[0];
+                                if (firstKey) msg = res.body.errors[firstKey][0];
+                            } else if (res.body.message) {
+                                msg = res.body.message;
+                            }
+                        }
+                        var box = document.createElement("div");
+                        box.className = "js-auth-error";
+                        box.style.cssText = "color:#dc2626;font-size:13px;font-weight:600;margin-top:10px";
+                        box.textContent = msg;
+                        form.appendChild(box);
+                        return;
+                    }
+
+                    /* muvaffaqiyatli: sahifa qayta yuklanadi — nav/kabinet serverda to'g'ri render bo'ladi */
+                    window.location.reload();
+                });
             });
         });
 
-        /* --- cabinet page init --- */
-        var cabBody = document.getElementById("js-cab-body");
-        var cabGuest = document.getElementById("js-cab-guest");
-        if (cabBody) {
-            var user = getUser();
-            if (!user) {
-                cabGuest.style.display = "";
-            } else {
-                cabBody.style.display = "";
-                /* populate page head title */
-                var pageHead = document.querySelector(".pagehead h1");
-                if (pageHead) {
-                    var firstName = (user.name || user.org || "").split(" ")[0];
-                    pageHead.textContent = "Assalomu alaykum, " + firstName + "!";
-                }
-                /* populate rail */
-                var cabAvatar = document.getElementById("js-cab-avatar");
-                var cabName = document.getElementById("js-cab-name");
-                var cabPhone = document.getElementById("js-cab-phone");
-                if (cabAvatar) cabAvatar.textContent = monogram(user.name || user.org || "");
-                if (cabName) cabName.textContent = user.name || user.org || "—";
-                if (cabPhone) cabPhone.textContent = user.phone || "—";
-                /* populate kv grid */
-                var kvName = document.getElementById("js-kv-name");
-                var kvPhone = document.getElementById("js-kv-phone");
-                var kvAge = document.getElementById("js-kv-age");
-                var kvDistrict = document.getElementById("js-kv-district");
-                if (kvName) kvName.textContent = user.name || user.org || "—";
-                if (kvPhone) kvPhone.textContent = user.phone || "—";
-                if (kvAge) kvAge.textContent = user.age || "—";
-                if (kvDistrict) kvDistrict.textContent = user.district || "—";
-            }
-
-            /* cabinet tab switching */
-            var tabBtns = Array.prototype.slice.call(document.querySelectorAll(".js-cab-tab"));
-            var panels   = Array.prototype.slice.call(document.querySelectorAll(".js-cab-panel"));
-            tabBtns.forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    tabBtns.forEach(function (b) { b.classList.toggle("on", b === btn); });
-                    panels.forEach(function (p) {
-                        p.style.display = p.dataset.panel === btn.dataset.tab ? "block" : "none";
-                    });
+        /* --- kabinet tab almashish (ma'lumot endi serverda render qilingan) --- */
+        var tabBtns = Array.prototype.slice.call(document.querySelectorAll(".js-cab-tab"));
+        var panels = Array.prototype.slice.call(document.querySelectorAll(".js-cab-panel"));
+        tabBtns.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                tabBtns.forEach(function (b) { b.classList.toggle("on", b === btn); });
+                panels.forEach(function (p) {
+                    p.style.display = p.dataset.panel === btn.dataset.tab ? "block" : "none";
                 });
             });
-        }
+        });
 
-        /* ===================== INSTITUTION CABINET ===================== */
-        var instBody = document.getElementById("js-inst-body");
-        var instGuest = document.getElementById("js-inst-guest");
-        if (instBody) {
-            var instUser = getUser();
-            if (!instUser || instUser.kind !== "institution") {
-                instGuest.style.display = "";
-            } else {
-                instBody.style.display = "";
-                /* populate rail */
-                var instAvatar = document.getElementById("js-inst-avatar");
-                var instName = document.getElementById("js-inst-name");
-                var instKind = document.getElementById("js-inst-kind");
-                var kindLabels = { maktab: "Xususiy maktab", bogcha: "Xususiy bog'cha", markaz: "O'quv markazi" };
-                if (instAvatar) instAvatar.textContent = monogram(instUser.org || instUser.name || "");
-                if (instName) instName.textContent = instUser.org || instUser.name || "—";
-                if (instKind) instKind.textContent = kindLabels[instUser.orgKind] || "Muassasa";
-                /* pre-fill form from user data */
-                var fName = document.getElementById("js-f-name");
-                var fKind = document.getElementById("js-f-kind");
-                if (fName && instUser.org) fName.value = instUser.org;
-                if (fKind && instUser.orgKind) fKind.value = instUser.orgKind;
-                /* update page head */
-                var instHead = document.querySelector(".pagehead h1");
-                if (instHead) instHead.textContent = instUser.org || "Muassasa kabineti";
-
-                /* --- live preview helpers --- */
-                function monogramInst(s) { return monogram(s || ""); }
-                function fmtPrice(n) {
-                    if (!n) return "";
-                    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-                }
-                function updatePreview() {
-                    var name = document.getElementById("js-f-name");
-                    var kind = document.getElementById("js-f-kind");
-                    var lang = document.getElementById("js-f-lang");
-                    var district = document.getElementById("js-f-district");
-                    var grades = document.getElementById("js-f-grades");
-                    var hours = document.getElementById("js-f-hours");
-                    var price = document.getElementById("js-f-price");
-                    var nameVal = name ? name.value : "";
-                    var kindVal = kind ? kind.value : "maktab";
-                    var kindMap = { maktab: "Maktab", bogcha: "Bog'cha", markaz: "O'quv markazi" };
-                    /* grades label */
-                    var gradesLabel = document.getElementById("js-f-grades-label");
-                    if (gradesLabel) gradesLabel.textContent = kindVal === "maktab" ? "Sinflar" : "Yosh oralig'i";
-                    /* preview fields */
-                    var pMono = document.getElementById("js-prev-mono");
-                    var pName = document.getElementById("js-prev-name");
-                    var pKind = document.getElementById("js-prev-kind");
-                    var pLang = document.getElementById("js-prev-lang");
-                    var pDistrict = document.getElementById("js-prev-district");
-                    var pGrades = document.getElementById("js-prev-grades");
-                    var pHours = document.getElementById("js-prev-hours");
-                    var pPrice = document.getElementById("js-prev-price");
-                    if (pMono) pMono.textContent = monogramInst(nameVal) || "?";
-                    if (pName) pName.textContent = nameVal || "Muassasa nomi";
-                    if (pKind) pKind.textContent = kindMap[kindVal] || "Maktab";
-                    if (pLang) pLang.textContent = lang ? lang.value : "Ingliz";
-                    if (pDistrict) pDistrict.textContent = (district && district.value) ? district.value : "Tuman";
-                    if (pGrades) pGrades.textContent = (grades && grades.value) ? grades.value : "—";
-                    if (pHours) pHours.textContent = (hours && hours.value) ? hours.value : "08:00 – 18:00";
-                    if (pPrice) {
-                        var priceVal = price ? parseInt(price.value, 10) : 0;
-                        pPrice.innerHTML = priceVal > 0
-                            ? "<b>" + fmtPrice(priceVal) + "</b> <span>so'm / oy</span>"
-                            : "<span>Narx kelishilgan</span>";
-                    }
-                }
-
-                /* wire all form inputs to live preview */
-                ["js-f-name","js-f-kind","js-f-lang","js-f-district","js-f-grades","js-f-hours","js-f-price"].forEach(function (id) {
-                    var el = document.getElementById(id);
-                    if (el) el.addEventListener("input", updatePreview);
+        /* --- muassasa kabineti tab almashish --- */
+        var instTabBtns = Array.prototype.slice.call(document.querySelectorAll(".js-inst-tab"));
+        var instPanels = Array.prototype.slice.call(document.querySelectorAll(".js-inst-panel"));
+        instTabBtns.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                instTabBtns.forEach(function (b) { b.classList.toggle("on", b === btn); });
+                instPanels.forEach(function (p) {
+                    p.style.display = p.dataset.panel === btn.dataset.tab ? "block" : "none";
                 });
-                updatePreview();
+            });
+        });
 
-                /* --- sat toggle --- */
-                var satToggle = document.getElementById("js-sat-toggle");
-                var satLabel = document.getElementById("js-sat-label");
-                var prevSat = document.getElementById("js-prev-sat");
-                var satOn = true;
-                if (satToggle) {
-                    satToggle.addEventListener("click", function () {
-                        satOn = !satOn;
-                        satToggle.classList.toggle("on", satOn);
-                        if (satLabel) satLabel.textContent = satOn ? "Ishlaydi" : "Dam olish";
-                        if (prevSat) prevSat.style.display = satOn ? "" : "none";
-                    });
+        /* ===== Muassasa kabineti: jonli preview + real saqlash (boshlang'ich qiymatlar serverdan) ===== */
+        var instNameField = document.getElementById("js-f-name");
+        if (instNameField) {
+            function fmtPrice(n) {
+                if (!n) return "";
+                return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+            }
+
+            function updatePreview() {
+                var name = document.getElementById("js-f-name");
+                var kind = document.getElementById("js-f-kind");
+                var lang = document.getElementById("js-f-lang");
+                var district = document.getElementById("js-f-district");
+                var grades = document.getElementById("js-f-grades");
+                var hours = document.getElementById("js-f-hours");
+                var price = document.getElementById("js-f-price");
+                var nameVal = name ? name.value : "";
+                var kindVal = kind ? kind.value : "maktab";
+                var kindMap = { maktab: "Maktab", bogcha: "Bog'cha", markaz: "O'quv markazi" };
+
+                var gradesLabel = document.getElementById("js-f-grades-label");
+                if (gradesLabel) gradesLabel.textContent = kindVal === "maktab" ? "Sinflar" : "Yosh oralig'i";
+
+                var pMono = document.getElementById("js-prev-mono");
+                var pName = document.getElementById("js-prev-name");
+                var pKind = document.getElementById("js-prev-kind");
+                var pLang = document.getElementById("js-prev-lang");
+                var pDistrict = document.getElementById("js-prev-district");
+                var pGrades = document.getElementById("js-prev-grades");
+                var pHours = document.getElementById("js-prev-hours");
+                var pPrice = document.getElementById("js-prev-price");
+
+                if (pMono) pMono.textContent = nameVal ? nameVal.trim().slice(0, 2).toUpperCase() : "?";
+                if (pName) pName.textContent = nameVal || "Muassasa nomi";
+                if (pKind) pKind.textContent = kindMap[kindVal] || "Maktab";
+                if (pLang) pLang.textContent = lang ? lang.value : "Ingliz";
+                if (pDistrict) pDistrict.textContent = (district && district.value) ? district.value : "Tuman";
+                if (pGrades) pGrades.textContent = (grades && grades.value) ? grades.value : "—";
+                if (pHours) pHours.textContent = (hours && hours.value) ? hours.value : "08:00 – 18:00";
+                if (pPrice) {
+                    var priceVal = price ? parseInt(price.value, 10) : 0;
+                    pPrice.innerHTML = priceVal > 0
+                        ? "<b>" + fmtPrice(priceVal) + "</b> <span>so'm / oy</span>"
+                        : "<span>Narx kelishilgan</span>";
                 }
+            }
 
-                /* --- accepting toggle --- */
-                var acceptCard = document.getElementById("js-accept-card");
-                var acceptToggle = document.getElementById("js-accept-toggle");
-                var acceptText = document.getElementById("js-accept-text");
-                var prevBadge = document.getElementById("js-prev-badge");
-                var accepting = true;
-                if (acceptToggle) {
-                    acceptToggle.addEventListener("click", function () {
-                        accepting = !accepting;
+            ["js-f-name", "js-f-kind", "js-f-lang", "js-f-district", "js-f-grades", "js-f-hours", "js-f-price"].forEach(function (id) {
+                var el = document.getElementById(id);
+                if (el) el.addEventListener("input", updatePreview);
+            });
+            updatePreview();
+
+            /* --- shanba toggle (faqat vizual — saqlashda o'qiladi) --- */
+            var satToggle = document.getElementById("js-sat-toggle");
+            var satLabel = document.getElementById("js-sat-label");
+            var prevSat = document.getElementById("js-prev-sat");
+            if (satToggle) {
+                satToggle.addEventListener("click", function () {
+                    var on = !satToggle.classList.contains("on");
+                    satToggle.classList.toggle("on", on);
+                    if (satLabel) satLabel.textContent = on ? "Ishlaydi" : "Dam olish";
+                    if (prevSat) prevSat.style.display = on ? "" : "none";
+                });
+            }
+
+            /* --- qabul holati: real PATCH /ajax/institution/me/accepting --- */
+            var acceptCard = document.getElementById("js-accept-card");
+            var acceptToggle = document.getElementById("js-accept-toggle");
+            var acceptText = document.getElementById("js-accept-text");
+            var prevBadge = document.getElementById("js-prev-badge");
+            if (acceptToggle) {
+                acceptToggle.addEventListener("click", function () {
+                    var accepting = !acceptToggle.classList.contains("on");
+                    jsonFetch("/ajax/institution/me/accepting", "PATCH", { accepting: accepting }).then(function (res) {
+                        if (!res.ok) return;
                         acceptToggle.classList.toggle("on", accepting);
                         if (acceptCard) acceptCard.classList.toggle("on", accepting);
                         if (acceptText) acceptText.textContent = accepting ? "Arizalar qabul qilinmoqda" : "Qabul vaqtincha yopiq";
                         if (prevBadge) prevBadge.style.display = accepting ? "" : "none";
                     });
-                }
-
-                /* --- spec chips --- */
-                document.querySelectorAll("#js-spec-chips .chip").forEach(function (chip) {
-                    chip.addEventListener("click", function () { chip.classList.toggle("on"); });
                 });
-
-                /* --- save button --- */
-                var saveBtn = document.getElementById("js-inst-save");
-                var savedPill = document.getElementById("js-saved-pill");
-                if (saveBtn) {
-                    saveBtn.addEventListener("click", function () {
-                        if (savedPill) { savedPill.style.display = ""; }
-                        setTimeout(function () { if (savedPill) savedPill.style.display = "none"; }, 3000);
-                    });
-                }
             }
 
-            /* institution tabs */
-            var instTabBtns = Array.prototype.slice.call(document.querySelectorAll(".js-inst-tab"));
-            var instPanels   = Array.prototype.slice.call(document.querySelectorAll(".js-inst-panel"));
-            instTabBtns.forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    instTabBtns.forEach(function (b) { b.classList.toggle("on", b === btn); });
-                    instPanels.forEach(function (p) {
-                        p.style.display = p.dataset.panel === btn.dataset.tab ? "block" : "none";
+            /* --- ixtisoslik chip'lari (faqat vizual — saqlashda o'qiladi) --- */
+            document.querySelectorAll("#js-spec-chips .chip").forEach(function (chip) {
+                chip.addEventListener("click", function () { chip.classList.toggle("on"); });
+            });
+
+            /* --- saqlash: real PUT /ajax/institution/me --- */
+            var saveBtn = document.getElementById("js-inst-save");
+            var savedPill = document.getElementById("js-saved-pill");
+            if (saveBtn) {
+                saveBtn.addEventListener("click", function () {
+                    var specs = Array.prototype.slice.call(document.querySelectorAll("#js-spec-chips .chip.on"))
+                        .map(function (c) { return c.dataset.spec; });
+
+                    var priceEl = document.getElementById("js-f-price");
+                    var priceVal = priceEl && priceEl.value ? parseInt(priceEl.value, 10) : null;
+
+                    var payload = {
+                        name: (document.getElementById("js-f-name") || {}).value || "",
+                        type: (document.getElementById("js-f-kind") || {}).value || "maktab",
+                        lang: (document.getElementById("js-f-lang") || {}).value || "",
+                        about: (document.getElementById("js-f-about") || {}).value || "",
+                        district: (document.getElementById("js-f-district") || {}).value || "",
+                        address: (document.getElementById("js-f-address") || {}).value || "",
+                        monthly_price: priceVal,
+                        grades: (document.getElementById("js-f-grades") || {}).value || "",
+                        work_hours: (document.getElementById("js-f-hours") || {}).value || "",
+                        works_saturday: !!(satToggle && satToggle.classList.contains("on")),
+                        specializations: specs,
+                    };
+
+                    saveBtn.disabled = true;
+                    jsonFetch("/ajax/institution/me", "PUT", payload).then(function (res) {
+                        saveBtn.disabled = false;
+
+                        if (!res.ok) {
+                            var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                            if (res.body) {
+                                if (res.body.errors) {
+                                    var firstKey = Object.keys(res.body.errors)[0];
+                                    if (firstKey && res.body.errors[firstKey][0]) msg = res.body.errors[firstKey][0];
+                                } else if (res.body.message) {
+                                    msg = res.body.message;
+                                }
+                            }
+                            alert(msg);
+                            return;
+                        }
+
+                        if (savedPill) { savedPill.style.display = ""; }
+                        setTimeout(function () { if (savedPill) savedPill.style.display = "none"; }, 3000);
+                        alert("Maʼlumotlar muvaffaqiyatli saqlandi!");
+                    });
+                });
+            }
+
+            /* --- rasm yuklash: real POST /ajax/institution/me/media (multipart) --- */
+            document.querySelectorAll(".js-media-upload").forEach(function (slot) {
+                var input = slot.querySelector("input[type=file]");
+                if (!input) return;
+                input.addEventListener("change", function () {
+                    var file = input.files && input.files[0];
+                    if (!file) return;
+
+                    var formData = new FormData();
+                    formData.append("file", file);
+                    formData.append("type", slot.dataset.mediaType || "gallery");
+
+                    slot.classList.add("loading");
+
+                    fetch("/ajax/institution/me/media", {
+                        method: "POST",
+                        headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+                        body: formData,
+                    }).then(function (res) {
+                        return res.json().catch(function () { return {}; }).then(function (body) {
+                            return { ok: res.ok, body: body };
+                        });
+                    }).then(function (result) {
+                        slot.classList.remove("loading");
+                        input.value = "";
+
+                        if (!result.ok) {
+                            var msg = "Rasmni yuklab boʻlmadi. Qayta urining.";
+                            if (result.body) {
+                                if (result.body.errors) {
+                                    var firstKey = Object.keys(result.body.errors)[0];
+                                    if (firstKey && result.body.errors[firstKey][0]) msg = result.body.errors[firstKey][0];
+                                } else if (result.body.message) {
+                                    msg = result.body.message;
+                                }
+                            }
+                            alert(msg);
+                            return;
+                        }
+
+                        /* muvaffaqiyatli: sahifani to'liq qayta yuklamasdan slotni yangilaymiz */
+                        var url = result.body.media && result.body.media.url;
+                        if (url) {
+                            slot.classList.add("filled");
+                            slot.style.backgroundImage = "url('" + url + "')";
+                            var span = slot.querySelector("span");
+                            if (span) span.textContent = "Yuklandi ✓";
+                        }
+
+                        var counter = document.getElementById("js-media-count");
+                        if (counter) {
+                            var n = parseInt((counter.textContent.match(/\d+/) || ["0"])[0], 10) + 1;
+                            counter.textContent = "(" + n + " ta yuklangan)";
+                        }
+                    }).catch(function () {
+                        slot.classList.remove("loading");
+                        alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
                     });
                 });
             });
-
         }
-
-        syncNav();
     }());
 })();

@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>Suhbatlar — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -14,7 +13,6 @@
 <body>
 
     @php
-        $isParent = auth()->check() && auth()->user()->isParent();
         $chats = [
             [
                 'id'        => 1,
@@ -68,7 +66,7 @@
         />
 
         {{-- ===== GUEST STATE ===== --}}
-        <div id="js-chat-guest" style="{{ $isParent ? 'display:none' : '' }}">
+        <div id="js-chat-guest" style="display:none">
             <div class="wrap" style="padding:60px 0;text-align:center">
                 <div class="empty">
                     <span class="empty-ico"><x-maktabgid.icon name="chat" :width="28" :height="28" /></span>
@@ -82,7 +80,7 @@
         </div>
 
         {{-- ===== CHAT BODY ===== --}}
-        <div id="js-chat-body" style="{{ $isParent ? '' : 'display:none' }}">
+        <div id="js-chat-body" style="display:none">
             <div class="wrap">
                 <div class="chat-shell">
 
@@ -138,19 +136,29 @@
     {{-- Seed chat data for JS --}}
     <script>
     var MG_CHATS = @json($chats);
-    var MG_IS_PARENT = @json($isParent);
     </script>
     <script src="{{ asset('js/maktabgid.js') }}"></script>
 
     <script>
     (function () {
-        if (!MG_IS_PARENT) return;
-
         var AUTO_REPLIES = [
             "Rahmat! Soʻrovingizni qabul qildik, administrator tez orada javob beradi.",
             "Albatta, bemalol tashrif buyurishingiz mumkin. Ekskursiyaga yozilib qoʻysangiz, vaqtini kelishamiz.",
             "Hujjatlar: tugʻilganlik guvohnomasi, 2 ta surat va tibbiy maʻlumotnnoma. Yana savol boʻlsa, yozing.",
         ];
+
+        /* ---- auth check ---- */
+        var user = null;
+        try { user = JSON.parse(localStorage.getItem("mg_user") || "null"); } catch (e) {}
+
+        var guest = document.getElementById("js-chat-guest");
+        var body  = document.getElementById("js-chat-body");
+
+        if (!user || user.kind !== "parent") {
+            guest.style.display = "block";
+            return;
+        }
+        body.style.display = "block";
 
         /* ---- state ---- */
         var chats    = MG_CHATS.map(function (c) { return Object.assign({}, c, { messages: c.messages.slice() }); });

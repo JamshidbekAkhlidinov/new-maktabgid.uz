@@ -2,8 +2,36 @@
 
 namespace App\Support;
 
+use App\Models\Article;
+use App\Models\District;
+use App\Models\ForumReply;
+use App\Models\ForumThread;
+use App\Models\Institution;
+use App\Models\News as NewsModel;
+use App\Models\Resume;
+use App\Models\Review;
+use App\Models\Specialization;
+use App\Models\Vacancy;
+use Illuminate\Support\Carbon;
+
+/**
+ * Frontend (Blade) uchun yagona ma'lumot darvozasi.
+ *
+ * Ikki turdagi metodlar bor:
+ *  - STATIK KONFIG/PRESET — DB'da emas, dizayn/UI konstantalari (kategoriyalar, narx-oraliqlari,
+ *    gradientlar, kategoriya bo'yicha umumiy galereya/dars presetlari va h.k.). Bular backend.md §3
+ *    izohiga ko'ra ataylab DB'ga ko'chirilmagan.
+ *  - ENTITY (DB'DAN) — muassasalar, tumanlar, ixtisosliklar, forum, yangilik/maqola, vakansiya/rezyume,
+ *    sharhlar — hammasi endi Eloquent orqali real bazadan o'qiladi. Metod imzolari (nom, parametr,
+ *    qaytariladigan massiv shakli) eski mock bilan bir xil qoldirilgan — shunga barcha Blade
+ *    fayllar o'zgarishsiz ishlayveradi, faqat manba DB bo'ldi.
+ */
 class MaktabgidData
 {
+    /* ==================================================================
+     * STATIK KONFIG / UI PRESETLARI (o'zgarmadi)
+     * ================================================================== */
+
     /** Gradient pairs for monogram tiles (same order as data.jsx) */
     public static function gradients(): array
     {
@@ -36,14 +64,6 @@ class MaktabgidData
         ][$key] ?? $key;
     }
 
-    public static function districts(): array
-    {
-        return [
-            'Yunusobod', 'Mirzo Ulugʻbek', 'Mirobod', 'Shayxontohur', 'Olmazor',
-            'Sergeli', 'Yakkasaroy', 'Yashnobod', 'Yangihayot', 'Chilonzor', 'Uchtepa',
-        ];
-    }
-
     public static function priceBands(): array
     {
         return [
@@ -65,113 +85,17 @@ class MaktabgidData
         ];
     }
 
-    public static function schools(): array
+    public static function formatPrice(int|float|null $n): string
     {
-        $schools = [
-            ['id' => 1, 'name' => 'CIS Tashkent', 'cat' => 'maktab', 'district' => 'Mirzo Ulugʻbek', 'dist' => 4.2, 'price' => 208818000, 'rating' => 4.9, 'reviews' => 214, 'grades' => '1–11', 'lang' => 'Ingliz', 'sat' => false, 'x' => 64, 'y' => 30, 'badge' => 'Premium'],
-            ['id' => 2, 'name' => 'Sodiq School', 'cat' => 'maktab', 'district' => 'Chilonzor', 'dist' => 1.1, 'price' => 6590000, 'rating' => 4.7, 'reviews' => 156, 'grades' => '1–11', 'lang' => 'Oʻzbek / Ingliz', 'sat' => true, 'x' => 33, 'y' => 58],
-            ['id' => 3, 'name' => 'Diplomat International School', 'cat' => 'maktab', 'district' => 'Yunusobod', 'dist' => 2.4, 'price' => 6900000, 'rating' => 4.8, 'reviews' => 189, 'grades' => '1–11', 'lang' => 'Ingliz', 'sat' => true, 'x' => 52, 'y' => 20],
-            ['id' => 4, 'name' => 'Artel Technical School', 'cat' => 'maktab', 'district' => 'Yashnobod', 'dist' => 5.6, 'price' => 4250000, 'rating' => 4.5, 'reviews' => 87, 'grades' => '5–11', 'lang' => 'Oʻzbek', 'sat' => false, 'x' => 76, 'y' => 64],
-            ['id' => 5, 'name' => 'IT Park School', 'cat' => 'maktab', 'district' => 'Mirzo Ulugʻbek', 'dist' => 3.8, 'price' => 41000000, 'rating' => 4.9, 'reviews' => 132, 'grades' => '1–11', 'lang' => 'Ingliz', 'sat' => false, 'x' => 70, 'y' => 42, 'badge' => 'Premium'],
-            ['id' => 6, 'name' => 'Cambridge School', 'cat' => 'maktab', 'district' => 'Mirobod', 'dist' => 2.0, 'price' => 5800000, 'rating' => 4.6, 'reviews' => 143, 'grades' => '1–11', 'lang' => 'Ingliz', 'sat' => true, 'x' => 48, 'y' => 48],
-            ['id' => 7, 'name' => 'Vosiq International School', 'cat' => 'maktab', 'district' => 'Olmazor', 'dist' => 3.1, 'price' => 5500000, 'rating' => 4.7, 'reviews' => 98, 'grades' => '1–9', 'lang' => 'Oʻzbek / Ingliz', 'sat' => true, 'x' => 40, 'y' => 28],
-            ['id' => 8, 'name' => 'Interhouse Lyceum', 'cat' => 'maktab', 'district' => 'Yakkasaroy', 'dist' => 1.7, 'price' => 6500000, 'rating' => 4.8, 'reviews' => 176, 'grades' => '5–11', 'lang' => 'Ingliz', 'sat' => false, 'x' => 45, 'y' => 62],
-            ['id' => 9, 'name' => 'Maple Bear Canadian School', 'cat' => 'bogcha', 'district' => 'Yunusobod', 'dist' => 2.9, 'price' => 14000000, 'rating' => 4.9, 'reviews' => 205, 'grades' => '3–7 yosh', 'lang' => 'Ingliz', 'sat' => false, 'x' => 56, 'y' => 24, 'badge' => 'Premium'],
-            ['id' => 10, 'name' => 'Milestone International School', 'cat' => 'maktab', 'district' => 'Mirzo Ulugʻbek', 'dist' => 4.5, 'price' => 6750000, 'rating' => 4.6, 'reviews' => 121, 'grades' => '1–11', 'lang' => 'Ingliz', 'sat' => true, 'x' => 67, 'y' => 36],
-            ['id' => 11, 'name' => 'Al-Beruniy School', 'cat' => 'maktab', 'district' => 'Shayxontohur', 'dist' => 3.3, 'price' => 6800000, 'rating' => 4.7, 'reviews' => 110, 'grades' => '1–11', 'lang' => 'Oʻzbek', 'sat' => true, 'x' => 28, 'y' => 44],
-            ['id' => 12, 'name' => 'Invento School', 'cat' => 'maktab', 'district' => 'Yunusobod', 'dist' => 5.2, 'price' => 132000000, 'rating' => 5.0, 'reviews' => 64, 'grades' => '1–11', 'lang' => 'Ingliz', 'sat' => false, 'x' => 58, 'y' => 14, 'badge' => 'Premium'],
-            ['id' => 13, 'name' => 'Jalaliddin International School', 'cat' => 'maktab', 'district' => 'Sergeli', 'dist' => 6.8, 'price' => 7778000, 'rating' => 4.5, 'reviews' => 73, 'grades' => '1–11', 'lang' => 'Ingliz', 'sat' => true, 'x' => 50, 'y' => 80],
-            ['id' => 14, 'name' => 'Rahimov School', 'cat' => 'maktab', 'district' => 'Chilonzor', 'dist' => 2.6, 'price' => 6200000, 'rating' => 4.6, 'reviews' => 134, 'grades' => '1–11', 'lang' => 'Oʻzbek / Ingliz', 'sat' => true, 'x' => 36, 'y' => 52],
-            ['id' => 15, 'name' => 'Little Stars Bogʻcha', 'cat' => 'bogcha', 'district' => 'Yakkasaroy', 'dist' => 0.9, 'price' => 3200000, 'rating' => 4.8, 'reviews' => 96, 'grades' => '2–6 yosh', 'lang' => 'Oʻzbek / Ingliz', 'sat' => true, 'x' => 43, 'y' => 56],
-            ['id' => 16, 'name' => 'Bright Kids Markazi', 'cat' => 'markaz', 'district' => 'Mirobod', 'dist' => 1.4, 'price' => 1500000, 'rating' => 4.7, 'reviews' => 152, 'grades' => '6–16 yosh', 'lang' => 'Ingliz', 'sat' => true, 'x' => 49, 'y' => 50],
-        ];
-
-        $gradients = self::gradients();
-        $specPlan = self::specPlan();
-        foreach ($schools as $i => &$school) {
-            $school['g'] = $gradients[$i % count($gradients)];
-            $school['specs'] = $specPlan[$i % count($specPlan)];
+        if ($n === null) {
+            return 'Kelishilgan';
         }
 
-        return $schools;
-    }
-
-    public static function school(int $id): ?array
-    {
-        foreach (self::schools() as $school) {
-            if ($school['id'] === $id) {
-                return $school;
-            }
-        }
-
-        return null;
-    }
-
-    /** Specializations catalogue (matches data.jsx SPECIALIZATIONS) */
-    public static function specializations(): array
-    {
-        return [
-            ['key' => 'stem', 'label' => 'STEM / Matematika', 'icon' => 'flask'],
-            ['key' => 'english', 'label' => 'Ingliz tili', 'icon' => 'globe'],
-            ['key' => 'it', 'label' => 'IT va dasturlash', 'icon' => 'code'],
-            ['key' => 'art', 'label' => 'Sanʼat va dizayn', 'icon' => 'palette'],
-            ['key' => 'music', 'label' => 'Musiqa', 'icon' => 'music'],
-            ['key' => 'sport', 'label' => 'Sport', 'icon' => 'dumbbell'],
-            ['key' => 'science', 'label' => 'Tabiiy fanlar', 'icon' => 'flask'],
-            ['key' => 'olympiad', 'label' => 'Olimpiadaga tayyorlov', 'icon' => 'trophy'],
-            ['key' => 'ielts', 'label' => 'IELTS / SAT', 'icon' => 'award'],
-            ['key' => 'early', 'label' => 'Erta rivojlanish', 'icon' => 'teddy'],
-        ];
-    }
-
-    public static function specializationLabel(string $key): ?array
-    {
-        foreach (self::specializations() as $sp) {
-            if ($sp['key'] === $key) {
-                return $sp;
-            }
-        }
-
-        return null;
-    }
-
-    /** Deterministic 2–3 specs per institution (matches data.jsx SPEC_PLAN) */
-    public static function specPlan(): array
-    {
-        return [
-            ['english', 'ielts', 'it'], ['stem', 'english', 'sport'], ['english', 'olympiad', 'it'],
-            ['it', 'stem', 'sport'], ['it', 'stem', 'english'], ['english', 'ielts'],
-            ['english', 'stem', 'music'], ['stem', 'olympiad', 'ielts'], ['early', 'english', 'art'],
-            ['english', 'it', 'science'], ['stem', 'science', 'olympiad'], ['english', 'ielts', 'it'],
-            ['english', 'sport', 'music'], ['stem', 'english', 'art'], ['early', 'art', 'music'],
-            ['english', 'it', 'art'],
-        ];
-    }
-
-    public static function vacancies(): array
-    {
-        return [
-            ['id' => 3, 'title' => 'Ingliz tili oʻqituvchisi', 'org' => 'Yakubovs School', 'type' => 'Toʻliq stavka', 'salary' => '10 – 12 mln', 'until' => '19 Apr 2027'],
-            ['id' => 2, 'title' => 'Ingliz tili oʻqituvchisi', 'org' => 'New Tone School', 'type' => 'Toʻliq stavka', 'salary' => '6 – 18 mln', 'until' => '19 Apr 2027'],
-            ['id' => 1, 'title' => 'Boshlangʻich sinf ustozi', 'org' => 'Baby Akademiya', 'type' => 'Toʻliq stavka', 'salary' => '4 – 7 mln', 'until' => '19 Apr 2027'],
-        ];
-    }
-
-    public static function blog(): array
-    {
-        return [
-            ['id' => 2, 'tag' => 'Yangilik', 'title' => 'Direktorlar uchun har oylik 20% mukofot joriy etiladi', 'excerpt' => '2026-yil 1-yanvardan boshlab umumtaʼlim maktablari direktorlari va oʻrinbosarlariga KPI natijalari asosida mukofotlar belgilanadi.', 'date' => '15 Apr 2026', 'g' => ['#0EA5A0', '#0B7E8C']],
-            ['id' => 1, 'tag' => 'Qabul', 'title' => 'Invento maktabida 5–6 yoshli bolalar uchun yangi guruh ochildi', 'excerpt' => 'Arizalar qabuli 30-aprelgacha davom etadi. Joylar soni cheklangan.', 'date' => '15 Apr 2026', 'g' => ['#6366F1', '#4338CA']],
-            ['id' => 3, 'tag' => 'Maslahat', 'title' => 'Farzandingizga mos maktabni qanday tanlash kerak?', 'excerpt' => 'Narx, masofa, taʼlim tili va dasturlarni solishtirishda eʼtibor beriladigan 7 ta mezon.', 'date' => '10 Apr 2026', 'g' => ['#F59E0B', '#D97706']],
-        ];
-    }
-
-    public static function formatPrice(int|float $n): string
-    {
         if ($n >= 1000000) {
             $m = $n / 1000000;
             $s = (floor($m) == $m) ? (string) (int) $m : number_format($m, 1);
-            return str_replace('.', ',', $s) . ' mln';
+
+            return str_replace('.', ',', $s).' mln';
         }
 
         return number_format($n, 0, ',', ' ');
@@ -329,88 +253,9 @@ class MaktabgidData
         ];
     }
 
-    public static function reviews(): array
-    {
-        return [
-            ['n' => 'Kamola R.', 'r' => 5, 'ago' => '1 hafta oldin', 't' => 'Farzandim shu yerda 2-yil. Oʻqituvchilar eʼtiborli, ingliz tili sezilarli oʻsdi. Tavsiya qilaman.'],
-            ['n' => 'Bekzod U.', 'r' => 4, 'ago' => '3 hafta oldin', 't' => 'Daraja yaxshi, lekin transport jadvalini biroz yaxshilash kerak. Umuman mamnunmiz.'],
-            ['n' => 'Nodira S.', 'r' => 5, 'ago' => '1 oy oldin', 't' => 'Joylashtirish jarayoni juda qulay boʻldi. Hammasi onlayn, qoʻshimcha yugur-yugursiz.'],
-        ];
-    }
-
-    public static function ratingBars(): array
-    {
-        return [
-            ['s' => 5, 'p' => 78], ['s' => 4, 'p' => 16], ['s' => 3, 'p' => 4], ['s' => 2, 'p' => 1], ['s' => 1, 'p' => 1],
-        ];
-    }
-
-    /** ---------------- FORUM ---------------- */
-
     public static function forumCategories(): array
     {
         return ['Hammasi', 'Maktab tanlash', 'Bogʻcha', 'Oʻquv markazi', 'Narx va toʻlov', 'Maslahat'];
-    }
-
-    public static function forumThreads(): array
-    {
-        return [
-            ['id' => 1, 'cat' => 'Maktab tanlash', 'title' => 'Yunusobodda 1-sinf uchun qaysi maktab yaxshi?', 'author' => 'Dilnoza M.', 'ago' => '2 soat oldin', 'replies' => 14, 'views' => 312, 'likes' => 23,
-                'body' => 'Assalomu alaykum! Farzandim kelasi yil 1-sinfga boradi. Yunusobod tumanida, oyiga 6 mln atrofida, ingliz tili kuchli maktab izlayapman. Tajribangiz bilan oʻrtoqlashsangiz.'],
-            ['id' => 2, 'cat' => 'Bogʻcha', 'title' => '3 yoshli bola uchun bogʻcha — moslashish qancha davom etadi?', 'author' => 'Sardor T.', 'ago' => '5 soat oldin', 'replies' => 9, 'views' => 188, 'likes' => 17,
-                'body' => 'Qizimni yangi bogʻchaga berdik, har kuni yigʻlaydi. Necha kunda koʻnikadi? Sizlarda qanday boʻlgan?'],
-            ['id' => 3, 'cat' => 'Narx va toʻlov', 'title' => 'Xususiy maktab toʻlovlarini boʻlib toʻlash mumkinmi?', 'author' => 'Gulnora A.', 'ago' => '1 kun oldin', 'replies' => 21, 'views' => 540, 'likes' => 31,
-                'body' => 'Koʻp maktablar yillik toʻlovni bir yoʻla soʻrayapti. Oylik yoki choraklik toʻlov qabul qiladigan maktablarni bilasizmi?'],
-            ['id' => 4, 'cat' => 'Oʻquv markazi', 'title' => 'IELTS 7.0 ga qaysi markaz real tayyorlaydi?', 'author' => 'Jasur K.', 'ago' => '1 kun oldin', 'replies' => 18, 'views' => 421, 'likes' => 12,
-                'body' => 'Kattaqizimga IELTS kerak, 3 oyda 7.0. Reklama emas, real natija bergan markazlarni tavsiya qiling.'],
-            ['id' => 5, 'cat' => 'Maslahat', 'title' => 'Maktab avtobusi xavfsizligini qanday tekshirasiz?', 'author' => 'Nodira S.', 'ago' => '2 kun oldin', 'replies' => 7, 'views' => 156, 'likes' => 9,
-                'body' => 'Maktab transport xizmati taklif qilyapti lekin xavfsizligi haqida oʻylayapman. Nimalarga eʼtibor berish kerak?'],
-        ];
-    }
-
-    public static function forumThread(int $id): ?array
-    {
-        foreach (self::forumThreads() as $t) {
-            if ($t['id'] === $id) {
-                return $t;
-            }
-        }
-
-        return null;
-    }
-
-    public static function forumReplies(): array
-    {
-        return [
-            ['id' => 1, 'author' => 'Kamola R.', 'ago' => '1 soat oldin', 'likes' => 8, 'body' => 'Diplomat International School ni koʻrib chiqing — ingliz tili juda kuchli, Yunusobodda. Biz 2 yildan beri qatnaymiz, mamnunmiz.'],
-            ['id' => 2, 'author' => 'Bekzod U.', 'ago' => '45 daqiqa oldin', 'likes' => 3, 'body' => 'Vosiq International ham yaxshi variant, narxi biroz arzonroq. Ekskursiyaga yozilib, oʻzingiz koʻrib keling.'],
-            ['id' => 3, 'author' => 'Dilnoza M.', 'ago' => '20 daqiqa oldin', 'likes' => 1, 'body' => 'Rahmat! Ikkalasiga ham ekskursiyaga yozildim platforma orqali.'],
-        ];
-    }
-
-    /** ---------------- BLOG (articles) ---------------- */
-
-    public static function articles(): array
-    {
-        return [
-            ['id' => 1, 'tag' => 'Tanlov', 'title' => 'Farzandingizga mos maktabni qanday tanlash kerak? 7 ta mezon', 'excerpt' => 'Narx, masofa, taʼlim tili, dastur va sharhlarni solishtirishda eʼtibor beriladigan asosiy mezonlar.', 'read' => '6 daqiqa', 'author' => 'Dr. Malika Yusupova', 'date' => '2 Iyun 2026', 'g' => ['#0EA5A0', '#0B7E8C'], 'feat' => true],
-            ['id' => 2, 'tag' => 'Psixologiya', 'title' => 'Maktabga moslashish: birinchi oydagi qiyinchiliklar', 'excerpt' => 'Bola yangi muhitga qanday koʻnikadi va ota-ona unga qanday yordam berishi mumkin.', 'read' => '5 daqiqa', 'author' => 'Nasiba Qodirova', 'date' => '30 May 2026', 'g' => ['#6366F1', '#4338CA']],
-            ['id' => 3, 'tag' => 'Moliya', 'title' => 'Taʼlim byudjetini rejalashtirish: oilaviy hisob-kitob', 'excerpt' => 'Oylik toʻlov, qoʻshimcha xarajatlar va tejash imkoniyatlarini hisoblash boʻyicha qoʻllanma.', 'read' => '7 daqiqa', 'author' => 'Sardor Tursunov', 'date' => '27 May 2026', 'g' => ['#F59E0B', '#D97706']],
-            ['id' => 4, 'tag' => 'Salomatlik', 'title' => 'Maktab yoshidagi bolalar uchun toʻgʻri ovqatlanish', 'excerpt' => 'Diqqat va xotirani yaxshilaydigan ratsion. Tushlik qutisiga nima solish kerak?', 'read' => '4 daqiqa', 'author' => 'Dr. Kamola R.', 'date' => '24 May 2026', 'g' => ['#10B981', '#047857']],
-            ['id' => 5, 'tag' => 'Tillar', 'title' => 'Bir vaqtda 2 ta tilni oʻrgatish bolaga zararmi?', 'excerpt' => 'Ikki tillilik haqidagi afsonalar va ilmiy dalillar. Mutaxassis fikri.', 'read' => '6 daqiqa', 'author' => 'Prof. Anvar Yoʻldoshev', 'date' => '21 May 2026', 'g' => ['#8B5CF6', '#6D28D9']],
-            ['id' => 6, 'tag' => 'Texnologiya', 'title' => 'Ekran vaqti: bolaga telefonni qachon va qancha berish kerak?', 'excerpt' => 'Yoshga qarab tavsiya etilgan ekran vaqti va sogʻlom raqamli odatlar.', 'read' => '5 daqiqa', 'author' => 'Nasiba Qodirova', 'date' => '18 May 2026', 'g' => ['#EC4899', '#BE185D']],
-        ];
-    }
-
-    public static function article(int $id): ?array
-    {
-        foreach (self::articles() as $a) {
-            if ($a['id'] === $id) {
-                return $a;
-            }
-        }
-
-        return null;
     }
 
     /** Generic continuation paragraphs for article/news detail pages (demo content has no full body) */
@@ -423,67 +268,330 @@ class MaktabgidData
         ];
     }
 
-    /** ---------------- NEWS ---------------- */
+    /* ==================================================================
+     * ENTITY — endi real bazadan (backend.md asosida qurilgan Phase 1-5)
+     * ================================================================== */
+
+    /** Haqiqiy 2GIS geolokatsiya hali ulanmagan muassasalar uchun barqaror (id'ga bog'liq) namoyish qiymati. */
+    private static function pseudoGeo(int $id): array
+    {
+        $dist = round((($id * 37) % 68) / 10 + 0.4, 1);
+        $x = 15 + (($id * 53) % 70);
+        $y = 12 + (($id * 29) % 76);
+
+        return [$dist, $x, $y];
+    }
+
+    private static function mapInstitution(Institution $institution): array
+    {
+        $gradients = self::gradients();
+        [$dist, $x, $y] = self::pseudoGeo($institution->id);
+
+        $photos = $institution->relationLoaded('media')
+            ? $institution->media->where('type', 'gallery')->pluck('url')->values()->all()
+            : [];
+
+        return [
+            'id' => $institution->id,
+            'name' => $institution->name,
+            'cat' => $institution->type,
+            'about' => $institution->about,
+            'district' => $institution->district?->name ?? '',
+            'address' => $institution->address,
+            'lat' => $institution->lat,
+            'lng' => $institution->lng,
+            'dist' => $dist,
+            'price' => $institution->monthly_price,
+            'rating' => (float) $institution->rating,
+            'reviews' => $institution->review_count,
+            'grades' => $institution->grades,
+            'lang' => $institution->lang,
+            'sat' => (bool) $institution->works_saturday,
+            'x' => $x,
+            'y' => $y,
+            'badge' => $institution->badge,
+            'g' => $gradients[$institution->id % count($gradients)],
+            'specs' => $institution->specializations->pluck('key')->all(),
+            'photos' => $photos,
+        ];
+    }
+
+    public static function schools(): array
+    {
+        return Institution::with(['district', 'specializations'])
+            ->orderBy('id')
+            ->get()
+            ->map(fn (Institution $institution) => self::mapInstitution($institution))
+            ->all();
+    }
+
+    public static function school(int $id): ?array
+    {
+        $institution = Institution::with(['district', 'specializations', 'media'])->find($id);
+
+        return $institution ? self::mapInstitution($institution) : null;
+    }
+
+    public static function districts(): array
+    {
+        return District::orderBy('name')->pluck('name')->all();
+    }
+
+    /** Specializations catalogue (matches data.jsx SPECIALIZATIONS) */
+    public static function specializations(): array
+    {
+        return Specialization::orderBy('id')->get()->map(fn ($s) => [
+            'key' => $s->key,
+            'label' => $s->label,
+            'icon' => $s->icon,
+        ])->all();
+    }
+
+    public static function specializationLabel(string $key): ?array
+    {
+        $s = Specialization::where('key', $key)->first();
+
+        return $s ? ['key' => $s->key, 'label' => $s->label, 'icon' => $s->icon] : null;
+    }
+
+    /** Muassasaning haqiqiy sharhlari (institutionId berilmasa — bo'sh). */
+    public static function reviews(?int $institutionId = null): array
+    {
+        $query = Review::with('author')->latest();
+
+        if ($institutionId) {
+            $query->where('institution_id', $institutionId);
+        }
+
+        return $query->get()->map(fn ($r) => [
+            'n' => self::shortName($r->author?->name ?? 'Foydalanuvchi'),
+            'r' => $r->rating,
+            'ago' => $r->created_at?->diffForHumans() ?? '',
+            't' => $r->body,
+        ])->all();
+    }
+
+    private static function shortName(string $name): string
+    {
+        $parts = explode(' ', trim($name));
+
+        return count($parts) >= 2 ? $parts[0].' '.mb_substr($parts[1], 0, 1).'.' : $name;
+    }
+
+    /** 5→1 yulduz taqsimoti (foizda), haqiqiy sharhlardan hisoblanadi. */
+    public static function ratingBars(?int $institutionId = null): array
+    {
+        $query = Review::query();
+        if ($institutionId) {
+            $query->where('institution_id', $institutionId);
+        }
+
+        $total = (clone $query)->count();
+
+        $bars = [];
+        for ($s = 5; $s >= 1; $s--) {
+            $count = $total ? (clone $query)->where('rating', $s)->count() : 0;
+            $bars[] = ['s' => $s, 'p' => $total ? (int) round($count / $total * 100) : 0];
+        }
+
+        return $bars;
+    }
+
+    /* ---------------- FORUM ---------------- */
+
+    public static function forumThreads(): array
+    {
+        return ForumThread::with('author')
+            ->withCount('replies')
+            ->orderByDesc('id')
+            ->get()
+            ->map(fn ($t) => [
+                'id' => $t->id,
+                'cat' => $t->category,
+                'title' => $t->title,
+                'body' => $t->body,
+                'author' => $t->author?->name ?? 'Foydalanuvchi',
+                'ago' => $t->created_at?->diffForHumans() ?? '',
+                'replies' => $t->replies_count,
+                'views' => $t->view_count,
+                'likes' => $t->like_count,
+            ])->all();
+    }
+
+    public static function forumThread(int $id): ?array
+    {
+        $t = ForumThread::with('author')->withCount('replies')->find($id);
+
+        if (! $t) {
+            return null;
+        }
+
+        return [
+            'id' => $t->id,
+            'cat' => $t->category,
+            'title' => $t->title,
+            'body' => $t->body,
+            'author' => $t->author?->name ?? 'Foydalanuvchi',
+            'ago' => $t->created_at?->diffForHumans() ?? '',
+            'replies' => $t->replies_count,
+            'views' => $t->view_count,
+            'likes' => $t->like_count,
+        ];
+    }
+
+    /** $threadId berilsa — faqat shu mavzuning javoblari (eski mock hammasiga bir xil ro'yxat qaytarardi — bu tuzatildi). */
+    public static function forumReplies(?int $threadId = null): array
+    {
+        $query = ForumReply::with('author')->orderBy('id');
+
+        if ($threadId) {
+            $query->where('thread_id', $threadId);
+        }
+
+        return $query->get()->map(fn ($r) => [
+            'id' => $r->id,
+            'author' => $r->author?->name ?? 'Foydalanuvchi',
+            'ago' => $r->created_at?->diffForHumans() ?? '',
+            'likes' => $r->like_count,
+            'body' => $r->body,
+        ])->all();
+    }
+
+    /* ---------------- BLOG (articles) ---------------- */
+
+    private static function mapArticle(Article $a): array
+    {
+        $gradients = self::gradients();
+
+        return [
+            'id' => $a->id,
+            'tag' => $a->tag,
+            'title' => $a->title,
+            'excerpt' => $a->excerpt,
+            'read' => $a->read_minutes.' daqiqa',
+            'author' => $a->author_name,
+            'date' => self::formatDateUz($a->published_at),
+            'g' => $gradients[$a->id % count($gradients)],
+            'feat' => (bool) $a->featured,
+        ];
+    }
+
+    public static function articles(): array
+    {
+        return Article::orderByDesc('published_at')->get()
+            ->map(fn (Article $a) => self::mapArticle($a))->all();
+    }
+
+    public static function article(int $id): ?array
+    {
+        $a = Article::find($id);
+
+        return $a ? self::mapArticle($a) : null;
+    }
+
+    /** Bosh sahifadagi qisqa blog-teaser (3 ta so'nggi maqola). */
+    public static function blog(): array
+    {
+        return Article::orderByDesc('published_at')->take(3)->get()
+            ->map(fn (Article $a) => self::mapArticle($a))->all();
+    }
+
+    /* ---------------- NEWS ---------------- */
+
+    private static function mapNews(NewsModel $n): array
+    {
+        $gradients = self::gradients();
+
+        return [
+            'id' => $n->id,
+            'tag' => $n->tag,
+            'title' => $n->title,
+            'excerpt' => $n->excerpt,
+            'date' => self::formatDateUz($n->published_at),
+            'source' => $n->source,
+            'g' => $gradients[$n->id % count($gradients)],
+            'hot' => (bool) $n->hot,
+        ];
+    }
 
     public static function news(): array
     {
-        return [
-            ['id' => 1, 'tag' => 'Taʼlim siyosati', 'title' => '2026–2027 oʻquv yili: xususiy maktablar uchun yangi litsenziya qoidalari', 'excerpt' => 'Vazirlik xususiy taʼlim muassasalari uchun akkreditatsiya talablarini yangiladi. Asosiy oʻzgarishlar va muddatlar.', 'date' => '3 Iyun 2026', 'source' => 'MaktabGID tahririyati', 'g' => ['#0EA5A0', '#0B7E8C'], 'hot' => true],
-            ['id' => 2, 'tag' => 'Qabul', 'title' => 'Toshkentda 12 ta yangi xususiy bogʻcha ochilmoqda', 'excerpt' => 'Shahar boʻylab yangi bogʻchalar roʻyxati va arizalar boshlanish sanalari eʼlon qilindi.', 'date' => '1 Iyun 2026', 'source' => 'Toshkent IBBM', 'g' => ['#6366F1', '#4338CA']],
-            ['id' => 3, 'tag' => 'Imtihon', 'title' => 'Milliy sertifikat imtihoni jadvali maʼlum boʻldi', 'excerpt' => 'Ingliz tili va boshqa fanlardan milliy sertifikat imtihonlari sanalari joylandi.', 'date' => '28 May 2026', 'source' => 'Davlat test markazi', 'g' => ['#F59E0B', '#D97706']],
-            ['id' => 4, 'tag' => 'Grant', 'title' => 'Iqtidorli oʻquvchilar uchun 500 ta toʻliq grant', 'excerpt' => 'Bir qancha xususiy maktablar ijtimoiy himoyaga muhtoj oilalar farzandlari uchun grant eʼlon qildi.', 'date' => '25 May 2026', 'source' => 'MaktabGID tahririyati', 'g' => ['#10B981', '#047857']],
-            ['id' => 5, 'tag' => 'Texnologiya', 'title' => 'Maktablarda AI-yordamchi: pilot loyiha 30 ta maktabda boshlandi', 'excerpt' => 'Sunʼiy intellekt asosidagi oʻquv yordamchilari sinov tariqasida joriy etilmoqda.', 'date' => '20 May 2026', 'source' => 'IT Park', 'g' => ['#8B5CF6', '#6D28D9']],
-            ['id' => 6, 'tag' => 'Tadbir', 'title' => '«Taʼlim EXPO 2026» koʻrgazmasi 15-iyunda boʻlib oʻtadi', 'excerpt' => '100 dan ortiq muassasa qatnashadi. Ota-onalar uchun bepul tashrif va konsultatsiyalar.', 'date' => '18 May 2026', 'source' => 'Taʼlim EXPO', 'g' => ['#EC4899', '#BE185D']],
-        ];
+        return NewsModel::orderByDesc('published_at')->get()
+            ->map(fn (NewsModel $n) => self::mapNews($n))->all();
     }
 
     public static function newsItem(int $id): ?array
     {
-        foreach (self::news() as $n) {
-            if ($n['id'] === $id) {
-                return $n;
-            }
-        }
+        $n = NewsModel::find($id);
 
-        return null;
+        return $n ? self::mapNews($n) : null;
     }
 
-    /** ---------------- CAREERS (vacancies + resumes) ---------------- */
+    /* ---------------- CAREERS (vacancies + resumes) ---------------- */
+
+    private static function mapVacancy(Vacancy $v): array
+    {
+        $typeLabels = ['full' => "Toʻliq stavka", 'part' => 'Yarim stavka', 'hourly' => 'Soatbay'];
+
+        return [
+            'id' => $v->id,
+            'title' => $v->title,
+            'org' => $v->org_name,
+            'type' => $typeLabels[$v->employment_type] ?? $v->employment_type,
+            'salary' => $v->salary_range,
+            'until' => $v->expires_at ? self::formatDateUz($v->expires_at) : '',
+            'spec' => $v->specialization_key,
+        ];
+    }
+
+    /** Bosh sahifadagi qisqa vakansiya-teaser (3 ta so'nggi). */
+    public static function vacancies(): array
+    {
+        return Vacancy::latest()->take(3)->get()
+            ->map(fn (Vacancy $v) => self::mapVacancy($v))->all();
+    }
 
     public static function careerVacancies(): array
     {
-        $main = array_map(fn ($v) => $v + ['spec' => 'english'], self::vacancies());
-
-        $more = [
-            ['id' => 101, 'title' => 'Matematika oʻqituvchisi', 'org' => 'Diplomat International', 'type' => 'Toʻliq stavka', 'salary' => '9 – 14 mln', 'until' => '20 Iyun 2026', 'spec' => 'stem'],
-            ['id' => 102, 'title' => 'Bogʻcha tarbiyachisi', 'org' => 'Maple Bear', 'type' => 'Toʻliq stavka', 'salary' => '5 – 8 mln', 'until' => '25 Iyun 2026', 'spec' => 'early'],
-            ['id' => 103, 'title' => 'IT / Robototexnika ustozi', 'org' => 'IT Park School', 'type' => 'Yarim stavka', 'salary' => '8 – 12 mln', 'until' => '30 Iyun 2026', 'spec' => 'it'],
-            ['id' => 104, 'title' => 'IELTS instruktori', 'org' => 'Bright Kids', 'type' => 'Toʻliq stavka', 'salary' => '10 – 16 mln', 'until' => '18 Iyun 2026', 'spec' => 'ielts'],
-        ];
-
-        return [...$main, ...$more];
+        return Vacancy::latest()->get()
+            ->map(fn (Vacancy $v) => self::mapVacancy($v))->all();
     }
 
     public static function careerVacancy(int $id): ?array
     {
-        foreach (self::careerVacancies() as $v) {
-            if ($v['id'] === $id) {
-                return $v;
-            }
-        }
+        $v = Vacancy::find($id);
 
-        return null;
+        return $v ? self::mapVacancy($v) : null;
     }
 
     public static function resumes(): array
     {
-        return [
-            ['id' => 1, 'name' => 'Madina Yusupova', 'role' => 'Ingliz tili oʻqituvchisi', 'exp' => '6 yil tajriba', 'spec' => 'english', 'salary' => '8 – 12 mln', 'district' => 'Yunusobod', 'langs' => 'Ingliz (C1), Oʻzbek', 'ago' => '2 kun oldin'],
-            ['id' => 2, 'name' => 'Aziz Rahimov', 'role' => 'Matematika oʻqituvchisi', 'exp' => '10 yil tajriba', 'spec' => 'stem', 'salary' => '10 – 15 mln', 'district' => 'Chilonzor', 'langs' => 'Oʻzbek, Rus', 'ago' => '3 kun oldin'],
-            ['id' => 3, 'name' => 'Sevara Tosheva', 'role' => 'Boshlangʻich sinf ustozi', 'exp' => '4 yil tajriba', 'spec' => 'early', 'salary' => '5 – 8 mln', 'district' => 'Mirobod', 'langs' => 'Oʻzbek, Ingliz (B2)', 'ago' => '1 kun oldin'],
-            ['id' => 4, 'name' => 'Jamshid Karimov', 'role' => 'IT / Dasturlash oʻqituvchisi', 'exp' => '7 yil tajriba', 'spec' => 'it', 'salary' => '12 – 20 mln', 'district' => 'Mirzo Ulugʻbek', 'langs' => 'Ingliz (C1), Rus', 'ago' => '4 soat oldin'],
-            ['id' => 5, 'name' => 'Nigora Aliyeva', 'role' => 'Bogʻcha tarbiyachisi', 'exp' => '8 yil tajriba', 'spec' => 'early', 'salary' => '4 – 6 mln', 'district' => 'Yakkasaroy', 'langs' => 'Oʻzbek, Rus', 'ago' => '5 kun oldin'],
-            ['id' => 6, 'name' => 'Otabek Saidov', 'role' => 'Sport / jismoniy tarbiya', 'exp' => '5 yil tajriba', 'spec' => 'sport', 'salary' => '6 – 9 mln', 'district' => 'Sergeli', 'langs' => 'Oʻzbek', 'ago' => '6 kun oldin'],
+        return Resume::with('district')->latest()->get()->map(fn (Resume $r) => [
+            'id' => $r->id,
+            'name' => $r->full_name,
+            'role' => $r->role_title,
+            'exp' => $r->experience,
+            'spec' => $r->specialization_key,
+            'salary' => $r->salary_expectation,
+            'district' => $r->district?->name ?? '',
+            'langs' => $r->languages,
+            'ago' => $r->created_at?->diffForHumans() ?? '',
+        ])->all();
+    }
+
+    /* ---------------- helpers ---------------- */
+
+    private static function formatDateUz(?Carbon $date): string
+    {
+        if (! $date) {
+            return '';
+        }
+
+        $months = [
+            1 => 'Yanvar', 2 => 'Fevral', 3 => 'Mart', 4 => 'Aprel', 5 => 'May', 6 => 'Iyun',
+            7 => 'Iyul', 8 => 'Avgust', 9 => 'Sentyabr', 10 => 'Oktyabr', 11 => 'Noyabr', 12 => 'Dekabr',
         ];
+
+        return $date->day.' '.$months[(int) $date->format('n')].' '.$date->year;
     }
 }

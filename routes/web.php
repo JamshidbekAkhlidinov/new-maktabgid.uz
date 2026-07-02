@@ -23,7 +23,7 @@ Route::get('/forum/{id}', function (int $id) {
     $thread = MaktabgidData::forumThread($id);
     abort_if(! $thread, 404);
 
-    return view('forum-thread', ['thread' => $thread, 'replies' => MaktabgidData::forumReplies()]);
+    return view('forum-thread', ['thread' => $thread, 'replies' => MaktabgidData::forumReplies($id)]);
 })->name('forum.show');
 
 /* ---------------- Blog ---------------- */
@@ -68,11 +68,60 @@ Route::get('/vakansiyalar/{id}', function (int $id) {
 
 /* ---------------- Kabinet ---------------- */
 Route::get('/cabinet', function () {
-    return view('cabinet');
+    $user = auth()->user();
+
+    if (! $user || ! $user->isParent()) {
+        return view('cabinet', [
+            'favorites' => collect(),
+            'applications' => collect(),
+            'conversations' => collect(),
+            'stats' => ['favorites' => 0, 'applications' => 0, 'conversations' => 0],
+        ]);
+    }
+
+    $user->loadMissing('district');
+
+    $favorites = $user->favorites()->with('institution.district')->latest()->get();
+    $applications = $user->applications()->with('institution')->latest()->get();
+    $conversations = $user->conversations()->with('institution')->latest('last_message_at')->get();
+
+    return view('cabinet', [
+        'favorites' => $favorites,
+        'applications' => $applications,
+        'conversations' => $conversations,
+        'stats' => [
+            'favorites' => $favorites->count(),
+            'applications' => $applications->count(),
+            'conversations' => $conversations->count(),
+        ],
+    ]);
 })->name('cabinet.index');
 
 Route::get('/institution-cabinet', function () {
-    return view('institution-cabinet');
+    $user = auth()->user();
+
+    if (! $user || ! $user->isInstitution()) {
+        return view('institution-cabinet', [
+            'institution' => null,
+            'applications' => collect(),
+            'stats' => ['applications' => 0, 'conversations' => 0, 'favorites' => 0],
+        ]);
+    }
+
+    $institution = $user->institution()->with(['district', 'specializations', 'media'])->first();
+    $applications = $institution ? $institution->applications()->latest()->get() : collect();
+
+    return view('institution-cabinet', [
+        'institution' => $institution,
+        'applications' => $applications,
+        'stats' => [
+            'applications' => $applications->count(),
+            'pending' => $applications->where('status', 'pending')->count(),
+            'confirmed' => $applications->where('status', 'confirmed')->count(),
+            'conversations' => $institution ? $institution->conversations()->count() : 0,
+            'favorites' => $institution ? $institution->favorites()->count() : 0,
+        ],
+    ]);
 })->name('institution.cabinet');
 
 Route::get('/chat', function () {

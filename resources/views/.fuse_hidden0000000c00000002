@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{{ $school['name'] }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -37,7 +36,7 @@
             </div>
         </div>
 
-        <x-maktabgid.detail.gallery :media="$media" :photos="$s['photos']" />
+        <x-maktabgid.detail.gallery :media="$media" />
         <x-maktabgid.detail.title-card :school="$s" :cat-label="$catLabel" :stats="$stats" />
 
         <div class="wrap detail-grid">

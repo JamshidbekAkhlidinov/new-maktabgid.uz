@@ -7,14 +7,16 @@
     </div>
 
     <div class="js-inline-enroll" data-school="{{ $school['name'] }}">
-        <form class="enroll-form js-fake-form">
+        <form class="enroll-form js-application-form">
+            <input type="hidden" name="institution_id" value="{{ $school['id'] }}" />
+            <input type="hidden" name="type" value="enrollment" />
             <div class="form-row2">
-                <x-maktabgid.field label="Bola ism familiyasi" icon="user"><input required placeholder="Asadbek Karimov" /></x-maktabgid.field>
-                <x-maktabgid.field label="Qaysi sinfga" icon="school"><input required placeholder="1-sinf" /></x-maktabgid.field>
+                <x-maktabgid.field label="Bola ism familiyasi" icon="user"><input name="child_name" required placeholder="Asadbek Karimov" /></x-maktabgid.field>
+                <x-maktabgid.field label="Qaysi sinfga" icon="school"><input name="target_grade" required placeholder="1-sinf" /></x-maktabgid.field>
             </div>
             <div class="form-row2">
-                <x-maktabgid.field label="Ota-ona ism familiyasi" icon="user"><input required placeholder="Dilnoza Murodova" /></x-maktabgid.field>
-                <x-maktabgid.field label="Telefon raqami" icon="phone"><input required placeholder="+998 90 123 45 67" /></x-maktabgid.field>
+                <x-maktabgid.field label="Ota-ona ism familiyasi" icon="user"><input name="parent_name" required placeholder="Dilnoza Murodova" /></x-maktabgid.field>
+                <x-maktabgid.field label="Telefon raqami" icon="phone"><input name="parent_phone" required placeholder="+998 90 123 45 67" /></x-maktabgid.field>
             </div>
             <div class="enroll-actions">
                 <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> Arizani yuborish</button>

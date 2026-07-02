@@ -13,7 +13,15 @@ class ApplicationController extends Controller
     /** Mehmon ham, ro'yxatdan o'tgan ota-ona ham yubora oladi. */
     public function store(ApplicationStoreRequest $request): JsonResponse
     {
-        $application = Application::create($request->validated() + [
+        $data = $request->validated();
+
+        if (empty($data['child_name'])) {
+            $data['child_name'] = ! empty($data['child_age'])
+                ? "Farzand ({$data['child_age']} yosh)"
+                : 'Farzand';
+        }
+
+        $application = Application::create($data + [
             'parent_user_id' => $request->user()?->id,
             'status' => 'pending',
         ]);

@@ -1,6 +1,8 @@
 @props(['categories' => []])
 
 @php
+    use App\Support\MaktabgidData;
+
     $links = [
         ['route' => 'welcome',      'label' => 'Katalog'],
         ['route' => 'forum.index',  'label' => 'Forum'],
@@ -8,6 +10,22 @@
         ['route' => 'news.index',   'label' => 'Yangiliklar'],
         ['route' => 'careers.index','label' => 'Vakansiyalar'],
     ];
+
+    /* Auth holati endi serverda (session) hisoblanadi — localStorage'ga tayanmaydi. */
+    $authUser = auth()->user();
+    $displayName = null;
+    $cabinetUrl = route('cabinet.index');
+
+    if ($authUser) {
+        if ($authUser->isInstitution()) {
+            $authUser->loadMissing('institution');
+            $displayName = $authUser->institution?->name ?: $authUser->name;
+            $cabinetUrl = route('institution.cabinet');
+        } else {
+            $displayName = $authUser->name;
+            $cabinetUrl = route('cabinet.index');
+        }
+    }
 @endphp
 
 <header class="nav">
@@ -51,21 +69,21 @@
             </div>
 
             {{-- Not logged in: Kirish button --}}
-            <button class="btn btn-ghost" type="button" id="js-kirish-btn" data-modal-open="auth-modal">
+            <button class="btn btn-ghost" type="button" id="js-kirish-btn" data-modal-open="auth-modal" @if($authUser) style="display:none" @endif>
                 <x-maktabgid.icon name="user" :width="17" :height="17" /> Kirish
             </button>
 
             {{-- Logged in: user menu dropdown --}}
-            <div class="nav-acc" id="js-user-nav" style="display:none">
+            <div class="nav-acc" id="js-user-nav" style="{{ $authUser ? '' : 'display:none' }}">
                 <button class="acc-btn" type="button" id="js-user-menu-btn">
-                    <span class="acc-ava" id="js-nav-avatar"></span>
-                    <span id="js-nav-name"></span>
+                    <span class="acc-ava" id="js-nav-avatar">{{ $authUser ? MaktabgidData::monogram($displayName) : '' }}</span>
+                    <span id="js-nav-name">{{ $authUser ? explode(' ', trim($displayName))[0] : '' }}</span>
                     <x-maktabgid.icon name="chevron" :width="14" :height="14" />
                 </button>
                 <div class="acc-menu" id="js-user-menu" style="display:none">
-                    <button type="button" id="js-nav-cabinet">
+                    <a href="{{ $cabinetUrl }}" id="js-nav-cabinet">
                         <x-maktabgid.icon name="user" :width="16" :height="16" /> Kabinet
-                    </button>
+                    </a>
                     <button type="button" class="danger" id="js-nav-logout">
                         <x-maktabgid.icon name="logout" :width="16" :height="16" /> Chiqish
                     </button>

@@ -18,7 +18,7 @@ class ApplicationStoreRequest extends FormRequest
         return [
             'institution_id' => ['required', 'integer', 'exists:institutions,id'],
             'type' => ['required', Rule::in(['excursion', 'enrollment'])],
-            'child_name' => ['required', 'string', 'max:255'],
+            'child_name' => ['required_if:type,enrollment', 'nullable', 'string', 'max:255'],
             'child_birth_date' => ['nullable', 'date'],
             'child_age' => ['nullable', 'integer', 'min:0', 'max:20'],
             'current_grade' => ['nullable', 'string', 'max:50'],

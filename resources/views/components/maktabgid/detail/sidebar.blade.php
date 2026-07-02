@@ -21,6 +21,9 @@
             <li><x-maktabgid.icon name="globe" :width="16" :height="16" /> {{ $school['lang'] }} tili</li>
             <li><x-maktabgid.icon name="clock" :width="16" :height="16" /> {{ $school['sat'] ? 'Du–Sh, 08:00–18:00' : 'Du–Ju, 08:00–18:00' }}</li>
             <li><x-maktabgid.icon name="pin" :width="16" :height="16" /> {{ $school['district'] }}, markazdan {{ $school['dist'] }} km</li>
+            @if (!empty($school['address']))
+                <li><x-maktabgid.icon name="pin" :width="16" :height="16" /> {{ $school['address'] }}</li>
+            @endif
         </ul>
     </div>
     <div class="side-map">

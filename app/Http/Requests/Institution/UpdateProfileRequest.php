@@ -19,7 +19,7 @@ class UpdateProfileRequest extends FormRequest
             'type' => ['sometimes', Rule::in(['maktab', 'bogcha', 'markaz', 'mutaxassis'])],
             'lang' => ['sometimes', 'nullable', 'string', 'max:100'],
             'about' => ['sometimes', 'nullable', 'string'],
-            'district' => ['sometimes', 'string', 'max:255'],
+            'district' => ['sometimes', 'nullable', 'string', 'max:255'],
             'address' => ['sometimes', 'nullable', 'string', 'max:255'],
             'monthly_price' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'grades' => ['sometimes', 'nullable', 'string', 'max:100'],
