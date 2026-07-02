@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ApplicationStoreRequest;
 use App\Models\Application;
+use App\Notifications\NewApplicationNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,8 +18,11 @@ class ApplicationController extends Controller
             'status' => 'pending',
         ]);
 
-        // TODO (Phase 5): muassasa egasiga NewApplicationNotification yuboriladi.
-        return response()->json(['application' => $application->load('institution')], 201);
+        $application->load('institution.owner');
+
+        $application->institution?->owner?->notify(new NewApplicationNotification($application));
+
+        return response()->json(['application' => $application], 201);
     }
 
     /** role:parent — o'z arizalarini status bilan ko'rish. */

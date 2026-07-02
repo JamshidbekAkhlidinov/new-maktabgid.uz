@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\RegisterParentController;
 use App\Http\Controllers\Cabinet\StatsController as CabinetStatsController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Institution\AcceptingController;
+use App\Http\Controllers\Institution\InboxController;
 use App\Http\Controllers\Institution\MediaController;
 use App\Http\Controllers\Institution\ProfileController;
 use App\Http\Controllers\Institution\StatsController as InstitutionStatsController;
@@ -42,6 +43,10 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::delete('media/{media}', [MediaController::class, 'destroy']);
         Route::patch('accepting', AcceptingController::class);
         Route::get('stats', InstitutionStatsController::class);
+
+        // Ekskursiya/joylashtirish arizalari — backend.md Phase 5
+        Route::get('applications', [InboxController::class, 'index']);
+        Route::patch('applications/{application}/status', [InboxController::class, 'updateStatus']);
     });
 
     // Arizalar — mehmon ham yubora oladi (backend.md Phase 4)
