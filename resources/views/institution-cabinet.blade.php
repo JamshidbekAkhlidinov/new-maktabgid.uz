@@ -21,6 +21,21 @@
         $statusLabels = ['pending' => "Ko'rib chiqilmoqda", 'confirmed' => 'Qabul qilindi', 'rejected' => 'Rad etildi'];
         $i = $institution;
         $mySpecs = $i ? $i->specializations->pluck('key')->all() : [];
+
+        $facilityCatalog = MaktabgidData::facilityCatalog();
+        $myFacilities = $i ? ($i->facilities ?? []) : [];
+        $statLabels = array_column(MaktabgidData::detailStats($i?->type ?? 'maktab'), 'k');
+
+        $pipeLinesToText = fn ($rows, $keys) => $rows
+            ? implode("\n", array_map(fn ($r) => implode(' | ', array_map(fn ($k) => $r[$k] ?? '', $keys)), $rows))
+            : '';
+        $plainLinesToText = fn ($rows) => $rows ? implode("\n", array_map(fn ($r) => is_array($r) ? ($r['label'] ?? '') : $r, $rows)) : '';
+
+        $teachersText = $i ? $pipeLinesToText($i->teachers ?? [], ['n', 'role', 'exp']) : '';
+        $programsText = $i ? $pipeLinesToText($i->programs ?? [], ['t', 'd']) : '';
+        $lessonsText = $i ? $plainLinesToText($i->lessons ?? []) : '';
+        $videosText = $i ? $pipeLinesToText($i->videos ?? [], ['title', 'dur', 'sub']) : '';
+        $stepsText = $i ? $pipeLinesToText($i->admission_steps ?? [], ['t', 'd']) : '';
     @endphp
 
     <x-maktabgid.nav />
@@ -224,6 +239,75 @@
                                         <span>{{ $existing ? 'Yuklandi ✓' : ($slotIdx === 0 ? 'Asosiy rasm' : "Rasm qo'shish") }}</span>
                                     </label>
                                 @endfor
+                            </div>
+
+                            <div class="form-section">Infratuzilma va qulayliklar <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">(profil sahifasida chiqadi)</em></div>
+                            <div class="chip-row" id="js-facility-chips">
+                                @foreach ($facilityCatalog as $f)
+                                    <button type="button"
+                                            class="chip{{ in_array($f['key'], $myFacilities, true) ? ' on' : '' }}"
+                                            data-facility="{{ $f['key'] }}">
+                                        <x-maktabgid.icon :name="$f['i']" :width="13" :height="13" />
+                                        {{ $f['t'] }}
+                                    </button>
+                                @endforeach
+                            </div>
+
+                            <div class="form-section">Ustozlar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Ism Familiya | Yoʻnalish | Tajriba</em></div>
+                            <label class="field">
+                                <span class="field-control">
+                                    <textarea id="js-f-teachers" rows="3" style="width:100%;resize:vertical" placeholder="Aziz Karimov | Matematika | 10 yil">{{ $teachersText }}</textarea>
+                                </span>
+                            </label>
+
+                            <div class="form-section">Yoʻnalishlar va dastur <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Sarlavha | Tavsif</em></div>
+                            <label class="field">
+                                <span class="field-control">
+                                    <textarea id="js-f-programs" rows="3" style="width:100%;resize:vertical" placeholder="Cambridge dasturi | Xalqaro standart va sertifikat">{{ $programsText }}</textarea>
+                                </span>
+                            </label>
+
+                            <div class="form-section">Oʻquv jarayonidan lavhalar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator — bitta lavha nomi</em></div>
+                            <label class="field">
+                                <span class="field-control">
+                                    <textarea id="js-f-lessons" rows="3" style="width:100%;resize:vertical" placeholder="Matematika darsi">{{ $lessonsText }}</textarea>
+                                </span>
+                            </label>
+
+                            <div class="form-section">Videolar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Sarlavha | Davomiyligi | Izoh</em></div>
+                            <label class="field">
+                                <span class="field-control">
+                                    <textarea id="js-f-videos" rows="3" style="width:100%;resize:vertical" placeholder="Maktab bilan tanishuv | 2:14 | 360° sayohat">{{ $videosText }}</textarea>
+                                </span>
+                            </label>
+
+                            <div class="form-section">Qabul bosqichlari <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Sarlavha | Tavsif</em></div>
+                            <label class="field">
+                                <span class="field-control">
+                                    <textarea id="js-f-steps" rows="3" style="width:100%;resize:vertical" placeholder="Ariza qoldirish | Onlayn forma orqali ariza yuborasiz">{{ $stepsText }}</textarea>
+                                </span>
+                            </label>
+
+                            <div class="form-section">Koʻrsatkichlar <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">(sarlavha ostida chiqadi)</em></div>
+                            <div class="form-row2">
+                                <label class="field">
+                                    <span class="field-label">{{ $statLabels[0] ?? '1-koʻrsatkich' }}</span>
+                                    <span class="field-control"><input type="text" id="js-f-stat1" value="{{ $i->stat_class_size }}" placeholder="16" /></span>
+                                </label>
+                                <label class="field">
+                                    <span class="field-label">{{ $statLabels[1] ?? '2-koʻrsatkich' }}</span>
+                                    <span class="field-control"><input type="text" id="js-f-stat2" value="{{ $i->stat_experience_years }}" placeholder="12" /></span>
+                                </label>
+                            </div>
+                            <div class="form-row2">
+                                <label class="field">
+                                    <span class="field-label">{{ $statLabels[2] ?? '3-koʻrsatkich' }}</span>
+                                    <span class="field-control"><input type="text" id="js-f-stat3" value="{{ $i->stat_admission_rate }}" placeholder="98%" /></span>
+                                </label>
+                                <label class="field">
+                                    <span class="field-label">{{ $statLabels[3] ?? '4-koʻrsatkich' }}</span>
+                                    <span class="field-control"><input type="text" id="js-f-stat4" value="{{ $i->stat_first_grade_seats }}" placeholder="24" /></span>
+                                </label>
                             </div>
 
                             <button class="btn btn-primary form-submit" type="button" id="js-inst-save">

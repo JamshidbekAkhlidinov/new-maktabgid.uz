@@ -27,6 +27,16 @@ class InstitutionResource extends JsonResource
             'rating' => (float) $this->rating,
             'reviewCount' => $this->review_count,
             'badge' => $this->badge,
+            'facilities' => $this->facilities ?? [],
+            'teachers' => $this->teachers ?? [],
+            'programs' => $this->programs ?? [],
+            'lessons' => $this->lessons ?? [],
+            'videos' => $this->videos ?? [],
+            'admissionSteps' => $this->admission_steps ?? [],
+            'statClassSize' => $this->stat_class_size,
+            'statExperienceYears' => $this->stat_experience_years,
+            'statAdmissionRate' => $this->stat_admission_rate,
+            'statFirstGradeSeats' => $this->stat_first_grade_seats,
             'specializations' => $this->whenLoaded(
                 'specializations',
                 fn () => $this->specializations->pluck('key')->values()

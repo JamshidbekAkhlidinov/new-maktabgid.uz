@@ -590,6 +590,11 @@
                 chip.addEventListener("click", function () { chip.classList.toggle("on"); });
             });
 
+            /* --- infratuzilma/qulaylik chip'lari (faqat vizual — saqlashda o'qiladi) --- */
+            document.querySelectorAll("#js-facility-chips .chip").forEach(function (chip) {
+                chip.addEventListener("click", function () { chip.classList.toggle("on"); });
+            });
+
             /* --- saqlash: real PUT /ajax/institution/me --- */
             var saveBtn = document.getElementById("js-inst-save");
             var savedPill = document.getElementById("js-saved-pill");
@@ -597,6 +602,9 @@
                 saveBtn.addEventListener("click", function () {
                     var specs = Array.prototype.slice.call(document.querySelectorAll("#js-spec-chips .chip.on"))
                         .map(function (c) { return c.dataset.spec; });
+
+                    var facilities = Array.prototype.slice.call(document.querySelectorAll("#js-facility-chips .chip.on"))
+                        .map(function (c) { return c.dataset.facility; });
 
                     var priceEl = document.getElementById("js-f-price");
                     var priceVal = priceEl && priceEl.value ? parseInt(priceEl.value, 10) : null;
@@ -613,6 +621,16 @@
                         work_hours: (document.getElementById("js-f-hours") || {}).value || "",
                         works_saturday: !!(satToggle && satToggle.classList.contains("on")),
                         specializations: specs,
+                        facilities: facilities,
+                        teachers_text: (document.getElementById("js-f-teachers") || {}).value || "",
+                        programs_text: (document.getElementById("js-f-programs") || {}).value || "",
+                        lessons_text: (document.getElementById("js-f-lessons") || {}).value || "",
+                        videos_text: (document.getElementById("js-f-videos") || {}).value || "",
+                        admission_steps_text: (document.getElementById("js-f-steps") || {}).value || "",
+                        stat_class_size: (document.getElementById("js-f-stat1") || {}).value || "",
+                        stat_experience_years: (document.getElementById("js-f-stat2") || {}).value || "",
+                        stat_admission_rate: (document.getElementById("js-f-stat3") || {}).value || "",
+                        stat_first_grade_seats: (document.getElementById("js-f-stat4") || {}).value || "",
                     };
 
                     saveBtn.disabled = true;

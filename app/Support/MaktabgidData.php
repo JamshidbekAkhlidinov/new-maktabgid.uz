@@ -223,14 +223,25 @@ class MaktabgidData
         ];
     }
 
-    public static function facilities(): array
+    /** Muassasa kabinetida tanlanadigan qulayliklar katalogi (barqaror kalitlar bilan). */
+    public static function facilityCatalog(): array
     {
         return [
-            ['i' => 'book', 't' => 'Zamonaviy sinfxonalar'], ['i' => 'flask', 't' => 'Ilmiy laboratoriya'],
-            ['i' => 'code', 't' => 'IT va robototexnika'], ['i' => 'dumbbell', 't' => 'Sport zali va maydon'],
-            ['i' => 'book', 't' => 'Kutubxona'], ['i' => 'cup', 't' => 'Issiq ovqat / oshxona'],
-            ['i' => 'cross', 't' => 'Tibbiyot xonasi'], ['i' => 'bus', 't' => 'Maktab avtobusi'], ['i' => 'wifi', 't' => 'Wi-Fi va xavfsizlik'],
+            ['key' => 'classrooms', 'i' => 'book', 't' => 'Zamonaviy sinfxonalar'],
+            ['key' => 'lab', 'i' => 'flask', 't' => 'Ilmiy laboratoriya'],
+            ['key' => 'it', 'i' => 'code', 't' => 'IT va robototexnika'],
+            ['key' => 'sport', 'i' => 'dumbbell', 't' => 'Sport zali va maydon'],
+            ['key' => 'library', 'i' => 'book', 't' => 'Kutubxona'],
+            ['key' => 'canteen', 'i' => 'cup', 't' => 'Issiq ovqat / oshxona'],
+            ['key' => 'medical', 'i' => 'cross', 't' => 'Tibbiyot xonasi'],
+            ['key' => 'bus', 'i' => 'bus', 't' => 'Maktab avtobusi'],
+            ['key' => 'wifi', 'i' => 'wifi', 't' => 'Wi-Fi va xavfsizlik'],
         ];
+    }
+
+    public static function facilities(): array
+    {
+        return array_map(fn ($f) => ['i' => $f['i'], 't' => $f['t']], self::facilityCatalog());
     }
 
     public static function teachers(): array
@@ -313,7 +324,120 @@ class MaktabgidData
             'g' => $gradients[$institution->id % count($gradients)],
             'specs' => $institution->specializations->pluck('key')->all(),
             'photos' => $photos,
+            'facilities' => self::resolveFacilities($institution),
+            'teachers' => self::resolveTeachers($institution),
+            'programs' => self::resolvePrograms($institution),
+            'lessons' => self::resolveLessons($institution),
+            'videos' => self::resolveVideos($institution),
+            'steps' => self::resolveAdmissionSteps($institution),
+            'stats' => self::resolveStats($institution),
         ];
+    }
+
+    /** Muassasa oʻzi tanlagan qulayliklar boʻlsa — shulardan, boʻlmasa toʻliq katalogdan (eski xatti-harakat). */
+    private static function resolveFacilities(Institution $institution): array
+    {
+        if (empty($institution->facilities)) {
+            return self::facilities();
+        }
+
+        $selected = $institution->facilities;
+
+        return array_values(array_map(
+            fn ($f) => ['i' => $f['i'], 't' => $f['t']],
+            array_filter(self::facilityCatalog(), fn ($f) => in_array($f['key'], $selected, true))
+        ));
+    }
+
+    private static function resolveTeachers(Institution $institution): array
+    {
+        if (empty($institution->teachers)) {
+            return self::teachers();
+        }
+
+        $gradients = self::gradients();
+
+        return collect($institution->teachers)->values()->map(fn ($t, $i) => [
+            'n' => $t['n'] ?? '',
+            'role' => $t['role'] ?? '',
+            'exp' => $t['exp'] ?? '',
+            'g' => $gradients[$i % count($gradients)],
+        ])->all();
+    }
+
+    private static function resolvePrograms(Institution $institution): array
+    {
+        if (empty($institution->programs)) {
+            return self::mediaFor($institution->type)['programs'];
+        }
+
+        $icons = ['award', 'flask', 'code', 'trophy', 'target', 'book', 'globe', 'users'];
+
+        return collect($institution->programs)->values()->map(fn ($p, $i) => [
+            'icon' => $icons[$i % count($icons)],
+            't' => $p['t'] ?? '',
+            'd' => $p['d'] ?? '',
+        ])->all();
+    }
+
+    private static function resolveLessons(Institution $institution): array
+    {
+        if (empty($institution->lessons)) {
+            return self::mediaFor($institution->type)['lessons'];
+        }
+
+        $icons = ['camera', 'book', 'target', 'globe', 'dumbbell', 'palette', 'code', 'users'];
+
+        return collect($institution->lessons)->values()->map(fn ($l, $i) => [
+            'icon' => $icons[$i % count($icons)],
+            'label' => is_array($l) ? ($l['label'] ?? '') : $l,
+        ])->all();
+    }
+
+    private static function resolveVideos(Institution $institution): array
+    {
+        if (empty($institution->videos)) {
+            return self::mediaFor($institution->type)['videos'];
+        }
+
+        return collect($institution->videos)->values()->map(fn ($v) => [
+            'title' => $v['title'] ?? '',
+            'dur' => $v['dur'] ?? '',
+            'sub' => $v['sub'] ?? '',
+        ])->all();
+    }
+
+    private static function resolveAdmissionSteps(Institution $institution): array
+    {
+        if (empty($institution->admission_steps)) {
+            return self::admissionSteps();
+        }
+
+        return collect($institution->admission_steps)->values()->map(fn ($s) => [
+            't' => $s['t'] ?? '',
+            'd' => $s['d'] ?? '',
+        ])->all();
+    }
+
+    /** 4 ta koʻrsatkich — muassasa qiymat kiritgan boʻlsa oʻshani, aks holda kategoriya boʻyicha default. */
+    private static function resolveStats(Institution $institution): array
+    {
+        $stats = self::detailStats($institution->type);
+
+        $overrides = [
+            $institution->stat_class_size,
+            $institution->stat_experience_years,
+            $institution->stat_admission_rate,
+            $institution->stat_first_grade_seats,
+        ];
+
+        foreach ($overrides as $i => $v) {
+            if (filled($v)) {
+                $stats[$i]['v'] = $v;
+            }
+        }
+
+        return $stats;
     }
 
     public static function schools(): array

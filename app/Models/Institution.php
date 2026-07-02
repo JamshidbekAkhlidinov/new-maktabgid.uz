@@ -16,6 +16,8 @@ class Institution extends Model
         'owner_user_id', 'name', 'type', 'about', 'lang', 'district_id',
         'address', 'lat', 'lng', 'monthly_price', 'grades', 'work_hours',
         'works_saturday', 'accepting', 'rating', 'review_count', 'badge',
+        'facilities', 'teachers', 'programs', 'lessons', 'videos', 'admission_steps',
+        'stat_class_size', 'stat_experience_years', 'stat_admission_rate', 'stat_first_grade_seats',
     ];
 
     protected function casts(): array
@@ -26,6 +28,12 @@ class Institution extends Model
             'works_saturday' => 'boolean',
             'accepting' => 'boolean',
             'rating' => 'decimal:1',
+            'facilities' => 'array',
+            'teachers' => 'array',
+            'programs' => 'array',
+            'lessons' => 'array',
+            'videos' => 'array',
+            'admission_steps' => 'array',
         ];
     }
 

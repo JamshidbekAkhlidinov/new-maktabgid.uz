@@ -18,10 +18,10 @@
         $s = $school;
         $catLabel = MaktabgidData::categoryLabel($s['cat']);
         $media = MaktabgidData::mediaFor($s['cat']);
-        $stats = MaktabgidData::detailStats($s['cat']);
-        $facilities = MaktabgidData::facilities();
-        $teachers = MaktabgidData::teachers();
-        $steps = MaktabgidData::admissionSteps();
+        $stats = $s['stats'];
+        $facilities = $s['facilities'];
+        $teachers = $s['teachers'];
+        $steps = $s['steps'];
         $reviews = MaktabgidData::reviews($s['id']);
         $ratingBars = MaktabgidData::ratingBars($s['id']);
     @endphp
@@ -43,9 +43,9 @@
         <div class="wrap detail-grid">
             <div class="detail-main">
                 <x-maktabgid.detail.about :school="$s" :cat-label="$catLabel" />
-                <x-maktabgid.detail.programs :programs="$media['programs']" />
-                <x-maktabgid.detail.lessons :lessons="$media['lessons']" />
-                <x-maktabgid.detail.videos :videos="$media['videos']" />
+                <x-maktabgid.detail.programs :programs="$s['programs']" />
+                <x-maktabgid.detail.lessons :lessons="$s['lessons']" />
+                <x-maktabgid.detail.videos :videos="$s['videos']" />
                 <x-maktabgid.detail.facilities :facilities="$facilities" />
                 <x-maktabgid.detail.teachers :teachers="$teachers" />
                 <x-maktabgid.detail.steps :steps="$steps" />

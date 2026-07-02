@@ -55,6 +55,36 @@ class ProfileController extends Controller
             $institution->works_saturday = (bool) $data['works_saturday'];
         }
 
+        if (isset($data['facilities'])) {
+            $institution->facilities = array_values($data['facilities']);
+        }
+
+        if (array_key_exists('teachers_text', $data)) {
+            $institution->teachers = self::parsePipeLines($data['teachers_text'], ['n', 'role', 'exp']);
+        }
+
+        if (array_key_exists('programs_text', $data)) {
+            $institution->programs = self::parsePipeLines($data['programs_text'], ['t', 'd']);
+        }
+
+        if (array_key_exists('lessons_text', $data)) {
+            $institution->lessons = self::parsePlainLines($data['lessons_text']);
+        }
+
+        if (array_key_exists('videos_text', $data)) {
+            $institution->videos = self::parsePipeLines($data['videos_text'], ['title', 'dur', 'sub']);
+        }
+
+        if (array_key_exists('admission_steps_text', $data)) {
+            $institution->admission_steps = self::parsePipeLines($data['admission_steps_text'], ['t', 'd']);
+        }
+
+        foreach (['stat_class_size', 'stat_experience_years', 'stat_admission_rate', 'stat_first_grade_seats'] as $statField) {
+            if (array_key_exists($statField, $data)) {
+                $institution->{$statField} = $data[$statField];
+            }
+        }
+
         // Manzil o'zgargan yoki koordinata hali yo'q bo'lsa — 2GIS orqali avtomatik geocoding
         if ($institution->isDirty('address') && filled($institution->address)) {
             $coords = $geocoder->geocode($institution->address, $institution->district?->name);
@@ -74,5 +104,43 @@ class ProfileController extends Controller
         return response()->json([
             'institution' => new InstitutionResource($institution->fresh(['district', 'specializations', 'media'])),
         ]);
+    }
+
+    /**
+     * Har bir qator "qism1 | qism2 | ..." formatida — muassasa kabinetidagi
+     * oddiy textarea inputlarini strukturaga aylantiradi (masalan: "Aziz Karimov | Matematika | 10 yil").
+     */
+    private static function parsePipeLines(?string $text, array $keys): array
+    {
+        if (blank($text)) {
+            return [];
+        }
+
+        $rows = [];
+        foreach (preg_split('/\r\n|\r|\n/', $text) as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            $parts = array_map('trim', explode('|', $line));
+            $row = [];
+            foreach ($keys as $i => $key) {
+                $row[$key] = $parts[$i] ?? '';
+            }
+            $rows[] = $row;
+        }
+
+        return $rows;
+    }
+
+    /** Har bir qator — bitta oddiy matn elementi (masalan: dars lavhasi nomi). */
+    private static function parsePlainLines(?string $text): array
+    {
+        if (blank($text)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $text)), fn ($l) => $l !== ''));
     }
 }
