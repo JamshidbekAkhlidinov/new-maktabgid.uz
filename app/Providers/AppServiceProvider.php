@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Services\Otp\OtpChannel;
 use App\Services\Otp\TelegramOtpChannel;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +24,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Super Admin — admin panelidagi BARCHA (shu jumladan kelajakda qo'shiladigan)
+        // huquqlarga avtomatik ega bo'ladi, har birini qo'lda syncPermissions qilish shart emas.
+        Gate::before(function ($user, string $ability) {
+            return $user->hasRole('Super Admin') ? true : null;
+        });
     }
 }

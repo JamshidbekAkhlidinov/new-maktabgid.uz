@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'phone', 'email', 'password', 'role', 'age', 'district_id'])]
 #[Hidden(['password', 'remember_token'])]
@@ -19,6 +20,12 @@ class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    // Spatie\Permission — admin panelidagi dinamik rol/permission tekshiruvlari.
+    // Diqqat: mavjud 'role' ustuni (parent|institution|admin) saytning asosiy rolini
+    // bildiradi va o'zgarishsiz qoladi; HasRoles esa shunga QO'SHIMCHA — admin panel
+    // ichidagi granular huquqlarni (Spatie roles/permissions) boshqaradi.
+    use HasRoles;
 
     public const ROLE_PARENT = 'parent';
 
