@@ -81,11 +81,13 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 
 /* ============ NAV ============ */
 .nav {
-  position: sticky; top: 0; z-index: 60;
+  position: fixed; top: 0; left: 0; right: 0; z-index: 60;
   background: rgba(255,255,255,.82);
   backdrop-filter: saturate(160%) blur(14px);
   border-bottom: 1px solid var(--line);
 }
+/* nav endi flow'dan chiqdi (fixed) — ostidagi kontentga joy qoldiramiz */
+.desktop-shell { padding-top: 71px; }
 .nav-inner { display: flex; align-items: center; gap: 28px; height: 70px; }
 .logo { display: flex; align-items: center; gap: 11px; font-family: var(--font-display); font-weight: 800; font-size: 21px; letter-spacing: -.02em; }
 .logo-mark {
@@ -135,6 +137,30 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .hero h1 .hl { color: var(--primary); position: relative; }
 .hero p.sub { margin-top: 16px; font-size: 18px; color: var(--ink-2); max-width: 56ch; line-height: 1.5; }
 
+/* hero search mode toggle (O'zim qidiraman / AI tanlab bersin) */
+.hero-mode-toggle { display: flex; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+.mode-btn {
+  display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: var(--r-pill);
+  border: 1.5px solid var(--line); background: var(--surface); font-weight: 700; font-size: 14.5px; color: var(--ink-2);
+  transition: .15s;
+}
+.mode-btn:hover:not(.on) { border-color: var(--primary); color: var(--ink); }
+.mode-btn.on { background: var(--primary); color: #fff; border-color: var(--primary); }
+.mode-btn .tag-new { background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: var(--r-pill); }
+.js-mode-panel[hidden] { display: none; }
+.ai-panel-placeholder {
+  margin-top: 18px; background: var(--primary-soft); border: 1.5px dashed var(--primary); border-radius: var(--r-lg);
+  padding: 26px 28px; display: flex; align-items: center; gap: 18px; color: var(--primary-ink);
+}
+.ai-panel-placeholder svg { color: var(--primary); flex: none; }
+.ai-panel-placeholder b { display: block; font-size: 16px; font-family: var(--font-display); }
+.ai-panel-placeholder p { margin-top: 4px; font-size: 14px; opacity: .85; }
+.ai-panel-placeholder .btn { margin-left: auto; flex: none; }
+@media (max-width: 720px) {
+  .ai-panel-placeholder { flex-wrap: wrap; }
+  .ai-panel-placeholder .btn { margin-left: 0; width: 100%; justify-content: center; }
+}
+
 /* category tabs */
 .cat-tabs { display: flex; gap: 10px; margin-top: 30px; flex-wrap: wrap; }
 .cat-tab {
@@ -146,11 +172,34 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .cat-tab .ico { color: var(--ink-3); display: grid; place-items: center; }
 .cat-tab.on { background: var(--ink); color: #fff; border-color: var(--ink); }
 .cat-tab.on .ico { color: #fff; }
+.cat-tab[disabled] { opacity: .5; cursor: default; }
+.cat-tab[disabled]:hover { border-color: var(--line); color: var(--ink-2); }
+
+/* category tabs w/ counts (results boʻlimi ustida) — nav ostida "yopishib" turadi */
+.section.cat-strip {
+  padding: 10px 0 6px; position: sticky; top: 71px; z-index: 45;
+  background: var(--paper);
+}
+.section.cat-strip .cat-tabs { margin-top: 0; }
+.cat-tabs-count .cat-tab { padding: 8px 18px 8px 8px; gap: 12px; }
+.cat-tabs-count .cat-tab .ico {
+  width: 34px; height: 34px; border-radius: var(--r-sm); background: var(--surface-2); color: var(--ink-3);
+}
+.cat-tabs-count .cat-tab.on .ico { width: auto; height: auto; background: transparent; color: #fff; }
+.cat-tabs-count .cat-tab[data-cat="bogcha"] .ico { background: #f6e8f8; color: #a8449a; }
+.cat-tabs-count .cat-tab[data-cat="markaz"] .ico { background: #e2f0fd; color: #2f74b5; }
+.cat-tabs-count .cat-tab[data-cat="mutaxassis"] .ico { background: #ede6fb; color: #7c4fc2; }
+.cat-tabs-count .cat-tab[disabled] .ico { background: #fdead6; color: #d9860f; }
+.cat-tabs-count .cat-tab-count {
+  display: inline-flex; align-items: center; justify-content: center; min-width: 24px; height: 24px; padding: 0 7px;
+  border-radius: var(--r-pill); background: var(--surface-2); color: var(--ink-2); font-size: 12.5px; font-weight: 800;
+}
+.cat-tabs-count .cat-tab.on .cat-tab-count { background: var(--primary); color: #fff; }
 
 /* search bar */
 .searchbar {
   margin-top: 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
-  box-shadow: var(--shadow-md); display: grid; grid-template-columns: 1.6fr 1fr 1fr auto; align-items: stretch;
+  box-shadow: var(--shadow-md); display: grid; grid-template-columns: 1fr 1.3fr 1fr 1fr auto; align-items: stretch;
   overflow: hidden;
 }
 .sb-field { display: flex; flex-direction: column; gap: 3px; padding: 14px 20px; border-right: 1px solid var(--line-2); position: relative; }
@@ -170,7 +219,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .results-grid { display: grid; grid-template-columns: 260px 1fr 0.92fr; gap: 22px; align-items: start; }
 
 /* filter rail */
-.filters { position: sticky; top: 86px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 6px 18px 18px; box-shadow: var(--shadow-sm); }
+.filters { position: sticky; top: 140px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 6px 18px 18px; box-shadow: var(--shadow-sm); }
 .filter-block { padding: 16px 0; border-bottom: 1px solid var(--line-2); }
 .filter-block:last-child { border-bottom: none; }
 .filter-head { display: flex; align-items: center; justify-content: space-between; font-weight: 700; font-size: 14px; margin-bottom: 12px; white-space: nowrap; }
@@ -246,7 +295,7 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 [data-cards="compact"] .scard-tags { display: none; }
 
 /* ============ MAP ============ */
-.map-col { position: sticky; top: 86px; }
+.map-col { position: sticky; top: 140px; }
 .map-panel {
   position: relative; height: calc(100vh - 110px); min-height: 560px; border-radius: var(--r-lg); overflow: hidden;
   border: 1px solid var(--line); box-shadow: var(--shadow-sm); background: #e9eef0;
@@ -317,6 +366,67 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .cta-band p { margin-top: 10px; opacity: .9; font-size: 16px; max-width: 50ch; }
 .cta-actions { display: flex; gap: 12px; position: relative; z-index: 2; }
 .btn-white { background: #fff; color: var(--primary-ink); }
+
+/* Ad banner (reklama karточкаsi) — spec-strip oʻrnida chiqadi, bir nechta bo'lsa karusel */
+.ad-banner-carousel { position: relative; display: grid; }
+.ad-banner {
+  align-items: center; gap: 22px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), #c9660f); border-radius: var(--r-lg);
+  padding: 26px 30px; color: #fff; box-shadow: var(--shadow-md);
+  display: flex;
+}
+/* barcha slaydlar bir xil grid katakchasida — balandlik "sakramaydi", faqat opacity bilan oʻtadi */
+.ad-banner.js-ad-slide {
+  grid-area: 1 / 1;
+  position: relative;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(.99);
+  transition: opacity .8s ease, transform .8s ease, visibility 0s linear .8s;
+}
+.ad-banner.js-ad-slide.on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: scale(1);
+  transition: opacity .8s ease, transform .8s ease, visibility 0s linear 0s;
+}
+.ad-banner::after { content: ""; position: absolute; right: -55px; top: -65px; width: 230px; height: 230px; border-radius: 50%; background: rgba(255,255,255,.10); }
+.ad-banner::before { content: ""; position: absolute; right: 130px; bottom: -80px; width: 170px; height: 170px; border-radius: 50%; background: rgba(255,255,255,.07); }
+.ad-banner-tag {
+  position: absolute; top: 16px; right: 20px; z-index: 2; background: #fff; color: var(--ink);
+  font-weight: 800; font-size: 12.5px; padding: 6px 14px; border-radius: var(--r-pill);
+}
+.ad-banner-avatar {
+  position: relative; z-index: 1; flex: none; width: 62px; height: 62px; border-radius: var(--r-md);
+  background: rgba(255,255,255,.18); display: grid; place-items: center; font-family: var(--font-display);
+  font-weight: 800; font-size: 19px; color: #fff;
+}
+.ad-banner-body { position: relative; z-index: 1; flex: 1; min-width: 0; }
+.ad-banner-badge {
+  display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,.2); font-weight: 800;
+  font-size: 11.5px; letter-spacing: .03em; text-transform: uppercase; padding: 5px 12px; border-radius: var(--r-pill);
+}
+.ad-banner-body h3 { margin-top: 10px; font-size: 21px; color: #fff; font-family: var(--font-display); }
+.ad-banner-body p { margin-top: 8px; font-size: 14.5px; opacity: .95; display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+.ad-banner-rating {
+  display: inline-flex; align-items: center; gap: 4px; background: rgba(255,255,255,.9); color: #7a3c0a;
+  font-weight: 800; font-size: 12.5px; padding: 3px 9px; border-radius: var(--r-pill); flex: none;
+}
+.ad-banner-actions { position: relative; z-index: 1; flex: none; align-self: flex-start; margin-top: 38px; display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.ad-banner-actions .btn-white { color: var(--accent); font-weight: 800; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.ad-banner-label { font-size: 11px; font-weight: 700; letter-spacing: .05em; opacity: .85; text-transform: uppercase; }
+.ad-banner-dots { display: flex; justify-content: center; align-items: center; gap: 6px; margin-top: 14px; }
+.ad-banner-dots .dot { width: 6px; height: 6px; padding: 0; border-radius: 50%; background: var(--line); transition: .2s; cursor: pointer; }
+.ad-banner-dots .dot:hover { background: var(--ink-3); }
+.ad-banner-dots .dot.on { width: 20px; border-radius: var(--r-pill); background: var(--primary); }
+.ad-banner-dots .dot.on:hover { background: var(--primary); }
+@media (max-width: 720px) {
+  .ad-banner { flex-wrap: wrap; padding: 22px; }
+  .ad-banner-tag { position: static; order: -1; margin-bottom: 4px; }
+  .ad-banner-actions { flex-direction: row; align-items: center; justify-content: space-between; width: 100%; align-self: auto; margin-top: 0; }
+}
 .btn-white:hover { transform: translateY(-1px); }
 .btn-outline-w { background: rgba(255,255,255,.12); color: #fff; border: 1px solid rgba(255,255,255,.4); }
 
@@ -511,14 +621,10 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .m-mcard .pr span { font-size: 10.5px; color: var(--ink-3); font-weight: 600; font-family: var(--font-sans); }
 
 /* ============ DESKTOP / MOBILE SHELL SWITCH ============ */
+/* Mobil ko'rinish vaqtincha o'chirilgan (mobile-shell endi renderlanmaydi) — keyinroq to'liq mobil dizayn qilinganda qaytariladi. */
 .mobile-shell { display: none; }
 .m-screen { min-height: auto; }
 .m-tabs { position: sticky; bottom: 0; }
-
-@media (max-width: 760px) {
-  .desktop-shell { display: none !important; }
-  .mobile-shell { display: block; }
-}
 
 /* favorite heart fill toggle (icon component sets fill="none" by default) */
 .fav.on svg, .m-fav.on svg { fill: currentColor; }

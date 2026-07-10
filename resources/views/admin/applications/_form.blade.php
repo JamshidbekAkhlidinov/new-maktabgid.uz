@@ -15,6 +15,7 @@
     <x-admin.select name="status" label="Status" required :value="$application?->status ?? 'pending'" :options="[
         'pending' => 'Kutilmoqda',
         'confirmed' => 'Tasdiqlangan',
+        'completed' => 'Bo\'lib o\'tgan',
         'rejected' => 'Rad etilgan',
     ]" />
 

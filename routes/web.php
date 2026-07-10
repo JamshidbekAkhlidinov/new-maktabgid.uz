@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InstitutionCabinetController;
 use App\Support\MaktabgidData;
 use Illuminate\Support\Facades\Route;
 
@@ -97,32 +98,17 @@ Route::get('/cabinet', function () {
     ]);
 })->name('cabinet.index');
 
-Route::get('/institution-cabinet', function () {
-    $user = auth()->user();
-
-    if (! $user || ! $user->isInstitution()) {
-        return view('institution-cabinet', [
-            'institution' => null,
-            'applications' => collect(),
-            'stats' => ['applications' => 0, 'conversations' => 0, 'favorites' => 0],
-        ]);
-    }
-
-    $institution = $user->institution()->with(['district', 'specializations', 'media'])->first();
-    $applications = $institution ? $institution->applications()->latest()->get() : collect();
-
-    return view('institution-cabinet', [
-        'institution' => $institution,
-        'applications' => $applications,
-        'stats' => [
-            'applications' => $applications->count(),
-            'pending' => $applications->where('status', 'pending')->count(),
-            'confirmed' => $applications->where('status', 'confirmed')->count(),
-            'conversations' => $institution ? $institution->conversations()->count() : 0,
-            'favorites' => $institution ? $institution->favorites()->count() : 0,
-        ],
-    ]);
-})->name('institution.cabinet');
+/* ---------------- Muassasa kabineti ("Boshqaruv paneli" dashboard) ---------------- */
+Route::get('/institution-cabinet', [InstitutionCabinetController::class, 'dashboard'])->name('institution.cabinet');
+Route::get('/institution-cabinet/lidlar', [InstitutionCabinetController::class, 'leads'])->name('institution.cabinet.leads');
+Route::get('/institution-cabinet/ekskursiyalar', [InstitutionCabinetController::class, 'excursions'])->name('institution.cabinet.excursions');
+Route::get('/institution-cabinet/suhbatlar', [InstitutionCabinetController::class, 'conversations'])->name('institution.cabinet.conversations');
+Route::get('/institution-cabinet/analitika', [InstitutionCabinetController::class, 'analytics'])->name('institution.cabinet.analytics');
+Route::get('/institution-cabinet/profil', [InstitutionCabinetController::class, 'profile'])->name('institution.cabinet.profile');
+Route::get('/institution-cabinet/tariflar', [InstitutionCabinetController::class, 'plans'])->name('institution.cabinet.plans');
+Route::get('/institution-cabinet/tariflar/{plan}', [InstitutionCabinetController::class, 'checkout'])
+    ->where('plan', 'standard|gold|premium')
+    ->name('institution.cabinet.checkout');
 
 Route::get('/chat', function () {
     return view('chat');

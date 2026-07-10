@@ -71,6 +71,7 @@
         var resetBtn = document.getElementById("js-reset");
         var emptyResetBtn = document.getElementById("js-empty-reset");
         var searchGoBtn = document.getElementById("js-search-go");
+        var catSelect = document.getElementById("js-cat-select");
 
         var DISTANCE_MAX = { "1": 1, "3": 3, "5": 5, "5+": Infinity };
         var PRICE_RANGE = {
@@ -84,6 +85,7 @@
             document.querySelectorAll(".js-cat").forEach(function (b) {
                 b.classList.toggle("on", b.dataset.cat === state.cat);
             });
+            if (catSelect) catSelect.value = state.cat;
         }
 
         function applyFilters() {
@@ -142,6 +144,8 @@
         document.querySelectorAll(".js-cat").forEach(function (btn) {
             btn.addEventListener("click", function () { state.cat = btn.dataset.cat; render(); });
         });
+
+        if (catSelect) catSelect.addEventListener("change", function () { state.cat = catSelect.value; render(); });
 
         document.querySelectorAll(".js-spec-tile").forEach(function (tile) {
             tile.addEventListener("click", function () {
@@ -241,6 +245,64 @@
         });
 
         render();
+    }
+
+    /* ===================== HERO SEARCH MODE (O'zim qidiraman / AI tanlab bersin) ===================== */
+    var modeBtns = Array.prototype.slice.call(document.querySelectorAll(".js-mode-btn"));
+    if (modeBtns.length) {
+        var modePanels = Array.prototype.slice.call(document.querySelectorAll(".js-mode-panel"));
+
+        function setSearchMode(mode) {
+            modeBtns.forEach(function (b) { b.classList.toggle("on", b.dataset.mode === mode); });
+            modePanels.forEach(function (p) { p.hidden = p.dataset.mode !== mode; });
+        }
+
+        modeBtns.forEach(function (btn) {
+            btn.addEventListener("click", function () { setSearchMode(btn.dataset.mode); });
+        });
+
+        document.querySelectorAll(".js-mode-back").forEach(function (btn) {
+            btn.addEventListener("click", function () { setSearchMode(btn.dataset.mode); });
+        });
+    }
+
+    /* ===================== AD BANNER CAROUSEL ===================== */
+    var adCarousel = document.querySelector(".js-ad-carousel");
+    if (adCarousel) {
+        var adSlides = Array.prototype.slice.call(adCarousel.querySelectorAll(".js-ad-slide"));
+        var adDots = Array.prototype.slice.call(adCarousel.querySelectorAll(".js-ad-dot"));
+        var adIndex = 0;
+        var adTimer = null;
+        var AD_INTERVAL = 3000;
+
+        function showAdSlide(i) {
+            adIndex = (i + adSlides.length) % adSlides.length;
+            adSlides.forEach(function (s, idx) { s.classList.toggle("on", idx === adIndex); });
+            adDots.forEach(function (d, idx) { d.classList.toggle("on", idx === adIndex); });
+        }
+
+        function stopAdAutoplay() {
+            if (adTimer) { clearInterval(adTimer); adTimer = null; }
+        }
+
+        function startAdAutoplay() {
+            if (adSlides.length < 2) return;
+            stopAdAutoplay();
+            adTimer = setInterval(function () { showAdSlide(adIndex + 1); }, AD_INTERVAL);
+        }
+
+        adDots.forEach(function (dot, i) {
+            dot.addEventListener("click", function () {
+                showAdSlide(i);
+                startAdAutoplay();
+            });
+        });
+
+        adCarousel.addEventListener("mouseenter", stopAdAutoplay);
+        adCarousel.addEventListener("mouseleave", startAdAutoplay);
+
+        showAdSlide(0);
+        startAdAutoplay();
     }
 
     /* ===================== MOBILE SHELL ===================== */
@@ -405,7 +467,7 @@
 
         /* --- logout: real session tugatiladi --- */
         document.addEventListener("click", function (e) {
-            var btn = e.target.closest("#js-nav-logout, #js-logout-btn, #js-inst-logout");
+            var btn = e.target.closest("#js-nav-logout, #js-logout-btn, #js-inst-logout, .js-logout-trigger");
             if (!btn) return;
             jsonFetch("/ajax/auth/logout", "POST", {}).then(function () {
                 window.location.href = "/";
@@ -720,4 +782,85 @@
             });
         }
     }());
+})();
+
+/* ===== Muassasa "Boshqaruv paneli" dashboard: generic dropdown toggles =====
+   Har qanday [data-dd-toggle="menuId"] tugmasi shu id'dagi elementni
+   ochib/yopadi (tashkilot select'i va topbar'dagi foydalanuvchi menyusi
+   shu orqali ishlaydi). Sahifada mos element bo'lmasa hech narsa qilmaydi. */
+(function () {
+    "use strict";
+
+    var toggles = Array.prototype.slice.call(document.querySelectorAll("[data-dd-toggle]"));
+    if (!toggles.length) return;
+
+    function closeAllDD() {
+        document.querySelectorAll("[data-dd-menu]").forEach(function (m) { m.hidden = true; });
+    }
+
+    toggles.forEach(function (btn) {
+        var menu = document.getElementById(btn.getAttribute("data-dd-toggle"));
+        if (!menu) return;
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var open = !menu.hidden;
+            closeAllDD();
+            menu.hidden = open;
+        });
+        menu.addEventListener("click", function (e) { e.stopPropagation(); });
+    });
+
+    document.addEventListener("click", closeAllDD);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeAllDD(); });
+})();
+
+/* ===== Ro'yxat sahifalari (Lidlar, Ekskursiyalar, ...): holat tab filtri + matn qidiruv.
+   Umumiy komponent — .js-filter-tab (data-status), .js-filter-row (data-status, data-search)
+   va ixtiyoriy .js-filter-search kirish maydoni bo'lgan har qanday sahifada ishlaydi. ===== */
+(function () {
+    "use strict";
+    var tabs = Array.prototype.slice.call(document.querySelectorAll(".js-filter-tab"));
+    var rows = Array.prototype.slice.call(document.querySelectorAll(".js-filter-row"));
+    var search = document.querySelector(".js-filter-search");
+    // Diqqat: faqat "rows" bo'sh (masalan hali hech qanday ariza/lid yo'q) bo'lganda ham
+    // tab tugmalari bosilib turishi kerak (keyinchalik qator qo'shilganda ishlashi uchun) —
+    // shuning uchun bu yerda faqat "tabs" borligi tekshiriladi, "rows" emas.
+    if (!tabs.length) return;
+
+    var activeStatus = "all";
+
+    function applyFilter() {
+        var q = search ? search.value.trim().toLowerCase() : "";
+        rows.forEach(function (row) {
+            var statusOk = activeStatus === "all" || row.dataset.status === activeStatus;
+            var text = (row.dataset.search || "").toLowerCase();
+            var searchOk = !q || text.indexOf(q) !== -1;
+            row.style.display = statusOk && searchOk ? "" : "none";
+        });
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            activeStatus = tab.dataset.status || "all";
+            tabs.forEach(function (t) { t.classList.toggle("on", t === tab); });
+            applyFilter();
+        });
+    });
+
+    if (search) search.addEventListener("input", applyFilter);
+})();
+
+/* ===== Checkout: to'lov usuli tanlash (radio ichida yashirin, .idash-pay-item "on" holati) ===== */
+(function () {
+    "use strict";
+    var items = Array.prototype.slice.call(document.querySelectorAll(".idash-pay-item"));
+    if (!items.length) return;
+    items.forEach(function (item) {
+        var radio = item.querySelector('input[type="radio"]');
+        if (!radio) return;
+        item.addEventListener("click", function () {
+            radio.checked = true;
+            items.forEach(function (i) { i.classList.toggle("on", i === item); });
+        });
+    });
 })();

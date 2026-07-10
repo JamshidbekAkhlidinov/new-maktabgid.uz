@@ -25,6 +25,17 @@
         $specializations = MaktabgidData::specializations();
         $defaultCat = $categories[0]['key'];
         $defaultResults = array_values(array_filter($schools, fn ($s) => $s['cat'] === $defaultCat));
+
+        /* Natijalar boʻlimi ustidagi toifa-tab satri (sonlar bilan) — hozircha faqat vizual moslik. */
+        $catCounts = collect($schools)->countBy('cat');
+        $catTabs = [
+            ['key' => 'maktab', 'label' => 'Maktablar', 'icon' => 'school', 'count' => $catCounts->get('maktab', 0)],
+            ['key' => 'bogcha', 'label' => 'Bogʻchalar', 'icon' => 'teddy', 'count' => $catCounts->get('bogcha', 0)],
+            ['key' => 'markaz', 'label' => 'Oʻquv markazlari', 'icon' => 'book', 'count' => $catCounts->get('markaz', 0)],
+            ['key' => 'mutaxassis', 'label' => 'Mutaxassislar', 'icon' => 'heart', 'count' => $catCounts->get('mutaxassis', 0)],
+        ];
+        /* "Oʻyin maydonchalari" uchun hali alohida toifa/maʼlumot bazasi yoʻq — faqat dizaynga moslash uchun statik. */
+        $catExtraTab = ['label' => 'Oʻyin maydonchalari', 'icon' => 'grid', 'count' => 4];
     @endphp
 
     {{-- ===================== DESKTOP / TABLET ===================== --}}
@@ -32,7 +43,11 @@
         <x-maktabgid.nav :categories="$categories" />
         <x-maktabgid.hero :categories="$categories" :districts="$districts" :total="103" />
 
-        <x-maktabgid.spec-strip :specs="$specializations" />
+        {{-- "Ixtisoslik boʻyicha qidiring" boʻlimi vaqtincha oʻchirilgan, oʻrniga reklama banneri chiqadi --}}
+        {{-- <x-maktabgid.spec-strip :specs="$specializations" /> --}}
+        <x-maktabgid.ad-banner />
+
+        <x-maktabgid.cat-count-tabs :tabs="$catTabs" :extra="$catExtraTab" :active="$defaultCat" />
 
         <main class="results" id="natijalar">
             <div class="wrap">
@@ -77,10 +92,7 @@
         </main>
     </div>
 
-    {{-- ===================== MOBILE (Mobil ilova uslubi) ===================== --}}
-    <div class="mobile-shell" id="m-top">
-        <x-maktabgid.mobile-app :categories="$categories" :schools="$schools" :total="103" />
-    </div>
+    {{-- Mobil ko'rinish vaqtincha o'chirilgan — keyinroq alohida to'liq mobil dizayn qilinadi --}}
 
     <x-maktabgid.trust-strip />
     <x-maktabgid.vacancies :vacancies="$vacancies" />

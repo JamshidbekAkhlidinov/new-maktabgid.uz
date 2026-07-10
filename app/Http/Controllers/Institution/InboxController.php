@@ -30,7 +30,9 @@ class InboxController extends Controller
         $this->authorize('updateStatus', $application);
 
         $data = $request->validate([
-            'status' => ['required', Rule::in(['pending', 'confirmed', 'rejected'])],
+            // 'completed' — ekskursiya/tashrif bo'lib o'tganini muassasa qo'lda "Yakunlash"
+            // orqali belgilaydi (institution-cabinet Ekskursiyalar sahifasi).
+            'status' => ['required', Rule::in(['pending', 'confirmed', 'rejected', 'completed'])],
         ]);
 
         $application->update(['status' => $data['status']]);

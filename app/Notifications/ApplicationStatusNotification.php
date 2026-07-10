@@ -32,6 +32,7 @@ class ApplicationStatusNotification extends Notification
         $label = match ($a->status) {
             'confirmed' => '✅ Arizangiz tasdiqlandi!',
             'rejected' => '❌ Arizangiz rad etildi.',
+            'completed' => '🎉 Tashrifingiz uchun rahmat!',
             default => null,
         };
 

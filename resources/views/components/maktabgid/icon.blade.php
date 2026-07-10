@@ -196,5 +196,20 @@
         @case('badge')
             <circle cx="12" cy="9" r="5.5" /><path d="M12 6.5l.9 1.8 2 .3-1.4 1.4.3 2-1.8-1-1.8 1 .3-2L9.1 8.6l2-.3z" /><path d="M8 14l-1 7 5-2.5L17 21l-1-7" />
             @break
+        @case('trending')
+            <path d="M3 17l6-6 4 4 8-8" /><path d="M15 7h6v6" />
+            @break
+        @case('card')
+            <rect x="3" y="5.5" width="18" height="13" rx="2.2" /><path d="M3 10h18" /><path d="M7 14.5h4" />
+            @break
+        @case('bell')
+            <path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6z" /><path d="M10 19a2 2 0 0 0 4 0" />
+            @break
+        @case('layers')
+            <path d="M12 3.5l8.5 4.5-8.5 4.5-8.5-4.5z" /><path d="M3.5 13l8.5 4.5 8.5-4.5" /><path d="M3.5 17l8.5 4.5 8.5-4.5" />
+            @break
+        @case('download')
+            <path d="M12 4v12" /><path d="M8 12l4 4 4-4" /><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16" />
+            @break
     @endswitch
 </svg>

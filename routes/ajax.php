@@ -11,6 +11,7 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Institution\AcceptingController;
 use App\Http\Controllers\Institution\InboxController;
 use App\Http\Controllers\Institution\MediaController;
+use App\Http\Controllers\Institution\MessageController;
 use App\Http\Controllers\Institution\ProfileController;
 use App\Http\Controllers\Institution\StatsController as InstitutionStatsController;
 use Illuminate\Support\Facades\Route;
@@ -47,6 +48,9 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         // Ekskursiya/joylashtirish arizalari — backend.md Phase 5
         Route::get('applications', [InboxController::class, 'index']);
         Route::patch('applications/{application}/status', [InboxController::class, 'updateStatus']);
+
+        // Suhbatlar — muassasa ota-onaga javob yozadi (institution-cabinet Suhbatlar sahifasi)
+        Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
     });
 
     // Arizalar — mehmon ham yubora oladi (backend.md Phase 4)
