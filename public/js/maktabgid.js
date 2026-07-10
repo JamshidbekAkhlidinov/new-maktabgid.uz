@@ -850,6 +850,54 @@
     if (search) search.addEventListener("input", applyFilter);
 })();
 
+/* ===== Suhbatlar (institution-cabinet): ro'yxatni qidirish + tezkor javob chip'lari + real yuborish ===== */
+(function () {
+    "use strict";
+
+    var search = document.querySelector(".js-chat-search");
+    var items = Array.prototype.slice.call(document.querySelectorAll(".js-chat-li"));
+    if (search && items.length) {
+        search.addEventListener("input", function () {
+            var q = search.value.trim().toLowerCase();
+            items.forEach(function (li) {
+                var text = (li.dataset.search || "").toLowerCase();
+                li.style.display = !q || text.indexOf(q) !== -1 ? "" : "none";
+            });
+        });
+    }
+
+    var input = document.getElementById("js-chat-input");
+    document.querySelectorAll(".js-chat-suggest").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            if (!input) return;
+            input.value = btn.dataset.text || "";
+            input.focus();
+        });
+    });
+
+    var form = document.querySelector(".js-chat-send-form");
+    if (form && input) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var text = input.value.trim();
+            if (!text) return;
+
+            var convId = form.dataset.conversationId;
+            var sendBtn = form.querySelector(".chat-send");
+            if (sendBtn) sendBtn.disabled = true;
+
+            jsonFetch("/ajax/institution/me/conversations/" + convId + "/messages", "POST", { body: text }).then(function (res) {
+                if (sendBtn) sendBtn.disabled = false;
+                if (res.ok) {
+                    window.location.href = window.location.pathname + "?c=" + convId;
+                } else {
+                    alert("Xabarni yuborib bo'lmadi. Qayta urining.");
+                }
+            });
+        });
+    }
+})();
+
 /* ===== Checkout: to'lov usuli tanlash (radio ichida yashirin, .idash-pay-item "on" holati) ===== */
 (function () {
     "use strict";

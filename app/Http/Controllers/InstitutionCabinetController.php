@@ -118,9 +118,12 @@ class InstitutionCabinetController extends Controller
         $ctx = $this->context($request);
         $institution = $ctx['institution'];
 
+        $unreadFromParent = fn ($q) => $q->where('sender_type', 'parent')->whereNull('read_at');
+
         $conversations = $institution
             ? $institution->conversations()
                 ->with(['parent', 'messages' => fn ($q) => $q->latest()->limit(1)])
+                ->withCount(['messages as unread_count' => $unreadFromParent])
                 ->latest('last_message_at')
                 ->get()
             : collect();
@@ -133,14 +136,30 @@ class InstitutionCabinetController extends Controller
         $activeChild = null;
 
         if ($active) {
-            $activeMessages = $active->messages()->with('sender')->oldest()->get();
+            // Muassasa suhbatni ochganda ota-onadan kelgan o'qilmagan xabarlar real
+            // belgilanadi (Message.read_at) — badge son shunga qarab kamayadi.
+            $active->messages()->where('sender_type', 'parent')->whereNull('read_at')->update(['read_at' => now()]);
+            $active->unread_count = 0;
 
-            // Conversation modelida bola/qiziqish maydoni yo'q — shu ota-ona shu muassasaga
-            // yuborgan eng so'nggi arizadan (bo'lsa) olinadi, faqat ko'rsatish uchun.
             $activeChild = $institution?->applications()
                 ->where('parent_user_id', $active->parent_user_id)
                 ->latest()
                 ->first();
+
+            // Har bir xabar qaysi kun ostida va o'sha kun bo'linuvchisi ("Bugun"/"Kecha"/sana)
+            // ko'rsatilishi kerakligini oldindan hisoblab beramiz — blade faqat chizadi.
+            $prevDay = null;
+            $activeMessages = $active->messages()->with('sender')->oldest()->get()->map(function ($m) use (&$prevDay) {
+                $day = $m->created_at->toDateString();
+                $showDivider = $day !== $prevDay;
+                $prevDay = $day;
+
+                return [
+                    'model' => $m,
+                    'showDivider' => $showDivider,
+                    'dayLabel' => $m->created_at->isToday() ? 'Bugun' : ($m->created_at->isYesterday() ? 'Kecha' : self::uzDayLabel($m->created_at)),
+                ];
+            });
         }
 
         return view('institution.conversations', $ctx + [
@@ -280,9 +299,20 @@ class InstitutionCabinetController extends Controller
     /** "8-iyun, 14:30" ko'rinishidagi sana — APP_LOCALE'dan mustaqil, doim o'zbekcha oy nomi bilan. */
     private static function uzDate(\Illuminate\Support\Carbon $date): string
     {
+        return $date->day.'-'.self::uzMonth($date).', '.$date->format('H:i');
+    }
+
+    /** "8-iyun" — vaqtsiz, suhbat sahifasidagi sana bo'linuvchilari uchun. */
+    private static function uzDayLabel(\Illuminate\Support\Carbon $date): string
+    {
+        return $date->day.'-'.self::uzMonth($date);
+    }
+
+    private static function uzMonth(\Illuminate\Support\Carbon $date): string
+    {
         $months = [1 => 'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
 
-        return $date->day.'-'.$months[$date->month].', '.$date->format('H:i');
+        return $months[$date->month];
     }
 
     /**
@@ -319,7 +349,13 @@ class InstitutionCabinetController extends Controller
             'counts' => [
                 'leads' => $institution ? 0 : 0, // Lidlar — hali real hisoblagich yo'q (mock sahifa).
                 'excursions' => $institution ? $institution->applications()->where('status', 'pending')->count() : 0,
-                'conversations' => $institution ? $institution->conversations()->count() : 0,
+                // Sidebar badge — jami suhbatlar emas, ota-onadan o'qilmagan xabari bor
+                // suhbatlar soni (Message.read_at asosida, real).
+                'conversations' => $institution
+                    ? $institution->conversations()
+                        ->whereHas('messages', fn ($q) => $q->where('sender_type', 'parent')->whereNull('read_at'))
+                        ->count()
+                    : 0,
             ],
         ];
     }

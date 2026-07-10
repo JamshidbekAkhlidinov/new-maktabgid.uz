@@ -210,6 +210,21 @@
 .idash-datetime { display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 13px; color: var(--ink-2); white-space: nowrap; }
 .idash-datetime svg { color: var(--ink-3); flex: none; }
 
+/* ---------- Suhbatlar (real chat — .chat-* asosiy qismi maktabgid.css'da mavjud) ---------- */
+.idash-content .chat-shell { margin: 0; height: calc(100vh - 230px); min-height: 520px; }
+.chat-list-head { padding: 16px 16px 14px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.chat-list-head h3 { font-size: 17px; margin-bottom: 12px; }
+.chat-search { display: flex; align-items: center; gap: 9px; padding: 9px 14px; border-radius: var(--r-pill); background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-3); }
+.chat-search input { border: none; outline: none; background: none; font: inherit; color: var(--ink); width: 100%; }
+.chat-li-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex: none; }
+.chat-li-meta time { font-size: 11px; color: var(--ink-3); font-weight: 600; }
+.chat-date-divider { display: flex; justify-content: center; margin: 4px 0 10px; }
+.chat-date-divider span { padding: 5px 14px; border-radius: var(--r-pill); background: var(--surface); border: 1px solid var(--line); color: var(--ink-3); font-size: 12px; font-weight: 700; }
+.chat-suggest { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 18px; border-top: 1px solid var(--line-2); background: var(--surface); }
+.chat-suggest button { padding: 8px 14px; border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 12.5px; color: var(--ink-2); }
+.chat-suggest button:hover { border-color: var(--primary); color: var(--primary); }
+.chat-empty { flex: 1; display: flex; align-items: center; justify-content: center; }
+
 /* ---------- alert banner (Tariflar sahifasi: "Hozir bepul rejimdasiz") ---------- */
 .idash-alert { display: flex; align-items: flex-start; gap: 16px; padding: 20px 22px; border-radius: var(--r-lg); background: var(--primary-soft); border: 1px solid color-mix(in oklab, var(--primary) 25%, var(--line)); }
 .idash-alert-ico { width: 44px; height: 44px; border-radius: 12px; background: var(--surface); color: var(--primary); display: grid; place-items: center; flex: none; box-shadow: var(--shadow-sm); }
