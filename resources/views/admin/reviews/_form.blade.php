@@ -8,7 +8,7 @@
         :value="$review?->user_id" :options="$users->pluck('name', 'id')" />
 
     <x-admin.select name="rating" label="Baho" required :value="$review?->rating" :options="[
-        1 => '1 ⭐', 2 => '2 ⭐', 3 => '3 ⭐', 4 => '4 ⭐', 5 => '5 ⭐',
+        1 => '1 yulduz', 2 => '2 yulduz', 3 => '3 yulduz', 4 => '4 yulduz', 5 => '5 yulduz',
     ]" />
 </div>
 

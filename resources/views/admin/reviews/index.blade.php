@@ -21,7 +21,13 @@
                     <tr>
                         <td class="px-4 py-3 font-medium text-slate-800">{{ $review->institution?->name }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $review->author?->name }}</td>
-                        <td class="px-4 py-3 text-slate-600">{{ str_repeat('⭐', $review->rating) }}</td>
+                        <td class="px-4 py-3">
+                            <span class="flex items-center gap-0.5 text-amber-500">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <x-admin.icon name="star" :solid="$i <= $review->rating" class="w-3.5 h-3.5 {{ $i > $review->rating ? 'text-slate-300' : '' }}" />
+                                @endfor
+                            </span>
+                        </td>
                         <td class="px-4 py-3 text-slate-600 max-w-xs truncate">{{ $review->body }}</td>
                         <td class="px-4 py-3">
                             <x-admin.row-actions

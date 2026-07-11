@@ -912,3 +912,18 @@
         });
     });
 })();
+
+/* ===== Analitika: davr tab'lari (Hafta/Oy/Yil) — hozircha faqat vizual holat, real davr filtri yo'q ===== */
+(function () {
+    "use strict";
+    var groups = Array.prototype.slice.call(document.querySelectorAll(".idash-seg"));
+    if (!groups.length) return;
+    groups.forEach(function (group) {
+        var btns = Array.prototype.slice.call(group.querySelectorAll(".js-seg-btn"));
+        btns.forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                btns.forEach(function (b) { b.classList.toggle("on", b === btn); });
+            });
+        });
+    });
+})();

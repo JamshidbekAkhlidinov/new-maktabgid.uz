@@ -160,6 +160,33 @@
 .idash-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
 .idash-badge-soft { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--r-pill); background: var(--accent-soft); color: #b45309; font-weight: 700; font-size: 12px; }
 
+/* ---------- Analitika sahifasi: davr tab'lari, donut, yosh guruh bar'lari ---------- */
+.idash-seg { display: inline-flex; padding: 3px; background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-pill); gap: 2px; flex: none; }
+.idash-seg button { padding: 7px 16px; border-radius: var(--r-pill); font-size: 13px; font-weight: 700; color: var(--ink-3); }
+.idash-seg button:hover { color: var(--ink); }
+.idash-seg button.on { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
+
+.idash-split2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: stretch; }
+
+.idash-donut-row { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
+.idash-donut { position: relative; width: 148px; height: 148px; border-radius: 50%; flex: none; }
+.idash-donut-center { position: absolute; inset: 20px; border-radius: 50%; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: inset 0 0 0 1px var(--line-2); }
+.idash-donut-center b { font-family: var(--font-display); font-size: 19px; line-height: 1.1; }
+.idash-donut-center span { font-size: 10.5px; color: var(--ink-3); font-weight: 700; margin-top: 2px; }
+
+.idash-donut-legend { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 12px; }
+.idash-donut-legend-row { display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 700; color: var(--ink-2); }
+.idash-donut-legend-row i { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+.idash-donut-legend-row b { margin-left: auto; font-family: var(--font-display); font-weight: 800; color: var(--ink); font-size: 13.5px; }
+
+.idash-agebars { display: flex; flex-direction: column; gap: 18px; justify-content: center; height: 100%; }
+.idash-agebar-row b { display: flex; align-items: baseline; justify-content: space-between; font-size: 13.5px; font-weight: 700; color: var(--ink-2); margin-bottom: 8px; }
+.idash-agebar-row b em { font-style: normal; font-family: var(--font-display); font-weight: 800; color: var(--ink); font-size: 14px; }
+.idash-agebar-track { height: 9px; border-radius: var(--r-pill); background: var(--surface-2); overflow: hidden; }
+.idash-agebar-track i { display: block; height: 100%; border-radius: var(--r-pill); background: linear-gradient(90deg, var(--primary), var(--primary-700)); }
+
+@media (max-width: 900px) { .idash-split2 { grid-template-columns: 1fr; } }
+
 /* ---------- Lidlar sahifasi ---------- */
 .idash-lead-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .idash-lead-tabs { display: flex; align-items: center; gap: 4px; background: var(--surface-2); padding: 5px; border-radius: var(--r-pill); flex-wrap: wrap; }

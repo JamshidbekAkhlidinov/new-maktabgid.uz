@@ -28,7 +28,15 @@
                         <td class="px-4 py-3 font-medium text-slate-800">{{ $item->title }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $item->tag }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $item->published_at?->format('d.m.Y') }}</td>
-                        <td class="px-4 py-3">{{ $item->hot ? '🔥' : '—' }}</td>
+                        <td class="px-4 py-3">
+                            @if ($item->hot)
+                                <span class="inline-flex items-center gap-1 text-xs font-medium text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full">
+                                    <x-admin.icon name="check" class="w-3 h-3" /> Hot
+                                </span>
+                            @else
+                                <span class="text-slate-400">—</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             <x-admin.row-actions
                                 :editRoute="route('admin.news.edit', $item)" editPermission="news.update"

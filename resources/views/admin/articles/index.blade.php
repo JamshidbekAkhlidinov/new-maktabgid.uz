@@ -28,7 +28,13 @@
                         <td class="px-4 py-3 font-medium text-slate-800">{{ $article->title }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $article->author_name }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $article->published_at?->format('d.m.Y') }}</td>
-                        <td class="px-4 py-3">{{ $article->featured ? '⭐' : '—' }}</td>
+                        <td class="px-4 py-3">
+                            @if ($article->featured)
+                                <x-admin.icon name="check" class="w-4 h-4 text-emerald-600" />
+                            @else
+                                <span class="text-slate-400">—</span>
+                            @endif
+                        </td>
                         <td class="px-4 py-3">
                             <x-admin.row-actions
                                 :editRoute="route('admin.articles.edit', $article)" editPermission="articles.update"

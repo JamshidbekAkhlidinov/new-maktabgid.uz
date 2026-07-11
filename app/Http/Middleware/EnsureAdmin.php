@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * /admin panelining tashqi darvozasi: faqat role=admin foydalanuvchilar kira oladi.
- * Ichkaridagi har bir amal esa alohida Spatie permission middleware bilan cheklanadi
- * (bootstrap/app.php dagi 'permission' aliasi, backend.md admin bo'limi).
+ * /admin panelining tashqi darvozasi: faqat Spatie "Super Admin" roliga ega
+ * foydalanuvchilar kira oladi (role=admin ustuni yetarli emas — real
+ * saytda faqat bitta yuqori pog'onadagi rol /admin/login'ga kira olishi kerak).
+ * Ichkaridagi har bir amal AppServiceProvider'dagi Gate::before orqali
+ * Super Admin'ga avtomatik ruxsat beriladi (backend.md admin bo'limi).
  */
 class EnsureAdmin
 {
@@ -17,13 +19,13 @@ class EnsureAdmin
     {
         $user = $request->user();
 
-        if (! $user || ! $user->isAdmin()) {
+        if (! $user || ! $user->hasRole('Super Admin')) {
             if ($request->expectsJson()) {
                 abort(403, 'Sizda admin panelga kirish huquqi yo\'q.');
             }
 
             return redirect()->route('admin.login')->withErrors([
-                'phone' => 'Admin panelga kirish uchun admin hisobingiz bilan kiring.',
+                'email' => 'Admin panelga faqat Super Admin huquqiga ega foydalanuvchilar kira oladi.',
             ]);
         }
 

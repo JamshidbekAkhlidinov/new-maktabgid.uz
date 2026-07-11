@@ -12,9 +12,10 @@ use Illuminate\Support\Facades\Hash;
  * Ishga tushirish:
  *   php artisan db:seed --class=AdminUserSeeder
  *
- * Kirish (login /admin/login):
- *   Telefon:  +998900000001
- *   Parol:    SuperAdmin!2026
+ * Kirish (login /admin/login — email + parol, yoki "Google bilan kirish"
+ * agar shu email Google hisobga bog'langan bo'lsa):
+ *   Email:  superadmin@maktabgid.uz
+ *   Parol:  SuperAdmin!2026
  *
  * Ishga tushirilgandan so'ng birinchi navbatda parolni admin panelning
  * "Foydalanuvchilar" bo'limidan almashtiring.

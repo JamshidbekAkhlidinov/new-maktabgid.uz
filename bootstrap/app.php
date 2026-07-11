@@ -38,7 +38,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // qolganda Laravel'ning standart route('login') fallback'i xatolik berib qoladi —
         // shuning uchun guest redirect manzilini o'zimiz belgilaymiz.
         $middleware->redirectGuestsTo(function (Request $request) {
-            return $request->is('admin/*') ? route('admin.login') : url('/');
+            // Diqqat: 'admin/*' pattern'i aynan "/admin" (segmentsiz, prefiksning o'zi)
+            // manzilini QOPLAMAYDI — shu sababli 'admin' aniq nomi ham qo'shildi,
+            // aks holda mehmon /admin'ga kirganda login sahifasi o'rniga bosh sahifaga
+            // (url('/')) tashlab yuborilardi.
+            return $request->is('admin', 'admin/*') ? route('admin.login') : url('/');
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
