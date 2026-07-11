@@ -9,10 +9,11 @@
 </head>
 <body class="min-h-screen relative overflow-hidden bg-gradient-to-br from-teal-50 via-white to-teal-100 flex flex-col items-center justify-center px-4 py-12">
     {{-- Fon uchun yumshoq dekorativ bo'yoqlar --}}
+    <div class="pointer-events-none absolute -top-24 -left-24 w-96 h-96 rounded-full bg-teal-200/40 blur-3xl"></div>
     <div class="pointer-events-none absolute -top-24 -right-24 w-96 h-96 rounded-full bg-teal-200/40 blur-3xl"></div>
     <div class="pointer-events-none absolute -bottom-32 -left-24 w-96 h-96 rounded-full bg-teal-100/60 blur-3xl"></div>
 
-    <div class="w-full max-w-sm relative">
+    <div class="w-full max-w-md relative">
         <a href="{{ route('welcome') }}" class="flex items-center justify-center gap-2.5 mb-8">
             <span class="flex items-center justify-center w-10 h-10 rounded-2xl bg-[#0d6e6a] text-white shrink-0">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -24,7 +25,7 @@
             <span class="text-2xl font-semibold text-slate-900">Maktab<b class="font-extrabold">GID</b></span>
         </a>
 
-        <div class="bg-white rounded-3xl shadow-xl shadow-teal-900/5 p-8">
+        <div class="bg-white rounded-3xl shadow-2xl shadow-teal-900/20 p-8">
             <h1 class="text-2xl font-bold text-slate-900">Xush kelibsiz!</h1>
             <p class="text-sm text-slate-500 mt-1 mb-6">Hisobingizga kiring</p>
 
