@@ -12,6 +12,7 @@
             <option value="">Barcha rollar</option>
             <option value="parent" @selected(request('role') === 'parent')>Ota-ona</option>
             <option value="institution" @selected(request('role') === 'institution')>Muassasa</option>
+            <option value="teacher" @selected(request('role') === 'teacher')>Ustoz</option>
             <option value="admin" @selected(request('role') === 'admin')>Admin</option>
         </select>
         <button class="rounded-lg bg-slate-800 text-white text-sm px-4 py-2">Qidirish</button>

@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\InstitutionCabinetController;
+use App\Http\Controllers\ParentCabinetController;
+use App\Http\Controllers\TeacherCabinetController;
 use App\Support\MaktabgidData;
 use Illuminate\Support\Facades\Route;
 
@@ -67,36 +69,15 @@ Route::get('/vakansiyalar/{id}', function (int $id) {
     return view('vacancy', ['vacancy' => $vacancy]);
 })->name('careers.show');
 
-/* ---------------- Kabinet ---------------- */
-Route::get('/cabinet', function () {
-    $user = auth()->user();
-
-    if (! $user || ! $user->isParent()) {
-        return view('cabinet', [
-            'favorites' => collect(),
-            'applications' => collect(),
-            'conversations' => collect(),
-            'stats' => ['favorites' => 0, 'applications' => 0, 'conversations' => 0],
-        ]);
-    }
-
-    $user->loadMissing('district');
-
-    $favorites = $user->favorites()->with('institution.district')->latest()->get();
-    $applications = $user->applications()->with('institution')->latest()->get();
-    $conversations = $user->conversations()->with('institution')->latest('last_message_at')->get();
-
-    return view('cabinet', [
-        'favorites' => $favorites,
-        'applications' => $applications,
-        'conversations' => $conversations,
-        'stats' => [
-            'favorites' => $favorites->count(),
-            'applications' => $applications->count(),
-            'conversations' => $conversations->count(),
-        ],
-    ]);
-})->name('cabinet.index');
+/* ---------------- Kabinet (ota-ona) ----------------
+ * ParentCabinetController + x-parent.shell — institution-cabinet/teacher-cabinet
+ * bilan bir xil andozada (bitta umumiy qobiq, har bir bo'lim o'z route'i). */
+Route::get('/cabinet', [ParentCabinetController::class, 'dashboard'])->name('cabinet.index');
+Route::get('/cabinet/children', [ParentCabinetController::class, 'children'])->name('cabinet.children');
+Route::get('/cabinet/favorites', [ParentCabinetController::class, 'favorites'])->name('cabinet.favorites');
+Route::get('/cabinet/applications', [ParentCabinetController::class, 'applications'])->name('cabinet.applications');
+Route::get('/cabinet/conversations', [ParentCabinetController::class, 'conversations'])->name('cabinet.conversations');
+Route::get('/cabinet/subscription', [ParentCabinetController::class, 'subscription'])->name('cabinet.subscription');
 
 /* ---------------- Muassasa kabineti ("Boshqaruv paneli" dashboard) ---------------- */
 Route::get('/institution-cabinet', [InstitutionCabinetController::class, 'dashboard'])->name('institution.cabinet');
@@ -104,11 +85,28 @@ Route::get('/institution-cabinet/lidlar', [InstitutionCabinetController::class, 
 Route::get('/institution-cabinet/ekskursiyalar', [InstitutionCabinetController::class, 'excursions'])->name('institution.cabinet.excursions');
 Route::get('/institution-cabinet/suhbatlar', [InstitutionCabinetController::class, 'conversations'])->name('institution.cabinet.conversations');
 Route::get('/institution-cabinet/analitika', [InstitutionCabinetController::class, 'analytics'])->name('institution.cabinet.analytics');
+Route::get('/institution-cabinet/teachers', [InstitutionCabinetController::class, 'teachers'])->name('institution.cabinet.teachers');
+Route::get('/institution-cabinet/achievements', [InstitutionCabinetController::class, 'achievements'])->name('institution.cabinet.achievements');
+Route::get('/institution-cabinet/gallery', [InstitutionCabinetController::class, 'gallery'])->name('institution.cabinet.gallery');
+Route::get('/institution-cabinet/vacancies', [InstitutionCabinetController::class, 'vacancies'])->name('institution.cabinet.vacancies');
 Route::get('/institution-cabinet/profil', [InstitutionCabinetController::class, 'profile'])->name('institution.cabinet.profile');
 Route::get('/institution-cabinet/tariflar', [InstitutionCabinetController::class, 'plans'])->name('institution.cabinet.plans');
 Route::get('/institution-cabinet/tariflar/{plan}', [InstitutionCabinetController::class, 'checkout'])
     ->where('plan', 'standard|gold|premium')
     ->name('institution.cabinet.checkout');
+
+/* ---------------- Ustoz kabineti (o'qituvchi dashboard qobig'i) ----------------
+ * Diqqat: "o'qituvchi" hali User::role sifatida modellashtirilmagan (faqat
+ * parent|institution|admin mavjud — bootstrap.md/User modeliga qarang). Shu
+ * sababli bu bo'lim hozircha faqat VIZUAL qatlam sifatida qurilgan: har bir
+ * sahifa namunaviy (mock) ma'lumot bilan ishlaydi, auth/rol tekshiruvi yo'q.
+ * Real rol, ro'yxatdan o'tish va login-redirect ulanishi keyingi bosqichda. */
+Route::get('/teacher-cabinet', [TeacherCabinetController::class, 'dashboard'])->name('teacher.cabinet');
+Route::get('/teacher-cabinet/resumes', [TeacherCabinetController::class, 'resumes'])->name('teacher.cabinet.resumes');
+Route::get('/teacher-cabinet/vacancies', [TeacherCabinetController::class, 'vacancies'])->name('teacher.cabinet.vacancies');
+Route::get('/teacher-cabinet/offers', [TeacherCabinetController::class, 'offers'])->name('teacher.cabinet.offers');
+Route::get('/teacher-cabinet/conversations', [TeacherCabinetController::class, 'conversations'])->name('teacher.cabinet.conversations');
+Route::get('/teacher-cabinet/payment', [TeacherCabinetController::class, 'tariffs'])->name('teacher.cabinet.tariffs');
 
 Route::get('/chat', function () {
     return view('chat');

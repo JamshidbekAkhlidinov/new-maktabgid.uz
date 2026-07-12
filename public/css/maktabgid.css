@@ -781,6 +781,60 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .appl-status.done { background: #e7f6ec; color: var(--ok); }
 .unread-dot { background: var(--primary); color: #fff; font-weight: 800; font-size: 11px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--r-pill); display: grid; place-items: center; }
 
+/* ---------- Ota-ona kabineti: Farzandlarim ---------- */
+.cab-why { display: flex; gap: 16px; background: linear-gradient(120deg, var(--hero-from), var(--hero-to)); border-radius: var(--r-lg); padding: 22px 26px; color: #fff; margin-bottom: 18px; flex-wrap: wrap; }
+.cab-why b { font-family: var(--font-display); font-size: 17px; width: 100%; }
+.cab-why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%; }
+.cab-why-item { display: flex; gap: 12px; align-items: flex-start; }
+.cab-why-ico { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
+.cab-why-item b { font-size: 14px; width: auto; display: block; }
+.cab-why-item span { font-size: 12.5px; opacity: .85; line-height: 1.45; display: block; margin-top: 3px; }
+
+.cab-child-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cab-child-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow-sm); }
+.cab-child-card:hover { box-shadow: var(--shadow-md); }
+.cab-child-top { display: flex; align-items: center; gap: 14px; }
+.cab-child-main { flex: 1; }
+.cab-child-main b { display: block; font-family: var(--font-display); font-size: 17px; }
+.cab-child-main span { font-size: 13px; color: var(--primary-ink); font-weight: 700; }
+.cab-child-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
+.cab-child-tags span { padding: 5px 12px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; background: var(--primary-soft); color: var(--primary-ink); }
+.cab-child-add { min-height: 130px; border: 2px dashed var(--line); border-radius: var(--r-lg); background: var(--surface-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: var(--ink-3); font-weight: 700; font-size: 14px; }
+.cab-child-add:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+
+/* ---------- Ota-ona kabineti: Obuna (Bepul vs Premium) ---------- */
+.cab-sub-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; align-items: start; }
+.cab-sub-progress { height: 8px; border-radius: 5px; background: var(--surface-2); overflow: hidden; margin: 12px 0 20px; }
+.cab-sub-progress i { display: block; height: 100%; border-radius: 5px; background: var(--accent); }
+.cab-compare-head, .cab-compare-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0; align-items: center; }
+.cab-compare-head { font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); padding: 0 4px 10px; border-bottom: 1px solid var(--line-2); }
+.cab-compare-head span:last-child { color: var(--primary-ink); }
+.cab-compare-row { padding: 13px 4px; border-bottom: 1px solid var(--line-2); }
+.cab-compare-row:last-child { border-bottom: none; }
+.cab-compare-row span:first-child { font-size: 13.5px; font-weight: 700; color: var(--ink); }
+.cab-compare-row span:nth-child(2) { font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.cab-compare-row span:last-child { font-size: 13px; font-weight: 800; color: var(--primary-ink); }
+
+.cab-premium { position: relative; background: linear-gradient(160deg, #1d2a26, #0f1614); color: #fff; border-radius: var(--r-lg); padding: 26px; box-shadow: var(--shadow-lg); }
+.cab-premium-tag { position: absolute; top: -11px; left: 26px; background: var(--accent); color: #fff; font-weight: 800; font-size: 11px; padding: 4px 12px; border-radius: var(--r-pill); }
+.cab-premium-ico { width: 48px; height: 48px; border-radius: 14px; background: rgba(69,196,190,.16); color: #45c4be; display: grid; place-items: center; }
+.cab-premium b.name { display: block; font-family: var(--font-display); font-size: 20px; margin-top: 14px; }
+.cab-premium-price { display: flex; align-items: baseline; gap: 6px; margin-top: 6px; }
+.cab-premium-price b { font-family: var(--font-display); font-size: 32px; white-space: nowrap; }
+.cab-premium-price span { font-size: 13px; color: #9aa8a1; font-weight: 600; }
+.cab-premium-feat { display: flex; flex-direction: column; gap: 10px; margin: 18px 0; }
+.cab-premium-feat span { display: flex; align-items: center; gap: 9px; font-size: 13.5px; font-weight: 600; color: #e8efec; }
+.cab-premium-feat svg { color: #45c4be; flex: none; }
+.cab-premium-cta { width: 100%; padding: 13px; border-radius: var(--r-pill); background: #45c4be; color: #0a3f3c; font-weight: 800; font-size: 14px; box-shadow: 0 8px 20px -8px rgba(69,196,190,.6); }
+.cab-premium-cta:hover { opacity: .92; }
+.cab-premium-note { display: block; text-align: center; font-size: 11.5px; color: #9aa8a1; font-weight: 600; margin-top: 12px; }
+
+@media (max-width: 900px) {
+  .cab-why-grid { grid-template-columns: 1fr; }
+  .cab-child-grid { grid-template-columns: 1fr; }
+  .cab-sub-row { grid-template-columns: 1fr; }
+}
+
 .empty { text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .empty-ico { width: 60px; height: 60px; border-radius: 50%; background: var(--surface-2); color: var(--ink-3); display: grid; place-items: center; }
 .empty p { color: var(--ink-2); font-size: 14.5px; max-width: 42ch; line-height: 1.5; }

@@ -21,6 +21,9 @@
             $authUser->loadMissing('institution');
             $displayName = $authUser->institution?->name ?: $authUser->name;
             $cabinetUrl = route('institution.cabinet');
+        } elseif ($authUser->isTeacher()) {
+            $displayName = $authUser->name;
+            $cabinetUrl = route('teacher.cabinet');
         } else {
             $displayName = $authUser->name;
             $cabinetUrl = route('cabinet.index');

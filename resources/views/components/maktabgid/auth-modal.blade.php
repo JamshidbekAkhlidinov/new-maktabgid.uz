@@ -100,6 +100,10 @@
                 <x-maktabgid.icon name="building" :width="16" :height="16" />
                 Men muassasaman — muassasa qo'shish
             </button>
+            <button class="auth-alt js-auth-switch" type="button" data-target="teacher">
+                <x-maktabgid.icon name="user" :width="16" :height="16" />
+                Men ustozman — ustoz kabinetini ochish
+            </button>
         </div>
 
         {{-- ===== INSTITUTION REGISTER PANEL ===== --}}
@@ -161,6 +165,76 @@
             <button class="auth-alt js-auth-switch" type="button" data-target="parent">
                 <x-maktabgid.icon name="user" :width="16" :height="16" />
                 Men ota-onaman — kabinet ochish
+            </button>
+            <button class="auth-alt js-auth-switch" type="button" data-target="teacher">
+                <x-maktabgid.icon name="user" :width="16" :height="16" />
+                Men ustozman — ustoz kabinetini ochish
+            </button>
+        </div>
+
+        {{-- ===== TEACHER REGISTER PANEL ===== --}}
+        <div class="auth-panel" data-panel="teacher" style="display:none">
+            <div class="modal-head">
+                <h3>Ustoz kabinetini ochish</h3>
+                <p>Ro'yxatdan o'ting va vakansiyalarga ariza yuboring, rezyume joylang</p>
+            </div>
+            <form class="form js-fake-auth" data-mode="teacher" autocomplete="off">
+                <label class="field">
+                    <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> Ism Familiya</span>
+                    <span class="field-control">
+                        <x-maktabgid.icon name="user" :width="17" :height="17" />
+                        <input type="text" name="name" placeholder="Masalan, Aziz Karimov" required />
+                    </span>
+                </label>
+                <div class="form-row2">
+                    <label class="field">
+                        <span class="field-label"><x-maktabgid.icon name="phone" :width="14" :height="14" /> Telefon raqami</span>
+                        <span class="field-control">
+                            <x-maktabgid.icon name="phone" :width="17" :height="17" />
+                            <input type="tel" name="phone" placeholder="+998 90 123 45 67" required />
+                        </span>
+                    </label>
+                    <label class="field">
+                        <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> Yoshingiz</span>
+                        <span class="field-control">
+                            <input type="number" name="age" min="18" max="90" placeholder="34" required />
+                        </span>
+                    </label>
+                </div>
+                <label class="field">
+                    <span class="field-label"><x-maktabgid.icon name="pin" :width="14" :height="14" /> Yashash tumani</span>
+                    <span class="field-control">
+                        <x-maktabgid.icon name="pin" :width="17" :height="17" />
+                        <select name="district" required>
+                            <option value="">Tumanni tanlang</option>
+                            @foreach ($districts as $d)
+                                <option value="{{ $d }}">{{ $d }}</option>
+                            @endforeach
+                        </select>
+                    </span>
+                </label>
+                <label class="field">
+                    <span class="field-label"><x-maktabgid.icon name="lock" :width="14" :height="14" /> Parol</span>
+                    <span class="field-control">
+                        <x-maktabgid.icon name="lock" :width="17" :height="17" />
+                        <input type="password" name="password" placeholder="••••••••" required />
+                    </span>
+                </label>
+                <button class="btn btn-primary form-submit" type="submit">
+                    Ro'yxatdan o'tish <x-maktabgid.icon name="arrowR" :width="17" :height="17" />
+                </button>
+            </form>
+            <div class="auth-switch">
+                Allaqachon hisobingiz bormi?
+                <button type="button" class="js-auth-switch" data-target="login">Kirish</button>
+            </div>
+            <button class="auth-alt js-auth-switch" type="button" data-target="parent">
+                <x-maktabgid.icon name="user" :width="16" :height="16" />
+                Men ota-onaman — kabinet ochish
+            </button>
+            <button class="auth-alt js-auth-switch" type="button" data-target="institution">
+                <x-maktabgid.icon name="building" :width="16" :height="16" />
+                Men muassasaman — muassasa qo'shish
             </button>
         </div>
     </div>

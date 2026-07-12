@@ -9,6 +9,7 @@
     <x-admin.select name="role" label="Asosiy rol (saytdagi)" :value="$user?->role" required :options="[
         'parent' => 'Ota-ona',
         'institution' => 'Muassasa',
+        'teacher' => 'Ustoz',
         'admin' => 'Admin',
     ]" />
 

@@ -493,6 +493,17 @@
             login: "/ajax/auth/login",
             parent: "/ajax/auth/register/parent",
             institution: "/ajax/auth/register/institution",
+            teacher: "/ajax/auth/register/teacher",
+        };
+
+        /* Muvaffaqiyatli kirish/ro'yxatdan o'tishdan so'ng rolega mos kabinetga yo'naltirish
+         * ("kind" — AuthUserResource'dagi role qiymati: parent|institution|admin|teacher). Mos
+         * qiymat topilmasa (masalan hali rol aniqlanmagan holatlar uchun) joriy sahifa
+         * qayta yuklanadi — avvalgi xatti-harakat. */
+        var ROLE_REDIRECTS = {
+            parent: "/cabinet",
+            institution: "/institution-cabinet",
+            teacher: "/teacher-cabinet",
         };
 
         document.querySelectorAll(".js-fake-auth").forEach(function (form) {
@@ -533,20 +544,14 @@
                         return;
                     }
 
-                    /* muvaffaqiyatli: sahifa qayta yuklanadi — nav/kabinet serverda to'g'ri render bo'ladi */
-                    window.location.reload();
-                });
-            });
-        });
-
-        /* --- kabinet tab almashish (ma'lumot endi serverda render qilingan) --- */
-        var tabBtns = Array.prototype.slice.call(document.querySelectorAll(".js-cab-tab"));
-        var panels = Array.prototype.slice.call(document.querySelectorAll(".js-cab-panel"));
-        tabBtns.forEach(function (btn) {
-            btn.addEventListener("click", function () {
-                tabBtns.forEach(function (b) { b.classList.toggle("on", b === btn); });
-                panels.forEach(function (p) {
-                    p.style.display = p.dataset.panel === btn.dataset.tab ? "block" : "none";
+                    /* muvaffaqiyatli: rolega mos kabinetga yo'naltiriladi */
+                    var kind = res.body && res.body.user && res.body.user.kind;
+                    var redirectTo = ROLE_REDIRECTS[kind];
+                    if (redirectTo) {
+                        window.location.href = redirectTo;
+                    } else {
+                        window.location.reload();
+                    }
                 });
             });
         });

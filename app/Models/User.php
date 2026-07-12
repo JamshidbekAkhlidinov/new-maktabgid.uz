@@ -33,6 +33,8 @@ class User extends Authenticatable
 
     public const ROLE_ADMIN = 'admin';
 
+    public const ROLE_TEACHER = 'teacher';
+
     /**
      * Get the attributes that should be cast.
      *
@@ -61,6 +63,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isTeacher(): bool
+    {
+        return $this->role === self::ROLE_TEACHER;
     }
 
     public function district(): BelongsTo

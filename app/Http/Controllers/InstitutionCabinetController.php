@@ -176,6 +176,35 @@ class InstitutionCabinetController extends Controller
         return view('institution.analytics', $this->context($request));
     }
 
+    /** Mock: o'qituvchilar ro'yxati hozircha namunaviy — real ma'lumot uchun
+     *  Institution::$teachers (json, profil sahifasida allaqachon ishlatiladi)
+     *  keyingi bosqichda shu sahifaga ham ulanadi. */
+    public function teachers(Request $request): View
+    {
+        return view('institution.teachers', $this->context($request));
+    }
+
+    /** Mock: "O'quvchilar yutuqlari" — hali alohida DB jadvali yo'q. */
+    public function achievements(Request $request): View
+    {
+        return view('institution.achievements', $this->context($request));
+    }
+
+    /** Mock: "Rasmlar" galereyasi — real yuklash InstitutionMedia orqali keyinroq ulanadi
+     *  (hozir faqat ko'rinish, InstitutionMedia hozircha video/boshqa turlar uchun ishlatiladi). */
+    public function gallery(Request $request): View
+    {
+        return view('institution.gallery', $this->context($request));
+    }
+
+    /** Mock: kabinet ichidagi "Vakansiyalar" boshqaruvi — real Vacancy modeli allaqachon
+     *  mavjud (careers sahifasida ishlatiladi), lekin nomzodlar/holat boshqaruvi hali shu
+     *  kabinetga ulanmagan — shuning uchun hozircha namunaviy ro'yxat bilan ko'rsatiladi. */
+    public function vacancies(Request $request): View
+    {
+        return view('institution.vacancies', $this->context($request));
+    }
+
     public function profile(Request $request): View
     {
         $ctx = $this->context($request);
@@ -356,6 +385,9 @@ class InstitutionCabinetController extends Controller
                         ->whereHas('messages', fn ($q) => $q->where('sender_type', 'parent')->whereNull('read_at'))
                         ->count()
                     : 0,
+                // Mock: "Vakansiyalar" sidebar badge'i — kabinet ichidagi nomzodlar boshqaruvi
+                // hali ulanmagani uchun hozircha ko'rsatilmaydi (null => badge chiqmaydi).
+                'vacancies' => null,
             ],
         ];
     }

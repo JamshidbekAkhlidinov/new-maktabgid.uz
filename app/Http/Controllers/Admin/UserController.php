@@ -146,7 +146,7 @@ class UserController extends Controller implements HasMiddleware
             'phone' => ['required', 'string', 'max:32', Rule::unique('users', 'phone')->ignore($user?->id)],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user?->id)],
             'password' => [$user ? 'nullable' : 'required', 'string', 'min:8'],
-            'role' => ['required', Rule::in([User::ROLE_PARENT, User::ROLE_INSTITUTION, User::ROLE_ADMIN])],
+            'role' => ['required', Rule::in([User::ROLE_PARENT, User::ROLE_INSTITUTION, User::ROLE_TEACHER, User::ROLE_ADMIN])],
             'age' => ['nullable', 'integer', 'min:0', 'max:120'],
             'district_id' => ['nullable', 'exists:districts,id'],
             'roles' => ['nullable', 'array'],

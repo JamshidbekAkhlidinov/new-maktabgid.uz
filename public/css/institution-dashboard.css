@@ -1,7 +1,12 @@
 /* ===== MaktabGID — muassasa "Boshqaruv paneli" dashboard qobig'i =====
    Faqat /institution-cabinet/* sahifalarida yuklanadi. Ranglar/shrift/radius
    uchun maktabgid.css'dagi CSS o'zgaruvchilaridan (--primary, --ink, --line...)
-   foydalanadi — shu bilan umumiy sayt bilan vizual izchillik saqlanadi. */
+   foydalanadi — shu bilan umumiy sayt bilan vizual izchillik saqlanadi.
+
+   Diqqat: bu fayl endi /ustoz-kabineti/* (o'qituvchi kabineti, x-teacher.shell)
+   sahifalarida ham ishlatiladi — .idash-* prefiksi umumiy "kabinet qobig'i"
+   uslubi bo'lgani uchun fayl nomini o'zgartirmasdan ikkala rol ham shundan
+   foydalanadi (vizual izchillik uchun bitta manba). */
 
 .idash-shell { display: flex; min-height: 100vh; background: var(--paper); }
 
@@ -358,3 +363,123 @@
   .idash-content { padding: 18px 16px 50px; }
   .idash-topbar { padding: 14px 16px; }
 }
+
+/* ===================================================================
+   O'qituvchilar / Yutuqlar / Rasmlar / Vakansiyalar (muassasa)
+   + Ustoz (o'qituvchi) kabineti — barchasi shu bo'limdagi klasslardan
+   foydalanadi.
+   =================================================================== */
+
+/* ---------- Org · O'qituvchilar (staff cards) ---------- */
+.idash-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.idash-tcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow-sm); display: flex; gap: 16px; transition: .14s; }
+.idash-tcard:hover { box-shadow: var(--shadow-md); }
+.idash-tcard-main { flex: 1; min-width: 0; }
+.idash-tcard-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.idash-tcard-head b { display: block; font-family: var(--font-display); font-size: 17px; }
+.idash-tcard-head span { font-size: 13px; color: var(--primary-ink); font-weight: 700; }
+.idash-tcard-edu { display: block; font-size: 12.5px; color: var(--ink-3); font-weight: 600; margin-top: 5px; }
+.idash-tcard-ach { display: flex; flex-direction: column; gap: 6px; margin-top: 11px; }
+.idash-tcard-ach span { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: #b45309; }
+.idash-tcard-ach svg { color: var(--accent); flex: none; }
+.idash-card-actions { display: flex; gap: 6px; flex: none; }
+
+/* ---------- Org · Yutuqlar (student achievements table) ---------- */
+.idash-ach-table { display: flex; flex-direction: column; }
+.idash-ach-row { display: grid; grid-template-columns: auto 1fr auto auto auto; gap: 16px; align-items: center; padding: 16px; border-radius: var(--r-md); border-bottom: 1px solid var(--line-2); }
+.idash-ach-row:last-child { border-bottom: none; }
+.idash-ach-row:hover { background: var(--surface-2); }
+.idash-ach-ico { width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(140deg, #fdeedd, #fbe0c0); color: #e0762b; display: grid; place-items: center; flex: none; }
+.idash-ach-main b { display: block; font-family: var(--font-display); font-size: 15.5px; }
+.idash-ach-main span { font-size: 12.5px; color: var(--ink-3); font-weight: 600; }
+.idash-ach-main span a { font-weight: 700; }
+.idash-pill-neutral { display: inline-flex; align-items: center; font-size: 11.5px; font-weight: 700; padding: 5px 12px; border-radius: var(--r-pill); background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+.idash-pill-level { display: inline-flex; align-items: center; font-size: 11.5px; font-weight: 800; padding: 5px 12px; border-radius: var(--r-pill); white-space: nowrap; }
+.idash-pill-level.intl { background: #ece9fc; color: #5145d8; }
+.idash-pill-level.national { background: var(--accent-soft); color: #b45309; }
+.idash-pill-level.regional { background: var(--primary-soft); color: var(--primary-ink); }
+
+/* ---------- Org · Rasmlar (gallery) ---------- */
+.idash-gallery { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.idash-gallery-tile { position: relative; border-radius: var(--r-lg); overflow: hidden; min-height: 170px; display: flex; align-items: flex-end; box-shadow: var(--shadow-sm); transition: .14s; }
+.idash-gallery-tile:hover { box-shadow: var(--shadow-lg); }
+.idash-gallery-tile::before { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(0,0,0,.4), transparent 55%); }
+.idash-gallery-cap { position: relative; z-index: 1; color: #fff; font-weight: 700; font-size: 13.5px; padding: 13px 15px; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.idash-gallery-del { position: absolute; top: 10px; right: 10px; z-index: 2; width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,.35); color: #fff; display: grid; place-items: center; backdrop-filter: blur(4px); }
+.idash-gallery-del:hover { background: #d4504e; }
+.idash-gallery-add { min-height: 170px; border: 2px dashed var(--line); border-radius: var(--r-lg); background: var(--surface-2); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; color: var(--ink-3); font-weight: 700; font-size: 13.5px; }
+.idash-gallery-add:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+
+/* ---------- Org · Vakansiyalar / Ustoz · Vakansiyalar (shared job-card look) ---------- */
+.idash-vac-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.idash-vac-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; gap: 14px; }
+.idash-vac-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.idash-vac-card h3 { font-size: 19px; }
+.idash-vac-meta { display: flex; gap: 18px; flex-wrap: wrap; color: var(--ink-2); font-weight: 600; font-size: 13.5px; }
+.idash-vac-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.idash-vac-meta svg { color: var(--ink-3); flex: none; }
+.idash-vac-foot { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--line-2); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.idash-vac-price { font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+.idash-vac-price span { font-size: 12px; color: var(--ink-3); font-weight: 600; font-family: var(--font-sans); }
+.idash-vac-actions { display: flex; align-items: center; gap: 8px; }
+.idash-vac-cand { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: var(--r-pill); background: var(--primary-soft); font-size: 12.5px; font-weight: 700; color: var(--primary-ink); }
+.idash-vac-cand:hover { background: var(--primary); color: #fff; }
+
+/* ---------- Ustoz kabineti · dashboard hero + mini-stat ---------- */
+.idash-t-hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: start; }
+.idash-t-hero-card { display: flex; align-items: center; gap: 20px; background: linear-gradient(135deg, var(--primary), var(--primary-700)); color: #fff; border-radius: var(--r-lg); padding: 24px 26px; }
+.idash-t-hero-ava { width: 72px; height: 72px; border-radius: var(--r-lg); background: rgba(255,255,255,.16); display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 26px; flex: none; }
+.idash-t-hero-main { flex: 1; }
+.idash-t-hero-main b { font-family: var(--font-display); font-size: 21px; }
+.idash-t-hero-main p { font-size: 13.5px; opacity: .9; margin-top: 3px; }
+.idash-t-hero-bar-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.idash-t-hero-track { height: 8px; border-radius: 5px; background: rgba(255,255,255,.2); overflow: hidden; }
+.idash-t-hero-track i { display: block; height: 100%; border-radius: 5px; background: #fff; }
+.idash-t-hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.idash-mini-stat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; box-shadow: var(--shadow-sm); }
+.idash-mini-stat b { display: block; font-family: var(--font-display); font-size: 24px; }
+.idash-mini-stat span { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+
+/* ---------- Ustoz · Rezyumelarim ---------- */
+.idash-resume-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px 22px; box-shadow: var(--shadow-sm); display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center; }
+.idash-resume-top { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.idash-resume-top b { font-family: var(--font-display); font-size: 18px; }
+.idash-resume-spec { font-size: 13px; color: var(--ink-3); font-weight: 600; }
+.idash-resume-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.idash-resume-meta span { display: inline-flex; align-items: center; gap: 6px; }
+.idash-resume-meta svg { color: var(--ink-3); flex: none; }
+.idash-resume-until { display: block; font-size: 12px; color: var(--ink-3); font-weight: 600; margin-top: 8px; }
+.idash-resume-actions { display: flex; gap: 8px; flex: none; }
+.idash-status-pill { display: inline-flex; align-items: center; font-weight: 700; font-size: 11.5px; padding: 4px 10px; border-radius: var(--r-pill); }
+.idash-status-pill.live { background: #e7f6ec; color: var(--ok); }
+.idash-status-pill.pending { background: var(--accent-soft); color: #b45309; }
+.idash-status-pill.expired { background: var(--surface-2); color: var(--ink-3); }
+
+/* ---------- Ustoz · to'lov usuli tanlash (rezyume/tarif) ---------- */
+.idash-paymethods { display: flex; gap: 12px; flex-wrap: wrap; }
+.idash-paymethod { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border: 1.5px solid var(--line); border-radius: var(--r-pill); font-weight: 700; font-size: 13.5px; color: var(--ink); background: var(--surface); }
+.idash-paymethod:hover { border-color: var(--ink-3); }
+.idash-paymethod.on { border-color: var(--primary); background: var(--primary-soft); color: var(--primary-ink); }
+.idash-paymethod i { width: 11px; height: 11px; border-radius: 50%; flex: none; display: inline-block; }
+.idash-paymethod .check { margin-left: auto; color: var(--primary); display: grid; place-items: center; }
+.idash-pay-cta-row { display: flex; align-items: center; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
+.idash-pay-secure { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--ink-3); }
+.idash-pay-secure svg { color: var(--primary); flex: none; }
+
+/* ---------- Ustoz · Vakansiyalar (job search rows) ---------- */
+.idash-vjob-row { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px 22px; box-shadow: var(--shadow-sm); display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; transition: .14s; }
+.idash-vjob-row:hover { box-shadow: var(--shadow-md); border-color: var(--ink-3); }
+.idash-vjob-ico { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 16px; flex: none; background: linear-gradient(140deg, var(--primary), var(--primary-700)); }
+.idash-vjob-head { display: flex; align-items: center; gap: 9px; margin-bottom: 5px; flex-wrap: wrap; }
+.idash-vjob-head b { font-family: var(--font-display); font-size: 17px; }
+.idash-vjob-meta { display: flex; gap: 16px; flex-wrap: wrap; color: var(--ink-2); font-size: 13px; font-weight: 600; }
+.idash-vjob-meta span { display: inline-flex; align-items: center; gap: 5px; }
+.idash-vjob-meta svg { color: var(--ink-3); flex: none; }
+.idash-vjob-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.idash-vjob-ago { font-size: 11.5px; color: var(--ink-3); font-weight: 700; }
+
+/* ---------- Ustoz · Takliflar (offer rows, ham dashboard'da qisqa ro'yxat) ---------- */
+.idash-offer-row { display: grid; grid-template-columns: auto 1fr auto auto; gap: 14px; align-items: center; padding: 13px 15px; border: 1px solid var(--line); border-radius: var(--r-md); }
+.idash-offer-ico { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; color: #fff; font-family: var(--font-display); font-weight: 800; font-size: 13px; flex: none; }
+.idash-offer-main b { display: block; font-family: var(--font-display); font-size: 15px; }
+.idash-offer-main span { font-size: 12.5px; color: var(--ink-3); font-weight: 600; }

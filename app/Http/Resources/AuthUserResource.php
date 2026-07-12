@@ -14,7 +14,7 @@ class AuthUserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'kind' => $this->role, // parent | institution | admin
+            'kind' => $this->role, // parent | institution | admin | teacher
             'name' => $this->name,
             'phone' => $this->phone,
             'age' => $this->age,

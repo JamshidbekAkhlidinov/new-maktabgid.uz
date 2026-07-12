@@ -46,6 +46,12 @@
                 ['key' => 'conversations', 'route' => 'institution.cabinet.conversations', 'icon' => 'chat', 'label' => 'Suhbatlar', 'count' => $counts['conversations'] ?? null],
                 ['key' => 'analytics', 'route' => 'institution.cabinet.analytics', 'icon' => 'trending', 'label' => 'Analitika'],
             ],
+            'kontent' => [
+                ['key' => 'teachers', 'route' => 'institution.cabinet.teachers', 'icon' => 'user', 'label' => "O'qituvchilar"],
+                ['key' => 'achievements', 'route' => 'institution.cabinet.achievements', 'icon' => 'trophy', 'label' => "O'quvchilar yutuqlari"],
+                ['key' => 'gallery', 'route' => 'institution.cabinet.gallery', 'icon' => 'image', 'label' => 'Rasmlar'],
+                ['key' => 'vacancies', 'route' => 'institution.cabinet.vacancies', 'icon' => 'bag', 'label' => 'Vakansiyalar', 'count' => $counts['vacancies'] ?? null],
+            ],
             'muassasa' => [
                 ['key' => 'profile', 'route' => 'institution.cabinet.profile', 'icon' => 'building', 'label' => 'Muassasa profili'],
                 ['key' => 'plans', 'route' => 'institution.cabinet.plans', 'icon' => 'card', 'label' => 'Tariflar va obuna'],
@@ -99,6 +105,19 @@
             <nav class="idash-navgroup">
                 <span class="idash-navlabel">Boshqaruv</span>
                 @foreach ($navItems['boshqaruv'] as $item)
+                    <a href="{{ route($item['route']) }}" class="idash-navlink{{ $active === $item['key'] ? ' on' : '' }}">
+                        <x-maktabgid.icon :name="$item['icon']" :width="18" :height="18" />
+                        {{ $item['label'] }}
+                        @if (! empty($item['count']))
+                            <em>{{ $item['count'] }}</em>
+                        @endif
+                    </a>
+                @endforeach
+            </nav>
+
+            <nav class="idash-navgroup">
+                <span class="idash-navlabel">Kontent</span>
+                @foreach ($navItems['kontent'] as $item)
                     <a href="{{ route($item['route']) }}" class="idash-navlink{{ $active === $item['key'] ? ' on' : '' }}">
                         <x-maktabgid.icon :name="$item['icon']" :width="18" :height="18" />
                         {{ $item['label'] }}
