@@ -22,6 +22,7 @@
         $schools = MaktabgidData::schools();
         $vacancies = MaktabgidData::vacancies();
         $blog = MaktabgidData::blog();
+        $forumThreads = MaktabgidData::forumThreads();
         $specializations = MaktabgidData::specializations();
         $defaultCat = $categories[0]['key'];
         $defaultResults = array_values(array_filter($schools, fn ($s) => $s['cat'] === $defaultCat));
@@ -94,6 +95,7 @@
 
     {{-- Mobil ko'rinish vaqtincha o'chirilgan — keyinroq alohida to'liq mobil dizayn qilinadi --}}
 
+    <x-maktabgid.forum-strip :threads="$forumThreads" />
     <x-maktabgid.trust-strip />
     <x-maktabgid.vacancies :vacancies="$vacancies" />
     <x-maktabgid.blog :posts="$blog" />
