@@ -114,12 +114,21 @@
                 </div>
 
                 <div class="idash-user-wrap">
-                    <div class="idash-user-btn" style="cursor:default">
+                    <button type="button" class="idash-user-btn" data-dd-toggle="idash-user-menu">
                         <span class="idash-user-ava">{{ \App\Support\MaktabgidData::monogram($user->name) }}</span>
                         <span style="text-align:left">
                             <b>{{ explode(' ', trim($user->name))[0] }}</b>
                             <span>Ota-ona</span>
                         </span>
+                        <x-maktabgid.icon name="chevron" :width="14" :height="14" />
+                    </button>
+                    <div class="idash-dd idash-user-menu" id="idash-user-menu" data-dd-menu hidden>
+                        <a href="{{ route('cabinet.index') }}" class="idash-org-item">
+                            <x-maktabgid.icon name="user" :width="16" :height="16" /> Profilim
+                        </a>
+                        <button type="button" class="idash-org-item js-logout-trigger" style="color:#d4504e">
+                            <x-maktabgid.icon name="logout" :width="16" :height="16" /> Chiqish
+                        </button>
                     </div>
                 </div>
             </header>

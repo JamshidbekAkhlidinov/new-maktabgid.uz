@@ -132,12 +132,21 @@
             </button>
 
             <div class="idash-user-wrap">
-                <div class="idash-user-btn" style="cursor:default">
+                <button type="button" class="idash-user-btn" data-dd-toggle="idash-user-menu">
                     <span class="idash-user-ava">{{ \App\Support\MaktabgidData::monogram($teacherName) }}</span>
                     <span style="text-align:left">
                         <b>{{ explode(' ', trim($teacherName))[0] }}</b>
                         <span>Ustoz</span>
                     </span>
+                    <x-maktabgid.icon name="chevron" :width="14" :height="14" />
+                </button>
+                <div class="idash-dd idash-user-menu" id="idash-user-menu" data-dd-menu hidden>
+                    <a href="{{ route('teacher.cabinet') }}" class="idash-org-item">
+                        <x-maktabgid.icon name="user" :width="16" :height="16" /> Mening profilim
+                    </a>
+                    <button type="button" class="idash-org-item js-logout-trigger" style="color:#d4504e">
+                        <x-maktabgid.icon name="logout" :width="16" :height="16" /> Chiqish
+                    </button>
                 </div>
             </div>
         </header>

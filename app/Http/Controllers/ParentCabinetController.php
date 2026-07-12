@@ -97,11 +97,19 @@ class ParentCabinetController extends Controller
             'favorites' => $user ? $user->favorites()->count() : 0,
             'applications' => $user ? $user->applications()->count() : 0,
             'conversations' => $user ? $user->conversations()->count() : 0,
+            // Mock: profil ko'rilishi hali kuzatilmaydi (view-tracking jadvali yo'q).
+            'profile_views' => 48,
         ];
 
         return [
             'user' => $user,
             'stats' => $stats,
+            // Mock: farzand profillari (AI Tanlovchi uchun) hali alohida DB jadvali yo'q —
+            // dashboard va "Farzandlarim" sahifasi shu bir xil namunaviy ro'yxatdan foydalanadi.
+            'mockChildren' => [
+                ['name' => 'Asadbek', 'age' => '8 yosh', 'gender' => "O'g'il bola", 'interests' => ['Ingliz tili', 'Futbol']],
+                ['name' => 'Amina', 'age' => '5 yosh', 'gender' => 'Qiz bola', 'interests' => ['Rassomchilik', "Bog'cha"]],
+            ],
         ];
     }
 }

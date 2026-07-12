@@ -366,6 +366,25 @@
         });
     });
 
+    /* generic ikki-variantli tanlov qatori (masalan farzand qo'shish/tahrirlash
+       modalidagi "Jinsi" — O'g'il/Qiz), har bir .choice-row ichida faqat bitta
+       .choice-btn "on" bo'lishi mumkin. */
+    document.querySelectorAll(".choice-row").forEach(function (row) {
+        row.querySelectorAll(".choice-btn").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                row.querySelectorAll(".choice-btn").forEach(function (b) { b.classList.toggle("on", b === btn); });
+            });
+        });
+    });
+
+    /* generic ko'p-variantli chip tanlovi (masalan farzand qo'shish/tahrirlash
+       modalidagi "Qiziqishlari") — faqat vizual, saqlashda hali o'qilmaydi. */
+    document.querySelectorAll('[id^="add-child-interests"], [id^="edit-child-interests-"]').forEach(function (wrap) {
+        wrap.querySelectorAll(".chip").forEach(function (chip) {
+            chip.addEventListener("click", function () { chip.classList.toggle("on"); });
+        });
+    });
+
     /* real ariza (excursion/enrollment) forms: POST /ajax/applications, real DB ga saqlanadi */
     document.querySelectorAll(".js-application-form").forEach(function (form) {
         form.addEventListener("submit", function (e) {
@@ -576,17 +595,21 @@
                 return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
             }
 
+            function daysSummary() {
+                var abbrs = Array.prototype.slice.call(document.querySelectorAll("#js-day-rows .day-row.on"))
+                    .map(function (row) { return row.dataset.abbr; });
+                return abbrs.length ? abbrs.join(", ") : "Dam olish kunlari";
+            }
+
             function updatePreview() {
                 var name = document.getElementById("js-f-name");
                 var kind = document.getElementById("js-f-kind");
-                var lang = document.getElementById("js-f-lang");
                 var district = document.getElementById("js-f-district");
-                var grades = document.getElementById("js-f-grades");
                 var hours = document.getElementById("js-f-hours");
                 var price = document.getElementById("js-f-price");
                 var nameVal = name ? name.value : "";
                 var kindVal = kind ? kind.value : "maktab";
-                var kindMap = { maktab: "Maktab", bogcha: "Bog'cha", markaz: "O'quv markazi" };
+                var kindMap = { maktab: "Xususiy maktab", bogcha: "Xususiy bog'cha", markaz: "O'quv markazi" };
 
                 var gradesLabel = document.getElementById("js-f-grades-label");
                 if (gradesLabel) gradesLabel.textContent = kindVal === "maktab" ? "Sinflar" : "Yosh oralig'i";
@@ -594,43 +617,110 @@
                 var pMono = document.getElementById("js-prev-mono");
                 var pName = document.getElementById("js-prev-name");
                 var pKind = document.getElementById("js-prev-kind");
-                var pLang = document.getElementById("js-prev-lang");
+                var pDays = document.getElementById("js-prev-days");
                 var pDistrict = document.getElementById("js-prev-district");
-                var pGrades = document.getElementById("js-prev-grades");
                 var pHours = document.getElementById("js-prev-hours");
                 var pPrice = document.getElementById("js-prev-price");
 
-                if (pMono) pMono.textContent = nameVal ? nameVal.trim().slice(0, 2).toUpperCase() : "?";
+                if (pMono) pMono.textContent = nameVal || "Muassasa nomi";
                 if (pName) pName.textContent = nameVal || "Muassasa nomi";
-                if (pKind) pKind.textContent = kindMap[kindVal] || "Maktab";
-                if (pLang) pLang.textContent = lang ? lang.value : "Ingliz";
+                if (pKind) pKind.textContent = kindMap[kindVal] || "Xususiy maktab";
+                if (pDays) pDays.textContent = daysSummary();
                 if (pDistrict) pDistrict.textContent = (district && district.value) ? district.value : "Tuman";
-                if (pGrades) pGrades.textContent = (grades && grades.value) ? grades.value : "—";
                 if (pHours) pHours.textContent = (hours && hours.value) ? hours.value : "08:00 – 18:00";
                 if (pPrice) {
                     var priceVal = price ? parseInt(price.value, 10) : 0;
                     pPrice.innerHTML = priceVal > 0
-                        ? "<b>" + fmtPrice(priceVal) + "</b> <span>so'm / oy</span>"
+                        ? "<b>" + fmtPrice(priceVal) + "</b> <span>so'mdan / oy</span>"
                         : "<span>Narx kelishilgan</span>";
                 }
             }
 
-            ["js-f-name", "js-f-kind", "js-f-lang", "js-f-district", "js-f-grades", "js-f-hours", "js-f-price"].forEach(function (id) {
+            ["js-f-name", "js-f-kind", "js-f-district", "js-f-hours", "js-f-price"].forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.addEventListener("input", updatePreview);
             });
             updatePreview();
 
-            /* --- shanba toggle (faqat vizual — saqlashda o'qiladi) --- */
+            /* --- kategoriya pillari: js-f-kind hidden select bilan sinxron --- */
+            document.querySelectorAll("#js-kind-pills .kind-pill").forEach(function (pill) {
+                pill.addEventListener("click", function () {
+                    document.querySelectorAll("#js-kind-pills .kind-pill").forEach(function (p) {
+                        p.classList.toggle("on", p === pill);
+                    });
+                    var hiddenSelect = document.getElementById("js-f-kind");
+                    if (hiddenSelect) {
+                        hiddenSelect.value = pill.dataset.kind;
+                        hiddenSelect.dispatchEvent(new Event("input"));
+                    }
+                });
+            });
+
+            /* --- har bir kun qatorining toggle tugmasi: Dushanba (js-f-hours) va
+                   Shanba (js-sat-toggle, real works_saturday) shu orqali ham ishlaydi,
+                   qolgan kunlar hozircha faqat ko'rinish/preview uchun. --- */
             var satToggle = document.getElementById("js-sat-toggle");
-            var satLabel = document.getElementById("js-sat-label");
-            var prevSat = document.getElementById("js-prev-sat");
-            if (satToggle) {
-                satToggle.addEventListener("click", function () {
-                    var on = !satToggle.classList.contains("on");
-                    satToggle.classList.toggle("on", on);
-                    if (satLabel) satLabel.textContent = on ? "Ishlaydi" : "Dam olish";
-                    if (prevSat) prevSat.style.display = on ? "" : "none";
+            document.querySelectorAll(".js-day-toggle").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var on = !btn.classList.contains("on");
+                    btn.classList.toggle("on", on);
+                    var row = btn.closest(".day-row");
+                    if (row) {
+                        row.classList.toggle("on", on);
+                        var input = row.querySelector(".day-hours-input");
+                        if (input) input.style.display = on ? "" : "none";
+                    }
+                    updatePreview();
+                });
+            });
+
+            /* --- telefon raqamlar ro'yxati (hozircha faqat vizual) --- */
+            var phoneList = document.getElementById("js-phone-list");
+            var phoneAdd = document.getElementById("js-phone-add");
+            function wirePhoneDelete(row) {
+                var btn = row.querySelector(".js-phone-del");
+                if (btn) btn.addEventListener("click", function () { row.remove(); });
+            }
+            if (phoneList) {
+                Array.prototype.slice.call(phoneList.querySelectorAll(".phone-row")).forEach(wirePhoneDelete);
+            }
+            if (phoneAdd && phoneList) {
+                phoneAdd.addEventListener("click", function () {
+                    var row = document.createElement("div");
+                    row.className = "phone-row";
+                    row.innerHTML =
+                        '<span class="phone-ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></span>' +
+                        '<span class="field-control" style="flex:1"><input type="tel" placeholder="+998 __ ___ __ __" /></span>' +
+                        '<button type="button" class="phone-del js-phone-del" title="O\'chirish"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>';
+                    phoneList.appendChild(row);
+                    wirePhoneDelete(row);
+                });
+            }
+
+            /* --- narxlar jadvali qatorlari (hozircha faqat vizual) --- */
+            var priceRows = document.getElementById("js-price-rows");
+            var priceAdd = document.getElementById("js-price-add");
+            function wirePriceDelete(row) {
+                var btn = row.querySelector(".js-price-del");
+                if (btn) btn.addEventListener("click", function () {
+                    if (priceRows.querySelectorAll(".price-row").length > 1) row.remove();
+                });
+            }
+            if (priceRows) {
+                Array.prototype.slice.call(priceRows.querySelectorAll(".price-row")).forEach(wirePriceDelete);
+            }
+            if (priceAdd && priceRows) {
+                priceAdd.addEventListener("click", function () {
+                    var row = document.createElement("div");
+                    row.className = "price-row";
+                    row.innerHTML =
+                        '<input type="text" placeholder="5-9-sinf" />' +
+                        '<select><option>O\'zbek</option><option>Rus</option><option>Ingliz</option></select>' +
+                        '<input type="text" placeholder="5 000 000" />' +
+                        '<input type="text" placeholder="—" />' +
+                        '<button type="button" class="price-del js-price-del" title="O\'chirish"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg></button>';
+                    priceRows.appendChild(row);
+                    wirePriceDelete(row);
                 });
             }
 
