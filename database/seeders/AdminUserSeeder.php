@@ -28,18 +28,18 @@ class AdminUserSeeder extends Seeder
         $this->call(PermissionSeeder::class);
 
         $admin = User::updateOrCreate(
-            ['phone' => '+998900000001'],
+            ['phone' => '+998900000000'],
             [
                 'name' => 'Super Admin',
-                'email' => 'superadmin@maktabgid.uz',
+                'email' => 'admin@ustadev.uz',
                 'role' => User::ROLE_ADMIN,
-                'password' => Hash::make('SuperAdmin!2026'),
+                'password' => Hash::make('admin@ustadev.uz'),
                 'phone_verified_at' => now(),
             ]
         );
 
         $admin->syncRoles(['Super Admin']);
 
-        $this->command?->info('Super admin tayyor: +998900000001 / SuperAdmin!2026');
+        $this->command?->info('Super admin tayyor: admin@ustadev.uz/admin@ustadev.uz');
     }
 }
