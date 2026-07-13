@@ -14,14 +14,17 @@ class DatabaseSeeder extends Seeder
         $this->call([
             DistrictSeeder::class,
             SpecializationSeeder::class,
+            // PermissionSeeder — rollar (Super Admin/Institution Admin/Teacher/Parent)
+            // UserSeeder'dan OLDIN ishga tushishi shart, chunki UserSeeder demo
+            // foydalanuvchilarga shu rollarni syncRoles() bilan biriktiradi.
+            PermissionSeeder::class,
             UserSeeder::class,
+            AdminUserSeeder::class,
             InstitutionSeeder::class,
             ReviewSeeder::class,
             ForumSeeder::class,
             ContentSeeder::class,
             CareerSeeder::class,
-            PermissionSeeder::class,
-            AdminUserSeeder::class,
         ]);
     }
 }

@@ -7,11 +7,13 @@ use App\Http\Requests\Auth\RegisterInstitutionRequest;
 use App\Http\Resources\AuthUserResource;
 use App\Models\Institution;
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class RegisterInstitutionController extends Controller
 {
@@ -37,6 +39,9 @@ class RegisterInstitutionController extends Controller
                 'rating' => 0,
                 'review_count' => 0,
             ]);
+
+            // 4 aniq rol tizimi — muassasa (manager) mos Spatie rolini avtomatik oladi.
+            $user->assignRole(Role::findOrCreate(PermissionSeeder::ROLE_INSTITUTION_ADMIN, 'web'));
 
             return $user;
         });

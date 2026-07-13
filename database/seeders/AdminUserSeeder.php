@@ -38,7 +38,7 @@ class AdminUserSeeder extends Seeder
             ]
         );
 
-        $admin->syncRoles(['Super Admin']);
+        $admin->syncRoles([PermissionSeeder::ROLE_SUPER_ADMIN]);
 
         $this->command?->info('Super admin tayyor: admin@ustadev.uz/admin@ustadev.uz');
     }

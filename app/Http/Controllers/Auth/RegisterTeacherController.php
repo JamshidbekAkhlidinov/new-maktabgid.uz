@@ -7,10 +7,12 @@ use App\Http\Requests\Auth\RegisterTeacherRequest;
 use App\Http\Resources\AuthUserResource;
 use App\Models\District;
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * Ustoz (o'qituvchi) sifatida ro'yxatdan o'tish — RegisterParentController bilan bir xil
@@ -35,6 +37,10 @@ class RegisterTeacherController extends Controller
             'district_id' => $district->id,
             'password' => Hash::make($data['password']),
         ]);
+
+        // 4 aniq rol tizimi — ro'yxatdan o'tgan har bir ustoz mos Spatie rolini
+        // avtomatik oladi (admin panel Rollar bo'limida ko'rinadi).
+        $user->assignRole(Role::findOrCreate(PermissionSeeder::ROLE_TEACHER, 'web'));
 
         Auth::login($user);
         $request->session()->regenerate();

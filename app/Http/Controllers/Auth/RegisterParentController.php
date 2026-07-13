@@ -7,10 +7,12 @@ use App\Http\Requests\Auth\RegisterParentRequest;
 use App\Http\Resources\AuthUserResource;
 use App\Models\District;
 use App\Models\User;
+use Database\Seeders\PermissionSeeder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class RegisterParentController extends Controller
 {
@@ -29,6 +31,10 @@ class RegisterParentController extends Controller
             'district_id' => $district->id,
             'password' => Hash::make($data['password']),
         ]);
+
+        // 4 aniq rol tizimi — ro'yxatdan o'tgan har bir ota-ona mos Spatie
+        // rolini avtomatik oladi (admin panel Rollar bo'limida ko'rinadi).
+        $user->assignRole(Role::findOrCreate(PermissionSeeder::ROLE_PARENT, 'web'));
 
         Auth::login($user);
         $request->session()->regenerate();

@@ -523,6 +523,7 @@
             parent: "/cabinet",
             institution: "/institution-cabinet",
             teacher: "/teacher-cabinet",
+            admin: "/admin",
         };
 
         document.querySelectorAll(".js-fake-auth").forEach(function (form) {
