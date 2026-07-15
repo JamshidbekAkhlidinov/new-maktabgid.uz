@@ -6,7 +6,9 @@ use App\Http\Controllers\Admin\AuthController as AdminAuthController;
 use App\Http\Controllers\Admin\ComingSoonController as AdminComingSoonController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\DistrictController as AdminDistrictController;
+use App\Http\Controllers\Admin\InstitutionAchievementController as AdminInstitutionAchievementController;
 use App\Http\Controllers\Admin\InstitutionController as AdminInstitutionController;
+use App\Http\Controllers\Admin\InstitutionMediaController as AdminInstitutionMediaController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\PermissionController as AdminPermissionController;
 use App\Http\Controllers\Admin\ResumeController as AdminResumeController;
@@ -49,6 +51,19 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('users', AdminUserController::class)->except(['show']);
         Route::resource('institutions', AdminInstitutionController::class)->except(['show']);
+
+        // Institution kabinetidagi galereya/video va yutuqlar bilan bir xil imkoniyat —
+        // admin muassasa nomidan boshqaradi (2026-07-15).
+        Route::prefix('institutions/{institution}')->name('institutions.')->group(function () {
+            Route::get('media', [AdminInstitutionMediaController::class, 'index'])->name('media.index');
+            Route::post('media', [AdminInstitutionMediaController::class, 'store'])->name('media.store');
+            Route::delete('media/{media}', [AdminInstitutionMediaController::class, 'destroy'])->name('media.destroy');
+
+            Route::get('achievements', [AdminInstitutionAchievementController::class, 'index'])->name('achievements.index');
+            Route::post('achievements', [AdminInstitutionAchievementController::class, 'store'])->name('achievements.store');
+            Route::put('achievements/{achievement}', [AdminInstitutionAchievementController::class, 'update'])->name('achievements.update');
+            Route::delete('achievements/{achievement}', [AdminInstitutionAchievementController::class, 'destroy'])->name('achievements.destroy');
+        });
         Route::resource('vacancies', AdminVacancyController::class)->except(['show']);
         Route::resource('applications', AdminApplicationController::class)->except(['show']);
         Route::resource('specializations', AdminSpecializationController::class)->except(['show']);
