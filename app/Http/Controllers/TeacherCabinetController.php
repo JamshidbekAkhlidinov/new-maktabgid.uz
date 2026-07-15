@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Resume;
+use App\Models\Vacancy;
+use App\Models\VacancyApplication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -9,15 +12,15 @@ use Illuminate\View\View;
 /**
  * Ustoz (o'qituvchi) kabineti — "Boshqaruv paneli" dashboard qobig'i.
  *
- * Auth/rol tekshiruvi endi real: joriy foydalanuvchi User::ROLE_TEACHER
- * bo'lsagina $teacher massivi to'ldiriladi, aks holda x-teacher.shell
- * "kirish kerak" holatini ko'rsatadi (x-institution.shell/x-parent.shell
- * bilan bir xil andoza).
+ * Auth/rol tekshiruvi real: joriy foydalanuvchi User::ROLE_TEACHER bo'lsagina
+ * $teacher massivi to'ldiriladi, aks holda x-teacher.shell "kirish kerak"
+ * holatini ko'rsatadi (x-institution.shell/x-parent.shell bilan bir xil andoza).
  *
- * Rezyume/vakansiya/taklif ro'yxatlari va sonlari hali mock — bular uchun
- * hali maxsus munosabat (owner_user_id orqali Resume/Vacancy bilan bog'lash,
- * taklif/suhbat modeli) qurilmagan. Faqat profil ma'lumotlari (ism, tuman)
- * endi real ro'yxatdan o'tgan foydalanuvchidan olinadi.
+ * "Rezyumelarim" (Resume.owner_user_id), "Vakansiyalar" (bozor ro'yxati) va
+ * "Takliflar" (VacancyApplication.teacher_user_id — yuborgan arizalar va ularning
+ * holati) endi real (ADR-0002, Faza 2). Yaratish/rezyume-joylash formasi hali
+ * pullik-demo (to'lov tizimi ulanmagani uchun). "Suhbatlar" hali mock —
+ * ustoz↔muassasa suhbat modeli hali qurilmagan (ADR-0002, Faza 3).
  */
 class TeacherCabinetController extends Controller
 {
@@ -28,17 +31,42 @@ class TeacherCabinetController extends Controller
 
     public function resumes(Request $request): View
     {
-        return view('teacher.resumes', $this->context());
+        $authUser = Auth::user();
+        $resumes = ($authUser && $authUser->isTeacher())
+            ? Resume::where('owner_user_id', $authUser->id)->latest()->get()
+            : collect();
+
+        return view('teacher.resumes', $this->context() + [
+            'resumes' => $resumes,
+        ]);
     }
 
     public function vacancies(Request $request): View
     {
-        return view('teacher.vacancies', $this->context());
+        $vacancies = Vacancy::query()
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>=', now()))
+            ->latest()
+            ->get();
+
+        return view('teacher.vacancies', $this->context() + [
+            'vacancies' => $vacancies,
+        ]);
     }
 
+    /** "Takliflar" — ustoz yuborgan arizalar va muassasa javobi (qabul/kutilmoqda/rad). */
     public function offers(Request $request): View
     {
-        return view('teacher.offers', $this->context());
+        $authUser = Auth::user();
+        $offers = ($authUser && $authUser->isTeacher())
+            ? VacancyApplication::where('teacher_user_id', $authUser->id)
+                ->with('vacancy')
+                ->latest()
+                ->get()
+            : collect();
+
+        return view('teacher.offers', $this->context() + [
+            'offers' => $offers,
+        ]);
     }
 
     public function conversations(Request $request): View
@@ -74,9 +102,15 @@ class TeacherCabinetController extends Controller
         return [
             'teacher' => $teacher,
             'counts' => [
-                // Mock: rezyume/vakansiya/taklif hali shu foydalanuvchiga bog'lanmagan.
-                'vacancies' => 12,
-                'offers' => 4,
+                // Real: bozordagi ochiq (muddati o'tmagan) vakansiyalar soni.
+                'vacancies' => Vacancy::query()
+                    ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>=', now()))
+                    ->count(),
+                // Real: yuborilgan arizalardan hali javob kelmagan (kutilmoqda) sonlari.
+                'offers' => $user
+                    ? VacancyApplication::where('teacher_user_id', $user->id)->where('status', 'pending')->count()
+                    : 0,
+                // Mock: "Suhbatlar" — ustoz↔muassasa suhbat modeli hali qurilmagan (ADR-0002, Faza 3).
                 'conversations' => 2,
             ],
         ];

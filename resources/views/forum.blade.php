@@ -23,7 +23,13 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="forum">
-        <x-maktabgid.page-head icon="forum" kicker="Ota-onalar forumi" title="Savol bering, tajriba ulashing" sub="Roʻyxatdan oʻtgan ota-onalar mavzu ochadi, boshqalar javob va maslahat beradi." />
+        <x-maktabgid.page-head icon="forum" kicker="Ota-onalar forumi" title="Savol bering, tajriba ulashing" sub="Roʻyxatdan oʻtgan ota-onalar mavzu ochadi, boshqalar javob va maslahat beradi.">
+            <div class="phead-actions">
+                <button class="btn btn-white" type="button" id="js-new-thread-btn">
+                    <x-maktabgid.icon name="plus" :width="17" :height="17" /> Yangi mavzu
+                </button>
+            </div>
+        </x-maktabgid.page-head>
 
         <div class="wrap forum-body">
             <div class="forum-filters">
@@ -55,6 +61,65 @@
     <x-maktabgid.cta-band />
     <x-maktabgid.footer />
 
+    {{-- ===== MODAL: YANGI MAVZU (real POST /ajax/forum/threads, ADR-0002 Faza 2) ===== --}}
+    <div class="modal-scrim js-modal" id="new-thread-modal" hidden>
+        <div class="modal-card" style="max-width:560px;width:100%">
+            <button class="modal-x js-modal-close" type="button" aria-label="Yopish">
+                <x-maktabgid.icon name="close" :width="20" :height="20" />
+            </button>
+
+            <div class="modal-head">
+                <h3>Yangi mavzu ochish</h3>
+                <p>Savolingizni yozing — boshqa ota-onalar javob beradi</p>
+            </div>
+
+            <form class="form js-thread-form" novalidate>
+                <label class="field">
+                    <span class="field-label">Kategoriya</span>
+                    <span class="field-control">
+                        <select name="category">
+                            @foreach (array_diff($cats, ['Hammasi']) as $c)
+                                <option value="{{ $c }}">{{ $c }}</option>
+                            @endforeach
+                        </select>
+                    </span>
+                </label>
+                <label class="field">
+                    <span class="field-label">Sarlavha</span>
+                    <span class="field-control"><input name="title" required placeholder="Savolingizni qisqacha yozing" /></span>
+                </label>
+                <label class="field">
+                    <span class="field-label">Matn</span>
+                    <span class="field-control"><textarea name="body" rows="4" required placeholder="Batafsil yozing…"></textarea></span>
+                </label>
+                <button class="btn btn-primary form-submit" type="submit">
+                    <x-maktabgid.icon name="send" :width="16" :height="16" /> Mavzuni chop etish
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script src="{{ asset('js/maktabgid.js') }}"></script>
+
+    <script>
+    (function () {
+        var isAuthed = @json(auth()->check());
+        var btn = document.getElementById("js-new-thread-btn");
+        if (!btn) return;
+
+        btn.addEventListener("click", function () {
+            if (!isAuthed) {
+                var kirish = document.getElementById("js-kirish-btn");
+                if (kirish) kirish.click();
+                return;
+            }
+            var modal = document.getElementById("new-thread-modal");
+            if (modal) {
+                modal.hidden = false;
+                document.body.classList.add("modal-open");
+            }
+        });
+    }());
+    </script>
 </body>
 </html>

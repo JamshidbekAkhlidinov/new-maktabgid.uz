@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\ForumLike;
+use App\Models\Review;
+use App\Observers\ForumLikeObserver;
+use App\Observers\ReviewObserver;
 use App\Services\Otp\OtpChannel;
 use App\Services\Otp\TelegramOtpChannel;
 use Illuminate\Support\Facades\Gate;
@@ -29,5 +33,13 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, string $ability) {
             return $user->hasRole('Super Admin') ? true : null;
         });
+
+        // Institution.rating/review_count har bir Review CRUD amalidan so'ng
+        // avtomatik qayta hisoblanadi (ADR-0002).
+        Review::observe(ReviewObserver::class);
+
+        // Forum mavzu/javob like_count'i har bir ForumLike CRUD amalidan so'ng
+        // avtomatik qayta hisoblanadi (ADR-0002, Faza 2).
+        ForumLike::observe(ForumLikeObserver::class);
     }
 }

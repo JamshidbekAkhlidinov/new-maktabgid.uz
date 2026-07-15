@@ -1,17 +1,11 @@
 @php
-    // Mock: "O'quvchilar yutuqlari" — hali alohida DB jadvali yo'q, shuning uchun
-    // namunaviy ro'yxat bilan ko'rsatiladi (leads.blade.php dagi kabi yondashuv).
+    // Real ro'yxat — App\Models\Achievement (Institution::achievements()). Ommaviy
+    // profil sahifasida (/maktab/{id}) ham shu yerdan chiqadi — ADR-0002, Faza 2.
     $levelMeta = [
         'intl' => ['label' => 'Xalqaro', 'class' => 'intl'],
         'national' => ['label' => 'Respublika', 'class' => 'national'],
         'regional' => ['label' => 'Viloyat', 'class' => 'regional'],
         'city' => ['label' => 'Shahar', 'class' => 'city'],
-    ];
-    $mockAchievements = [
-        ['title' => 'IELTS 8.5 ball', 'student' => 'Sardor Aliyev', 'year' => 2025, 'type' => 'Xalqaro imtihon', 'level' => 'intl'],
-        ['title' => 'Respublika matematika olimpiadasi — 1-o\'rin', 'student' => 'Madina Yusupova', 'year' => 2025, 'type' => 'Olimpiada', 'level' => 'national'],
-        ['title' => 'Robototexnika tanlovi — g\'olib', 'student' => 'Jasur Kamolov', 'year' => 2024, 'type' => 'Tanlov', 'level' => 'national'],
-        ['title' => 'Viloyat she\'riyat kechasi — 2-o\'rin', 'student' => 'Laylo Ergasheva', 'year' => 2024, 'type' => 'Ijodiy tanlov', 'level' => 'regional'],
     ];
 @endphp
 
@@ -34,56 +28,71 @@
     </div>
 
     <div class="panel" style="padding:10px">
-        <div class="idash-ach-table">
-            @foreach ($mockAchievements as $a)
-                <div class="idash-ach-row">
-                    <span class="idash-ach-ico"><x-maktabgid.icon name="trophy" :width="24" :height="24" /></span>
-                    <div class="idash-ach-main">
-                        <b>{{ $a['title'] }}</b>
-                        <span>{{ $a['student'] }} · {{ $a['year'] }}-yil · <a href="#">Sertifikat ko'rish</a></span>
+        @if ($achievements->isEmpty())
+            <div class="empty">
+                <span class="empty-ico"><x-maktabgid.icon name="trophy" :width="26" :height="26" /></span>
+                <p>Hali yutuq qo'shilmagan.</p>
+            </div>
+        @else
+            <div class="idash-ach-table">
+                @foreach ($achievements as $a)
+                    <div class="idash-ach-row">
+                        @if ($a->image_url)
+                            <span class="idash-ach-ico" style="background-image:url('{{ $a->image_url }}');background-size:cover;background-position:center"></span>
+                        @else
+                            <span class="idash-ach-ico"><x-maktabgid.icon name="trophy" :width="24" :height="24" /></span>
+                        @endif
+                        <div class="idash-ach-main">
+                            <b>{{ $a->title }}</b>
+                            <span>
+                                {{ collect([$a->student_name, $a->year ? "{$a->year}-yil" : null])->filter()->implode(' · ') }}
+                                @if ($a->image_url)
+                                    · <a href="{{ $a->image_url }}" target="_blank" rel="noopener">Sertifikat ko'rish</a>
+                                @endif
+                            </span>
+                        </div>
+                        @if ($a->type)
+                            <span class="idash-pill-neutral">{{ $a->type }}</span>
+                        @endif
+                        <span class="idash-pill-level {{ $levelMeta[$a->level]['class'] ?? 'city' }}">{{ $levelMeta[$a->level]['label'] ?? $a->level }}</span>
+                        <div class="idash-card-actions">
+                            <button type="button" class="idash-lead-iconbtn" title="Tahrirlash" data-modal-open="edit-achievement-{{ $a->id }}"><x-maktabgid.icon name="edit" :width="14" :height="14" /></button>
+                            <button type="button" class="idash-lead-iconbtn danger js-achievement-delete" data-achievement-id="{{ $a->id }}" title="O'chirish"><x-maktabgid.icon name="close" :width="14" :height="14" /></button>
+                        </div>
                     </div>
-                    <span class="idash-pill-neutral">{{ $a['type'] }}</span>
-                    <span class="idash-pill-level {{ $levelMeta[$a['level']]['class'] }}">{{ $levelMeta[$a['level']]['label'] }}</span>
-                    <div class="idash-card-actions">
-                        <button type="button" class="idash-lead-iconbtn" title="Tahrirlash" data-modal-open="edit-achievement-{{ $loop->index }}"><x-maktabgid.icon name="edit" :width="14" :height="14" /></button>
-                        <button type="button" class="idash-lead-iconbtn danger" title="O'chirish"><x-maktabgid.icon name="close" :width="14" :height="14" /></button>
-                    </div>
-                </div>
-            @endforeach
-        </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 
-    <div class="idash-badge-soft">
-        <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Bu bo'lim demo ma'lumot bilan ko'rsatilmoqda — tez orada real yutuqlar bazasi bilan ishga tushadi
-    </div>
-
-    {{-- ===== "Yutuq qo'shish" modali — real yutuqlar jadvali hali yo'q (yuqoridagi
-         $mockAchievements'ga qarang), shuning uchun umumiy "fake form" andozasi orqali
-         ishlaydi. ===== --}}
+    {{-- ===== "Yutuq qo'shish" modali — real POST /ajax/institution/me/achievements
+         (multipart, ixtiyoriy sertifikat rasmi bilan) — ADR-0002, Faza 2. ===== --}}
     <x-maktabgid.modal-shell id="add-achievement-modal" :width="480">
         <div class="js-modal-body">
-            <div class="modal-head js-fake-form-head">
+            <div class="modal-head">
                 <h3>Yutuq qo'shish</h3>
             </div>
 
-            <form class="form js-fake-form">
+            <form class="form js-achievement-form" enctype="multipart/form-data">
+                <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
+
                 <x-maktabgid.field label="Yutuq / mukofot nomi" icon="trophy">
-                    <input type="text" required placeholder="Matematika olimpiadasi — 1-o'rin" />
+                    <input type="text" name="title" required placeholder="Matematika olimpiadasi — 1-o'rin" />
                 </x-maktabgid.field>
                 <div class="form-row2">
                     <x-maktabgid.field label="O'quvchi ismi" hint="ixtiyoriy" icon="user">
-                        <input type="text" placeholder="Sardor Karimov" />
+                        <input type="text" name="student_name" placeholder="Sardor Karimov" />
                     </x-maktabgid.field>
                     <x-maktabgid.field label="Yil" icon="cal">
-                        <input type="text" required value="{{ now()->year }}" />
+                        <input type="number" name="year" min="2000" max="2100" value="{{ now()->year }}" />
                     </x-maktabgid.field>
                 </div>
                 <div class="form-row2">
-                    <x-maktabgid.field label="Turi" icon="award">
-                        <input type="text" required placeholder="Olimpiada" />
+                    <x-maktabgid.field label="Turi" hint="ixtiyoriy" icon="award">
+                        <input type="text" name="type" placeholder="Olimpiada" />
                     </x-maktabgid.field>
                     <x-maktabgid.field label="Daraja" icon="badge">
-                        <select required>
+                        <select name="level" required>
                             @foreach ($levelMeta as $key => $lvl)
                                 <option value="{{ $key }}">{{ $lvl['label'] }}</option>
                             @endforeach
@@ -91,8 +100,8 @@
                     </x-maktabgid.field>
                 </div>
 
-                <label class="upload-slot js-fake-photo" style="flex-direction:row;justify-content:center;padding:16px">
-                    <input type="file" accept="image/*,.pdf" hidden />
+                <label class="upload-slot" style="flex-direction:row;justify-content:center;padding:16px">
+                    <input type="file" name="image" accept="image/*" hidden />
                     <x-maktabgid.icon name="upload" :width="18" :height="18" />
                     <span>Sertifikat / rasm yuklash (ixtiyoriy)</span>
                 </label>
@@ -102,50 +111,49 @@
                     <button class="btn btn-ghost js-modal-close" type="button">Bekor qilish</button>
                 </div>
             </form>
-
-            <x-maktabgid.success-note title="Yutuq qo'shildi!" :close-target="true" class="js-fake-success" style="display:none">
-                Profil sahifasidagi "Yutuqlar" bo'limida ko'rinadi.
-            </x-maktabgid.success-note>
         </div>
     </x-maktabgid.modal-shell>
 
-    {{-- ===== "Yutuqni tahrirlash" modali — har bir yutuq uchun alohida ===== --}}
-    @foreach ($mockAchievements as $a)
-        <x-maktabgid.modal-shell id="edit-achievement-{{ $loop->index }}" :width="480">
+    {{-- ===== "Yutuqni tahrirlash" modali — har bir yutuq uchun alohida, real
+         PUT /ajax/institution/me/achievements/{id} ===== --}}
+    @foreach ($achievements as $a)
+        <x-maktabgid.modal-shell id="edit-achievement-{{ $a->id }}" :width="480">
             <div class="js-modal-body">
-                <div class="modal-head js-fake-form-head">
+                <div class="modal-head">
                     <h3>Yutuqni tahrirlash</h3>
                 </div>
 
-                <form class="form js-fake-form">
+                <form class="form js-achievement-form" enctype="multipart/form-data" data-achievement-id="{{ $a->id }}">
+                    <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
+
                     <x-maktabgid.field label="Yutuq / mukofot nomi" icon="trophy">
-                        <input type="text" value="{{ $a['title'] }}" required />
+                        <input type="text" name="title" value="{{ $a->title }}" required />
                     </x-maktabgid.field>
                     <div class="form-row2">
                         <x-maktabgid.field label="O'quvchi ismi" hint="ixtiyoriy" icon="user">
-                            <input type="text" value="{{ $a['student'] }}" />
+                            <input type="text" name="student_name" value="{{ $a->student_name }}" />
                         </x-maktabgid.field>
                         <x-maktabgid.field label="Yil" icon="cal">
-                            <input type="text" value="{{ $a['year'] }}" required />
+                            <input type="number" name="year" min="2000" max="2100" value="{{ $a->year }}" />
                         </x-maktabgid.field>
                     </div>
                     <div class="form-row2">
-                        <x-maktabgid.field label="Turi" icon="award">
-                            <input type="text" value="{{ $a['type'] }}" required />
+                        <x-maktabgid.field label="Turi" hint="ixtiyoriy" icon="award">
+                            <input type="text" name="type" value="{{ $a->type }}" />
                         </x-maktabgid.field>
                         <x-maktabgid.field label="Daraja" icon="badge">
-                            <select required>
+                            <select name="level" required>
                                 @foreach ($levelMeta as $key => $lvl)
-                                    <option value="{{ $key }}" @selected($key === $a['level'])>{{ $lvl['label'] }}</option>
+                                    <option value="{{ $key }}" @selected($key === $a->level)>{{ $lvl['label'] }}</option>
                                 @endforeach
                             </select>
                         </x-maktabgid.field>
                     </div>
 
-                    <label class="upload-slot js-fake-photo" style="flex-direction:row;justify-content:center;padding:16px">
-                        <input type="file" accept="image/*,.pdf" hidden />
+                    <label class="upload-slot" style="flex-direction:row;justify-content:center;padding:16px">
+                        <input type="file" name="image" accept="image/*" hidden />
                         <x-maktabgid.icon name="upload" :width="18" :height="18" />
-                        <span>Sertifikat / rasm yuklash (ixtiyoriy)</span>
+                        <span>{{ $a->image_url ? 'Rasmni almashtirish' : 'Sertifikat / rasm yuklash' }} (ixtiyoriy)</span>
                     </label>
 
                     <div style="display:flex;gap:10px;margin-top:4px">
@@ -153,10 +161,6 @@
                         <button class="btn btn-ghost js-modal-close" type="button">Bekor qilish</button>
                     </div>
                 </form>
-
-                <x-maktabgid.success-note title="Ma'lumotlar yangilandi!" :close-target="true" class="js-fake-success" style="display:none">
-                    O'zgarishlar profil sahifasida ham aks etadi.
-                </x-maktabgid.success-note>
             </div>
         </x-maktabgid.modal-shell>
     @endforeach

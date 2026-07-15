@@ -1,11 +1,9 @@
 @php
-    // Mock: rezyume joylash pullik xizmat sifatida rejalashtirilgan (narxni admin belgilaydi —
-    // Admin\ResumeController'ga qarang), lekin ustoz kabineti tomoni hali ulanmagan.
-    $resumes = [
-        ['title' => 'Ingliz tili o\'qituvchisi', 'spec' => 'Umumiy o\'rta ta\'lim · IELTS/CELTA', 'status' => 'live', 'stLabel' => 'Faol', 'views' => 214, 'applies' => 6, 'until' => '18 kun qoldi · 30-avgustgacha', 'exp' => '8 yil', 'salary' => '10 000 000', 'edu' => 'UzSWLU — 2016-yil', 'skills' => 'IELTS 8.0, CELTA…', 'contact' => $teacher['phone'] ?? ''],
-        ['title' => 'IELTS mentor (qo\'shimcha)', 'spec' => 'Individual va guruh darslari', 'status' => 'expired', 'stLabel' => 'Muddati tugagan', 'views' => 89, 'applies' => 2, 'until' => 'Yangilash kerak', 'exp' => '5 yil', 'salary' => '7 000 000', 'edu' => 'ToshDPU — 2019-yil', 'skills' => 'IELTS 7.5', 'contact' => $teacher['phone'] ?? ''],
-    ];
-    $statusStyle = ['live' => 'live', 'pending' => 'pending', 'expired' => 'expired'];
+    // Real ro'yxat — App\Models\Resume (owner_user_id = joriy ustoz). Yangi rezyume
+    // joylash pullik xizmat sifatida rejalashtirilgan (narxni admin belgilaydi —
+    // Admin\ResumeController'ga qarang), to'lov tizimi hali ulanmagani uchun
+    // "Yangi rezyume" formasi hozircha demo ko'rinishda qoladi (ADR-0002, Faza 1
+    // — faqat ro'yxat/o'qish tomoni real qilindi).
     $payMethods = [
         ['key' => 'humo', 'label' => 'Humo · 8842', 'dot' => '#2aabee', 'on' => true],
         ['key' => 'payme', 'label' => 'Payme', 'dot' => '#3fc4e8', 'on' => false],
@@ -15,83 +13,39 @@
 <x-teacher.shell active="resumes" title="Rezyumelarim" sub="Rezyume joylash — pullik, narxni admin belgilaydi" :teacher="$teacher" :counts="$counts">
 
     <div class="idash-toolbar">
-        <span class="idash-chart-meta">{{ count($resumes) }} ta rezyume · joylash narxi 30 000 so'm</span>
+        <span class="idash-chart-meta">{{ $resumes->count() }} ta rezyume · joylash narxi 30 000 so'm</span>
         <a href="#new-resume" class="btn btn-primary sm">
             <x-maktabgid.icon name="plus" :width="15" :height="15" /> Yangi rezyume
         </a>
     </div>
 
-    <div style="display:flex;flex-direction:column;gap:14px">
-        @foreach ($resumes as $r)
-            <div class="idash-resume-card">
-                <div>
-                    <div class="idash-resume-top">
-                        <b>{{ $r['title'] }}</b>
-                        <span class="idash-status-pill {{ $statusStyle[$r['status']] }}">{{ $r['stLabel'] }}</span>
+    @if ($resumes->isEmpty())
+        <div class="idash-badge-soft">
+            <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Hali rezyumengiz yo'q — pastdagi "Yangi rezyume joylash" bo'limidan boshlang
+        </div>
+    @else
+        <div style="display:flex;flex-direction:column;gap:14px">
+            @foreach ($resumes as $r)
+                <div class="idash-resume-card">
+                    <div>
+                        <div class="idash-resume-top">
+                            <b>{{ $r->role_title }}</b>
+                        </div>
+                        @if ($r->specialization_key)
+                            <span class="idash-resume-spec">{{ \App\Support\MaktabgidData::specializationLabel($r->specialization_key)['label'] ?? $r->specialization_key }}</span>
+                        @endif
+                        <div class="idash-resume-meta">
+                            <span><x-maktabgid.icon name="clock" :width="15" :height="15" /> {{ $r->experience }}</span>
+                            @if ($r->salary_expectation)
+                                <span><x-maktabgid.icon name="card" :width="15" :height="15" /> {{ $r->salary_expectation }} so'm</span>
+                            @endif
+                        </div>
+                        <span class="idash-resume-until">Joylangan: {{ $r->created_at->format('d.m.Y') }}</span>
                     </div>
-                    <span class="idash-resume-spec">{{ $r['spec'] }}</span>
-                    <div class="idash-resume-meta">
-                        <span><x-maktabgid.icon name="eye" :width="15" :height="15" /> {{ $r['views'] }} ko'rildi</span>
-                        <span><x-maktabgid.icon name="mail" :width="15" :height="15" /> {{ $r['applies'] }} taklif</span>
-                    </div>
-                    <span class="idash-resume-until">{{ $r['until'] }}</span>
                 </div>
-                <div class="idash-resume-actions">
-                    <button type="button" class="btn btn-ghost sm" data-modal-open="edit-resume-{{ $loop->index }}">Tahrirlash</button>
-                    <button type="button" class="idash-lead-iconbtn" title="Boshqa"><x-maktabgid.icon name="sliders" :width="15" :height="15" /></button>
-                </div>
-            </div>
-        @endforeach
-    </div>
-
-    {{-- ===== "Rezyumeni tahrirlash" modali — har bir rezyume uchun alohida (statik namoyish,
-         real saqlash hali yo'q, shuning uchun umumiy "fake form" andozasi orqali ishlaydi). ===== --}}
-    @foreach ($resumes as $r)
-        <x-maktabgid.modal-shell id="edit-resume-{{ $loop->index }}" :width="480">
-            <div class="js-modal-body">
-                <div class="modal-head js-fake-form-head">
-                    <h3>Rezyumeni tahrirlash</h3>
-                </div>
-
-                <form class="form js-fake-form">
-                    <x-maktabgid.field label="Lavozim" icon="bag">
-                        <input type="text" value="{{ $r['title'] }}" />
-                    </x-maktabgid.field>
-                    <div class="form-row2">
-                        <x-maktabgid.field label="Tajriba" icon="clock">
-                            <input type="text" value="{{ $r['exp'] }}" />
-                        </x-maktabgid.field>
-                        <x-maktabgid.field label="Kutilayotgan maosh (so'm)" icon="card">
-                            <input type="text" value="{{ $r['salary'] }}" />
-                        </x-maktabgid.field>
-                    </div>
-                    <x-maktabgid.field label="Ma'lumoti" icon="book">
-                        <input type="text" value="{{ $r['edu'] }}" />
-                    </x-maktabgid.field>
-                    <x-maktabgid.field label="Ko'nikmalar" icon="sparkle">
-                        <textarea rows="2">{{ $r['skills'] }}</textarea>
-                    </x-maktabgid.field>
-                    <x-maktabgid.field label="Bog'lanish" icon="phone">
-                        <input type="text" value="{{ $r['contact'] }}" placeholder="+998 90 123 45 67" />
-                    </x-maktabgid.field>
-
-                    <div style="display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--accent-soft);border-radius:var(--r-md);font-size:12.5px;font-weight:700;color:#b45309">
-                        <x-maktabgid.icon name="card" :width="16" :height="16" />
-                        Rezyume joylash pullik — 30 000 so'm (narxni admin belgilaydi).
-                    </div>
-
-                    <div style="display:flex;gap:10px;margin-top:4px">
-                        <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">Saqlash</button>
-                        <button class="btn btn-ghost js-modal-close" type="button">Bekor qilish</button>
-                    </div>
-                </form>
-
-                <x-maktabgid.success-note title="Rezyume yangilandi!" :close-target="true" class="js-fake-success" style="display:none">
-                    O'zgarishlar saqlandi.
-                </x-maktabgid.success-note>
-            </div>
-        </x-maktabgid.modal-shell>
-    @endforeach
+            @endforeach
+        </div>
+    @endif
 
     <div class="panel" id="new-resume">
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap" class="js-fake-form-head">

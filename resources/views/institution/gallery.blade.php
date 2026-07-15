@@ -1,14 +1,7 @@
 @php
-    // Mock: galereya — real yuklash/saqlash InstitutionMedia orqali keyinroq ulanadi
-    // (hozircha bu model asosan video uchun ishlatiladi — profile.blade.php'ga qarang).
-    $mockGallery = [
-        ['cap' => 'Bosh bino · fasad', 'grad' => 'linear-gradient(140deg,#0e8a86,#0a625e)'],
-        ['cap' => 'Sinf xonasi', 'grad' => 'linear-gradient(140deg,#2f6fed,#1c4fc2)'],
-        ['cap' => 'Kompyuter xonasi', 'grad' => 'linear-gradient(140deg,#6d5cf6,#4535c9)'],
-        ['cap' => 'Sport zali', 'grad' => 'linear-gradient(140deg,#f0852e,#c2611a)'],
-        ['cap' => 'Kutubxona', 'grad' => 'linear-gradient(140deg,#c2247a,#8f1a5a)'],
-        ['cap' => 'Hovli va bog\'', 'grad' => 'linear-gradient(140deg,#16a34a,#0e7a37)'],
-    ];
+    // Real galereya — App\Models\InstitutionMedia (type=gallery). Yuklash/o'chirish
+    // /ajax/institution/me/media orqali ishlaydi (ADR-0002, Faza 1).
+    $maxGallery = 10;
 @endphp
 
 <x-institution.shell
@@ -23,28 +16,33 @@
     @if ($institution)
 
     <div class="idash-toolbar">
-        <span class="idash-chart-meta">{{ count($mockGallery) }} / 10 rasm yuklangan · JPG, PNG, WebP — maks 5 MB</span>
-        <button type="button" class="btn btn-primary sm">
-            <x-maktabgid.icon name="upload" :width="15" :height="15" /> Rasm yuklash
-        </button>
+        <span class="idash-chart-meta" id="js-media-count">{{ $galleryMedia->count() }} / {{ $maxGallery }} rasm yuklangan · JPG, PNG, WebP — maks 5 MB</span>
     </div>
 
     <div class="idash-gallery">
-        @foreach ($mockGallery as $g)
-            <div class="idash-gallery-tile" style="background:{{ $g['grad'] }}">
-                <span class="idash-gallery-cap">{{ $g['cap'] }}</span>
-                <button type="button" class="idash-gallery-del" title="O'chirish"><x-maktabgid.icon name="close" :width="14" :height="14" /></button>
+        @foreach ($galleryMedia as $m)
+            <div class="idash-gallery-tile" style="background-image:url('{{ $m->url }}');background-size:cover;background-position:center">
+                <span class="idash-gallery-cap">{{ $m->caption ?? $institution->name }}</span>
+                <button type="button" class="idash-gallery-del js-media-delete" data-media-id="{{ $m->id }}" title="O'chirish">
+                    <x-maktabgid.icon name="close" :width="14" :height="14" />
+                </button>
             </div>
         @endforeach
-        <button type="button" class="idash-gallery-add">
-            <x-maktabgid.icon name="upload" :width="26" :height="26" />
-            Yana {{ 10 - count($mockGallery) }} ta rasm qo'shish mumkin
-        </button>
+
+        @if ($galleryMedia->count() < $maxGallery)
+            <label class="idash-gallery-add js-media-upload" data-media-type="gallery" data-reload="1">
+                <input type="file" accept="image/*" hidden />
+                <x-maktabgid.icon name="upload" :width="26" :height="26" />
+                <span>Yana {{ $maxGallery - $galleryMedia->count() }} ta rasm qo'shish mumkin</span>
+            </label>
+        @endif
     </div>
 
-    <div class="idash-badge-soft">
-        <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Bu bo'lim demo ko'rinishda — real fayl yuklash tez orada ulanadi
-    </div>
+    @if ($galleryMedia->isEmpty())
+        <div class="idash-badge-soft">
+            <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Hali rasm yuklanmagan — yuqoridagi katakka bosib birinchi rasmingizni qo'shing
+        </div>
+    @endif
 
     @endif
 </x-institution.shell>

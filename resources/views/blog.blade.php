@@ -25,7 +25,7 @@
 
     <div class="wrap section">
         <a href="{{ route('blog.show', $feat['id']) }}" class="feat-article">
-            <div class="feat-media" style="background:linear-gradient(135deg, {{ $feat['g'][0] }}, {{ $feat['g'][1] }})"><span class="blog-tag">{{ $feat['tag'] }}</span></div>
+            <div class="feat-media" style="{{ MaktabgidData::mediaStyle($feat, 135) }}"><span class="blog-tag">{{ $feat['tag'] }}</span></div>
             <div class="feat-body">
                 <span class="feat-kicker">Tavsiya etilgan maqola</span>
                 <h2>{{ $feat['title'] }}</h2>
@@ -37,7 +37,7 @@
         <div class="blog-grid" style="margin-top:28px">
             @foreach ($rest as $b)
                 <a href="{{ route('blog.show', $b['id']) }}" class="blog-card">
-                    <div class="blog-media" style="background:linear-gradient(140deg, {{ $b['g'][0] }}, {{ $b['g'][1] }})"><span class="blog-tag">{{ $b['tag'] }}</span></div>
+                    <div class="blog-media" style="{{ MaktabgidData::mediaStyle($b) }}"><span class="blog-tag">{{ $b['tag'] }}</span></div>
                     <div class="blog-body">
                         <h3>{{ $b['title'] }}</h3>
                         <p>{{ $b['excerpt'] }}</p>

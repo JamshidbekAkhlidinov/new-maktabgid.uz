@@ -30,9 +30,9 @@
         {{-- ===== MAIN ===== --}}
         <div class="detail-main">
 
-            {{-- Gradient banner --}}
+            {{-- Cover banner --}}
             <div class="blog-media"
-                 style="height:280px;border-radius:var(--r-lg);background:linear-gradient(135deg,{{ $article['g'][0] }},{{ $article['g'][1] }})">
+                 style="height:280px;border-radius:var(--r-lg);{{ MaktabgidData::mediaStyle($article, 135) }}">
                 <span class="blog-tag" style="font-size:13px;padding:6px 14px">{{ $article['tag'] }}</span>
             </div>
 
@@ -61,8 +61,7 @@
                 <div class="blog-grid">
                     @foreach ($more as $b)
                         <a href="{{ route('blog.show', $b['id']) }}" class="blog-card">
-                            <div class="blog-media"
-                                 style="background:linear-gradient(140deg,{{ $b['g'][0] }},{{ $b['g'][1] }})">
+                            <div class="blog-media" style="{{ MaktabgidData::mediaStyle($b) }}">
                                 <span class="blog-tag">{{ $b['tag'] }}</span>
                             </div>
                             <div class="blog-body">
@@ -108,7 +107,7 @@
                         @foreach ($more as $b)
                             <a href="{{ route('blog.show', $b['id']) }}"
                                style="display:flex;gap:12px;align-items:flex-start;text-decoration:none;color:inherit">
-                                <div style="flex:none;width:48px;height:48px;border-radius:10px;background:linear-gradient(140deg,{{ $b['g'][0] }},{{ $b['g'][1] }})"></div>
+                                <div style="flex:none;width:48px;height:48px;border-radius:10px;{{ MaktabgidData::mediaStyle($b) }}"></div>
                                 <div>
                                     <p style="font-size:13.5px;font-weight:700;line-height:1.3">{{ $b['title'] }}</p>
                                     <span style="font-size:12px;color:var(--ink-3);font-weight:600">{{ $b['read'] }}</span>

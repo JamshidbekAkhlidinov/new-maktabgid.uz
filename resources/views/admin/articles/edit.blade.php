@@ -6,7 +6,7 @@
     <x-admin.page-header title="Maqolani tahrirlash: {{ $article->title }}" />
 
     <x-admin.card>
-        <form method="POST" action="{{ route('admin.articles.update', $article) }}">
+        <form method="POST" action="{{ route('admin.articles.update', $article) }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
             @include('admin.articles._form')

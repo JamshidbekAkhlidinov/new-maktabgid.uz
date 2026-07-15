@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             InstitutionSeeder::class,
             ReviewSeeder::class,
+            AchievementSeeder::class,
             ForumSeeder::class,
             ContentSeeder::class,
             CareerSeeder::class,

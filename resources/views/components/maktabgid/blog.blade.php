@@ -12,7 +12,7 @@
         <div class="blog-grid">
             @foreach ($posts as $b)
                 <article class="blog-card">
-                    <div class="blog-media" style="background: linear-gradient(140deg, {{ $b['g'][0] }}, {{ $b['g'][1] }})">
+                    <div class="blog-media" style="{{ \App\Support\MaktabgidData::mediaStyle($b) }}">
                         <span class="blog-tag">{{ $b['tag'] }}</span>
                     </div>
                     <div class="blog-body">

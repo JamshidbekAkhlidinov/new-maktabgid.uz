@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ArticleController extends Controller implements HasMiddleware
@@ -40,7 +41,10 @@ class ArticleController extends Controller implements HasMiddleware
 
     public function store(Request $request): RedirectResponse
     {
-        Article::create($this->validateData($request));
+        $data = $this->validateData($request);
+        $data = array_merge($data, $this->handleImage($request));
+
+        Article::create($data);
 
         return redirect()->route('admin.articles.index')->with('status', 'Maqola yaratildi.');
     }
@@ -52,7 +56,10 @@ class ArticleController extends Controller implements HasMiddleware
 
     public function update(Request $request, Article $article): RedirectResponse
     {
-        $article->update($this->validateData($request));
+        $data = $this->validateData($request);
+        $data = array_merge($data, $this->handleImage($request, $article));
+
+        $article->update($data);
 
         return redirect()->route('admin.articles.index')->with('status', 'Maqola yangilandi.');
     }
@@ -76,10 +83,35 @@ class ArticleController extends Controller implements HasMiddleware
             'read_minutes' => ['required', 'integer', 'min:1', 'max:120'],
             'featured' => ['nullable', 'boolean'],
             'published_at' => ['required', 'date'],
+            'image' => ['nullable', 'image', 'max:4096'],
         ]);
 
         $data['featured'] = (bool) ($data['featured'] ?? false);
+        unset($data['image']);
 
         return $data;
+    }
+
+    /**
+     * Maqola muqova rasmini config('filesystems.media_disk')ga yozadi (institutsiya media bilan bir xil andoza).
+     * Yangi fayl yuklanmasa — mavjud rasm o'zgarmaydi. Yangi fayl yuklansa — eskisi diskdan o'chiriladi.
+     *
+     * @return array<string, mixed>
+     */
+    private function handleImage(Request $request, ?Article $article = null): array
+    {
+        if (! $request->hasFile('image')) {
+            return [];
+        }
+
+        $disk = config('filesystems.media_disk', 'public');
+        $path = $request->file('image')->store('articles', $disk);
+        $url = Storage::disk($disk)->url($path);
+
+        if ($article && $article->image_path) {
+            Storage::disk($article->disk ?? $disk)->delete($article->image_path);
+        }
+
+        return ['disk' => $disk, 'image_path' => $path, 'image_url' => $url];
     }
 }

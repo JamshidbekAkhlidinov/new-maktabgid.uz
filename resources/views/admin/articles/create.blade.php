@@ -6,7 +6,7 @@
     <x-admin.page-header title="Maqola qo'shish" />
 
     <x-admin.card>
-        <form method="POST" action="{{ route('admin.articles.store') }}">
+        <form method="POST" action="{{ route('admin.articles.store') }}" enctype="multipart/form-data">
             @csrf
             @include('admin.articles._form')
 

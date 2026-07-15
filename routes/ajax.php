@@ -8,13 +8,23 @@ use App\Http\Controllers\Auth\RegisterInstitutionController;
 use App\Http\Controllers\Auth\RegisterParentController;
 use App\Http\Controllers\Auth\RegisterTeacherController;
 use App\Http\Controllers\Cabinet\StatsController as CabinetStatsController;
+use App\Http\Controllers\Career\ResumeController as CareerResumeController;
+use App\Http\Controllers\Career\VacancyApplicationController as CareerVacancyApplicationController;
+use App\Http\Controllers\Career\VacancyController as CareerVacancyController;
 use App\Http\Controllers\FavoriteController;
+use App\Http\Controllers\Forum\LikeController as ForumLikeController;
+use App\Http\Controllers\Forum\ReplyController as ForumReplyController;
+use App\Http\Controllers\Forum\ThreadController as ForumThreadController;
 use App\Http\Controllers\Institution\AcceptingController;
+use App\Http\Controllers\Institution\AchievementController;
 use App\Http\Controllers\Institution\InboxController;
 use App\Http\Controllers\Institution\MediaController;
 use App\Http\Controllers\Institution\MessageController;
 use App\Http\Controllers\Institution\ProfileController;
 use App\Http\Controllers\Institution\StatsController as InstitutionStatsController;
+use App\Http\Controllers\Institution\VacancyController as InstitutionVacancyController;
+use App\Http\Controllers\ParentCabinetController;
+use App\Http\Controllers\ParentChildController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -53,10 +63,40 @@ Route::middleware('web')->prefix('ajax')->group(function () {
 
         // Suhbatlar — muassasa ota-onaga javob yozadi (institution-cabinet Suhbatlar sahifasi)
         Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
+
+        // O'z vakansiyasini o'chirish (institution-cabinet Vakansiyalar sahifasi, ADR-0002)
+        Route::delete('vacancies/{vacancy}', [InstitutionVacancyController::class, 'destroy']);
+
+        // Nomzod arizasi holatini o'zgartirish — qabul/rad (ADR-0002, Faza 2)
+        Route::patch('vacancy-applications/{application}/status', [InstitutionVacancyController::class, 'updateApplicationStatus']);
+
+        // O'quvchilar yutuqlari — kabinetda qo'shish/tahrirlash/o'chirish (ADR-0002, Faza 2).
+        // fetch() FormData bilan PUT so'rovini to'g'ridan-to'g'ri yuborishi mumkin (native
+        // <form> orqali emas), shuning uchun _method spoofing shart emas.
+        Route::post('achievements', [AchievementController::class, 'store']);
+        Route::put('achievements/{achievement}', [AchievementController::class, 'update']);
+        Route::delete('achievements/{achievement}', [AchievementController::class, 'destroy']);
     });
 
     // Arizalar — mehmon ham yubora oladi (backend.md Phase 4)
     Route::post('applications', [ApplicationController::class, 'store']);
+
+    // Vakansiyaga ariza — mehmon ham yubora oladi, Application bilan bir xil qoida (ADR-0002, Faza 2)
+    Route::post('vacancies/{vacancy}/apply', [CareerVacancyApplicationController::class, 'store']);
+
+    // Ommaviy careers sahifasi — vakansiya/rezyume joylash (backend.md §6, ADR-0002 Faza 1)
+    Route::middleware('auth')->group(function () {
+        Route::post('vacancies', [CareerVacancyController::class, 'store']);
+        Route::post('resumes', [CareerResumeController::class, 'store']);
+    });
+
+    // Forum — mavzu ochish/javob/layk (backend.md §6, ADR-0002 Faza 2)
+    Route::middleware('auth')->prefix('forum')->group(function () {
+        Route::post('threads', [ForumThreadController::class, 'store']);
+        Route::post('threads/{thread}/replies', [ForumReplyController::class, 'store']);
+        Route::post('threads/{thread}/like', [ForumLikeController::class, 'thread']);
+        Route::post('replies/{reply}/like', [ForumLikeController::class, 'reply']);
+    });
 
     // Ota-ona tomoni (role=parent) — backend.md Phase 4
     Route::middleware(['auth', 'role:parent'])->group(function () {
@@ -67,6 +107,14 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::get('applications/me', [ApplicationController::class, 'mine']);
 
         Route::get('me/stats', CabinetStatsController::class);
+
+        // Profilni tahrirlash (parent/dashboard.blade.php)
+        Route::put('me', [ParentCabinetController::class, 'updateProfile']);
+
+        // Farzandlarim — qo'shish/tahrirlash/o'chirish (parent/children.blade.php, ADR 2026-07-14)
+        Route::post('children', [ParentChildController::class, 'store']);
+        Route::put('children/{child}', [ParentChildController::class, 'update']);
+        Route::delete('children/{child}', [ParentChildController::class, 'destroy']);
     });
 
 });

@@ -124,30 +124,30 @@
                 <p>Ish beruvchilar sizni topadi</p>
             </div>
 
-            {{-- Form --}}
-            <form class="form js-fake-form" novalidate>
+            {{-- Form: real POST /ajax/resumes (auth) --}}
+            <form class="form js-resume-form" novalidate>
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> Ism Familiya</span>
-                    <span class="field-control"><input required placeholder="F.I.Sh." /></span>
+                    <span class="field-control"><input name="full_name" required placeholder="F.I.Sh." /></span>
                 </label>
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="bag" :width="14" :height="14" /> Lavozim</span>
-                    <span class="field-control"><input required placeholder="Masalan, Ingliz tili oʻqituvchisi" /></span>
+                    <span class="field-control"><input name="role_title" required placeholder="Masalan, Ingliz tili oʻqituvchisi" /></span>
                 </label>
                 <div class="form-row2">
                     <label class="field">
                         <span class="field-label">Tajriba</span>
-                        <span class="field-control"><input required placeholder="5 yil" /></span>
+                        <span class="field-control"><input name="experience" required placeholder="5 yil" /></span>
                     </label>
                     <label class="field">
                         <span class="field-label">Maosh kutilmasi</span>
-                        <span class="field-control"><input placeholder="8 – 12 mln" /></span>
+                        <span class="field-control"><input name="salary_expectation" placeholder="8 – 12 mln" /></span>
                     </label>
                 </div>
                 <label class="field">
                     <span class="field-label">Yoʻnalish</span>
                     <span class="field-control">
-                        <select>
+                        <select name="specialization_key">
                             @foreach ($specs as $s)
                                 <option value="{{ $s['key'] }}">{{ $s['label'] }}</option>
                             @endforeach
@@ -184,28 +184,28 @@
                 <p>Eng yaxshi nomzodlarni jalb qiling</p>
             </div>
 
-            {{-- Form --}}
-            <form class="form js-fake-form" novalidate>
+            {{-- Form: real POST /ajax/vacancies (auth) --}}
+            <form class="form js-vacancy-form" novalidate>
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="bag" :width="14" :height="14" /> Lavozim</span>
-                    <span class="field-control"><input required placeholder="Masalan, Matematika oʻqituvchisi" /></span>
+                    <span class="field-control"><input name="title" required placeholder="Masalan, Matematika oʻqituvchisi" /></span>
                 </label>
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="building" :width="14" :height="14" /> Muassasa</span>
-                    <span class="field-control"><input required placeholder="Muassasa nomi" /></span>
+                    <span class="field-control"><input name="org" required placeholder="Muassasa nomi" /></span>
                 </label>
                 <div class="form-row2">
                     <label class="field">
                         <span class="field-label">Maosh</span>
-                        <span class="field-control"><input placeholder="9 – 14 mln" /></span>
+                        <span class="field-control"><input name="salary_range" placeholder="9 – 14 mln" /></span>
                     </label>
                     <label class="field">
                         <span class="field-label">Bandlik</span>
                         <span class="field-control">
-                            <select>
-                                <option>Toʻliq stavka</option>
-                                <option>Yarim stavka</option>
-                                <option>Soatbay</option>
+                            <select name="employment_type">
+                                <option value="full">Toʻliq stavka</option>
+                                <option value="part">Yarim stavka</option>
+                                <option value="hourly">Soatbay</option>
                             </select>
                         </span>
                     </label>
@@ -231,15 +231,16 @@
 
     <script>
     (function () {
-        function getUser() {
-            try { return JSON.parse(localStorage.getItem("mg_user") || "null"); } catch (e) { return null; }
-        }
+        // Diqqat: eski "mg_user" (localStorage) tekshiruvi hech qachon o'rnatilmagan edi
+        // (real auth session-based) — shu sababli tugma doim "kirish kerak" holatiga
+        // tushib qolardi. Endi haqiqiy server sessiyasidan (auth()->check()) o'qiladi.
+        var isAuthed = @json(auth()->check());
 
         function openPostModal(id) {
             var modal = document.getElementById(id);
             if (!modal) return;
             // reset state so form shows (not success)
-            var form    = modal.querySelector(".js-fake-form");
+            var form    = modal.querySelector("form");
             var head    = modal.querySelector(".js-fake-form-head");
             var success = modal.querySelector(".js-fake-success");
             if (form)    { form.style.display = "block"; if (form.reset) form.reset(); }
@@ -259,14 +260,14 @@
 
         if (resumeBtn) {
             resumeBtn.addEventListener("click", function () {
-                if (!getUser()) { openAuth(); return; }
+                if (!isAuthed) { openAuth(); return; }
                 openPostModal("post-resume-modal");
             });
         }
 
         if (vacBtn) {
             vacBtn.addEventListener("click", function () {
-                if (!getUser()) { openAuth(); return; }
+                if (!isAuthed) { openAuth(); return; }
                 openPostModal("post-vac-modal");
             });
         }

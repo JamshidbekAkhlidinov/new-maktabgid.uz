@@ -1,10 +1,14 @@
 @php
+    // Diqqat: bu PHP bloki x-parent.shell componentidan TASHQARIDA, shuning uchun
+    // $user null bo'lsa ham (mehmon /cabinet ga kirsa) ishga tushadi. Shu sabab
+    // $user->created_at to'g'ridan-to'g'ri o'qilmasligi kerak edi.
     $months = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
-    $joined = $user->created_at ? $user->created_at->year . '-yil ' . $months[$user->created_at->month - 1] . 'dan' : '';
+    $joined = ($user && $user->created_at) ? $user->created_at->year . '-yil ' . $months[$user->created_at->month - 1] . 'dan' : '';
 @endphp
 
 <x-parent.shell active="dashboard" title="Profilim" sub="Shaxsiy ma'lumot" :user="$user" :stats="$stats">
 
+    @if ($user)
     <div class="pprof-grid">
         {{-- ===== chap: shaxsiy ma'lumot kartochkasi ===== --}}
         <div class="pprof-card">
@@ -102,5 +106,6 @@
             </x-maktabgid.success-note>
         </div>
     </x-maktabgid.modal-shell>
+    @endif
 
 </x-parent.shell>

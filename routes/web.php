@@ -14,6 +14,15 @@ Route::get('/maktab/{id}', function (int $id) {
     $school = MaktabgidData::school($id);
     abort_if(! $school, 404);
 
+    // Ko'rishlar jurnali — muassasa kabinetidagi "Analitika" sahifasi shu yerdan
+    // hisoblanadi (ADR-0002, Faza 2). Forum'dagi view_count bilan bir xil darajada
+    // sodda: bir martalik hisoblash (IP/sessiya dedupe) hozircha yo'q.
+    \App\Models\InstitutionView::create([
+        'institution_id' => $id,
+        'viewer_user_id' => auth()->id(),
+        'created_at' => now(),
+    ]);
+
     return view('school', ['school' => $school]);
 })->name('maktabgid.school');
 
@@ -25,6 +34,11 @@ Route::get('/forum', function () {
 Route::get('/forum/{id}', function (int $id) {
     $thread = MaktabgidData::forumThread($id);
     abort_if(! $thread, 404);
+
+    // Ko'rishlar hisoblagichi — har bir sahifa ochilishida oshiriladi (oddiy, IP/sessiyaga
+    // qarab bir martalik hisoblash hozircha yo'q — institution_views bilan bir xil darajada
+    // sodda, ADR-0002 Faza 2'da kengaytirilishi mumkin).
+    \App\Models\ForumThread::whereKey($id)->increment('view_count');
 
     return view('forum-thread', ['thread' => $thread, 'replies' => MaktabgidData::forumReplies($id)]);
 })->name('forum.show');
@@ -96,11 +110,10 @@ Route::get('/institution-cabinet/tariflar/{plan}', [InstitutionCabinetController
     ->name('institution.cabinet.checkout');
 
 /* ---------------- Ustoz kabineti (o'qituvchi dashboard qobig'i) ----------------
- * Diqqat: "o'qituvchi" hali User::role sifatida modellashtirilmagan (faqat
- * parent|institution|admin mavjud — bootstrap.md/User modeliga qarang). Shu
- * sababli bu bo'lim hozircha faqat VIZUAL qatlam sifatida qurilgan: har bir
- * sahifa namunaviy (mock) ma'lumot bilan ishlaydi, auth/rol tekshiruvi yo'q.
- * Real rol, ro'yxatdan o'tish va login-redirect ulanishi keyingi bosqichda. */
+ * "teacher" — User::ROLE_TEACHER sifatida to'liq modellashtirilgan (ADR-0001/0002):
+ * ro'yxatdan o'tish (RegisterTeacherController), login-redirect va auth/rol
+ * tekshiruvi (TeacherCabinetController::context()) real ishlaydi. Rezyume ro'yxati
+ * real (Resume.owner_user_id); Takliflar/Suhbatlar hali Faza 2'da rejalashtirilgan. */
 Route::get('/teacher-cabinet', [TeacherCabinetController::class, 'dashboard'])->name('teacher.cabinet');
 Route::get('/teacher-cabinet/resumes', [TeacherCabinetController::class, 'resumes'])->name('teacher.cabinet.resumes');
 Route::get('/teacher-cabinet/vacancies', [TeacherCabinetController::class, 'vacancies'])->name('teacher.cabinet.vacancies');

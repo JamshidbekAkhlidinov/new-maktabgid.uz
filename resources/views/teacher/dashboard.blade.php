@@ -22,6 +22,11 @@
 
 <x-teacher.shell active="dashboard" title="Boshqaruv paneli" sub="Rezyume ko'rsatkichlari va takliflar" :teacher="$teacher" :counts="$counts">
 
+    {{-- Diqqat: $teacher null bo'lishi mumkin (mehmon /teacher-cabinet ga kirsa) — shell
+         o'zining @unless($teacher) bilan "kirish kerak" ekranini ko'rsatadi, lekin bu slot
+         baribir kompilyatsiya vaqtida bajariladi, shuning uchun $teacher['...'] ni @if bilan
+         qo'riqlash shart (parent/dashboard.blade.php dagi bir xil xato — ErrorException). --}}
+    @if ($teacher)
     <div class="idash-t-hero">
         <div class="idash-t-hero-card">
             <span class="idash-t-hero-ava">{{ \App\Support\MaktabgidData::monogram($teacher['name']) }}</span>
@@ -64,5 +69,6 @@
     <div class="idash-badge-soft">
         <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Bu kabinet demo ko'rinishda — ro'yxatdan o'tish va real ma'lumotlar keyingi bosqichda ulanadi
     </div>
+    @endif
 
 </x-teacher.shell>

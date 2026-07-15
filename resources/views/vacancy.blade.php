@@ -54,12 +54,12 @@
                 <h3 style="margin-bottom:4px">Ariza yuborish</h3>
                 <p style="color:var(--ink-2);margin-bottom:20px;font-size:14px">Maʼlumotlaringizni qoldiring — qabul boʻlimi siz bilan bogʻlanadi.</p>
                 <div class="js-inline-enroll">
-                    <form class="enroll-form js-fake-form" style="gap:14px">
+                    <form class="enroll-form js-vacancy-apply-form" data-vacancy-id="{{ $vacancy['id'] }}" style="gap:14px">
                         <div class="form-row2">
-                            <x-maktabgid.field label="Toʻliq ism" icon="user"><input required placeholder="Ism Familiya" /></x-maktabgid.field>
-                            <x-maktabgid.field label="Telefon raqam" icon="phone"><input required placeholder="+998 90 123 45 67" /></x-maktabgid.field>
+                            <x-maktabgid.field label="Toʻliq ism" icon="user"><input name="full_name" required placeholder="Ism Familiya" /></x-maktabgid.field>
+                            <x-maktabgid.field label="Telefon raqam" icon="phone"><input name="phone" required placeholder="+998 90 123 45 67" /></x-maktabgid.field>
                         </div>
-                        <x-maktabgid.field label="Xabar (ixtiyoriy)" icon="edit"><textarea rows="3" placeholder="Qisqacha oʻzingiz haqingizda…"></textarea></x-maktabgid.field>
+                        <x-maktabgid.field label="Xabar (ixtiyoriy)" icon="edit"><textarea name="note" rows="3" placeholder="Qisqacha oʻzingiz haqingizda…"></textarea></x-maktabgid.field>
                         <div>
                             <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> Ariza yuborish</button>
                         </div>

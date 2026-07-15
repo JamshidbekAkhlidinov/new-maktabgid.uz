@@ -18,5 +18,9 @@
 </div>
 
 <div class="mt-5">
+    <x-admin.image-upload name="image" label="Rasm" :value="$article?->image_url" hint="JPG, PNG yoki WEBP, maksimal 4 MB." />
+</div>
+
+<div class="mt-5">
     <x-admin.checkbox name="featured" label="Tanlangan (featured)" :checked="(bool) $article?->featured" />
 </div>

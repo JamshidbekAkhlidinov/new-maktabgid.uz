@@ -1,34 +1,9 @@
 @php
-    // Mock: kabinet ichidagi vakansiya boshqaruvi (nomzodlar, holat) — real Vacancy modeli
-    // mavjud (careers sahifasida ishlatiladi), lekin bu boshqaruv paneli hali ulanmagan,
-    // shuning uchun namunaviy ro'yxat bilan ko'rsatiladi.
-    $mockVacancies = [
-        ['title' => 'Ingliz tili o\'qituvchisi', 'type' => 'To\'liq stavka', 'status' => 'active', 'stLabel' => 'Faol', 'applicants' => 12, 'until' => '30-avgustgacha', 'salary' => '6 000 000', 'requirements' => 'IELTS 7.0+, kamida 2 yil tajriba, boshlang\'ich/o\'rta sinflar bilan ishlay olish', 'candidates' => [
-            ['name' => 'Kamola Yusupova', 'exp' => '6 yil tajriba', 'note' => 'IELTS 8.0', 'ago' => 'Bugun 09:15'],
-            ['name' => 'Otabek Rahimov', 'exp' => '4 yil tajriba', 'note' => 'CELTA sertifikati', 'ago' => 'Kecha 18:02'],
-            ['name' => 'Dilnoza Saidova', 'exp' => '3 yil tajriba', 'note' => 'IELTS 7.5', 'ago' => '2 kun oldin'],
-        ]],
-        ['title' => 'Boshlang\'ich sinf o\'qituvchisi', 'type' => 'To\'liq stavka', 'status' => 'active', 'stLabel' => 'Faol', 'applicants' => 8, 'until' => '15-avgustgacha', 'salary' => '5 500 000', 'requirements' => 'Pedagogika yo\'nalishi bo\'yicha diplom, bolalar bilan ishlash tajribasi', 'candidates' => [
-            ['name' => 'Aziz Karimov', 'exp' => '8 yil tajriba', 'note' => 'IELTS 8.0', 'ago' => 'Bugun 10:20'],
-            ['name' => 'Madina Tosheva', 'exp' => '5 yil tajriba', 'note' => 'TDPU', 'ago' => 'Kecha 15:40'],
-            ['name' => 'Rustam Qodirov', 'exp' => '12 yil tajriba', 'note' => 'Olimpiada murabbiyi', 'ago' => '2 kun oldin'],
-        ]],
-        ['title' => 'IT / dasturlash to\'garak rahbari', 'type' => 'Yarim stavka', 'status' => 'review', 'stLabel' => 'Ko\'rib chiqilmoqda', 'applicants' => 5, 'until' => '10-sentabrgacha', 'salary' => '4 000 000', 'requirements' => 'Python/Scratch asoslari, o\'quvchilarga tushuntira olish qobiliyati', 'candidates' => [
-            ['name' => 'Jasur Nazarov', 'exp' => '3 yil tajriba', 'note' => 'Python/Scratch mentor', 'ago' => 'Bugun 08:45'],
-            ['name' => 'Sardor Yo\'ldoshev', 'exp' => '5 yil tajriba', 'note' => 'Hackathon g\'olibi', 'ago' => '3 kun oldin'],
-        ]],
-        ['title' => 'Psixolog', 'type' => 'To\'liq stavka', 'status' => 'closed', 'stLabel' => 'Yopilgan', 'applicants' => 3, 'until' => 'Yakunlangan', 'salary' => '4 500 000', 'requirements' => 'Amaliy psixologiya yo\'nalishi, maktab tajribasi afzallik', 'candidates' => [
-            ['name' => 'Feruza Alimova', 'exp' => '7 yil tajriba', 'note' => 'Amaliy psixologiya', 'ago' => '1 hafta oldin'],
-            ['name' => 'Nodira Ergasheva', 'exp' => '4 yil tajriba', 'note' => 'Maktab tajribasi bor', 'ago' => '1 hafta oldin'],
-            ['name' => 'Shahzod Tursunov', 'exp' => '2 yil tajriba', 'note' => 'Yosh mutaxassis', 'ago' => '2 hafta oldin'],
-        ]],
-    ];
-    $statusStyle = [
-        'active' => ['bg' => 'var(--primary-soft)', 'color' => 'var(--primary-ink)'],
-        'review' => ['bg' => 'var(--accent-soft)', 'color' => '#b45309'],
-        'closed' => ['bg' => 'var(--surface-2)', 'color' => 'var(--ink-3)'],
-    ];
-    $totalApplicants = collect($mockVacancies)->sum('applicants');
+    // Real ro'yxat — App\Models\Vacancy (Institution::vacancies()). "Vakansiya ochish"
+    // (yaratish) formasi hali pullik-demo bo'lib qoladi, nomzodlar/ariza boshqaruvi esa
+    // hali qurilmagan (ADR-0002, Faza 2: vacancy_applications jadvali) — shuning uchun
+    // pastda faqat real e'lonlar ro'yxati va o'chirish amali ko'rsatiladi.
+    $employmentLabels = ['full' => "To'liq stavka", 'part' => 'Yarim stavka', 'hourly' => 'Soatbay'];
 @endphp
 
 <x-institution.shell
@@ -43,43 +18,49 @@
     @if ($institution)
 
     <div class="idash-toolbar">
-        <span class="idash-chart-meta">{{ count($mockVacancies) }} ta e'lon · {{ $totalApplicants }} nomzod · e'lon narxi 100 000 so'm</span>
+        <span class="idash-chart-meta">{{ $vacancies->count() }} ta e'lon · e'lon narxi 100 000 so'm</span>
         <button type="button" class="btn btn-primary sm" data-modal-open="add-vacancy-modal">
             <x-maktabgid.icon name="plus" :width="15" :height="15" /> Vakansiya ochish
         </button>
     </div>
 
-    <div class="idash-vac-grid">
-        @foreach ($mockVacancies as $v)
-            <div class="idash-vac-card">
-                <div class="idash-vac-top">
-                    <span class="idash-pill-neutral" style="background:var(--primary-soft);color:var(--primary-ink)">{{ $v['type'] }}</span>
-                    <span class="idash-status-pill" style="background:{{ $statusStyle[$v['status']]['bg'] }};color:{{ $statusStyle[$v['status']]['color'] }}">{{ $v['stLabel'] }}</span>
-                </div>
-                <h3>{{ $v['title'] }}</h3>
-                <div class="idash-vac-meta">
-                    <span><x-maktabgid.icon name="users" :width="15" :height="15" /> {{ $v['applicants'] }} nomzod</span>
-                    <span><x-maktabgid.icon name="cal" :width="15" :height="15" /> {{ $v['until'] }}</span>
-                </div>
-                <div class="idash-vac-foot">
-                    <span class="idash-vac-price">{{ $v['salary'] }} <span>so'm</span></span>
-                    <div class="idash-vac-actions">
-                        <button type="button" class="idash-lead-iconbtn" title="Tahrirlash" data-modal-open="edit-vacancy-{{ $loop->index }}"><x-maktabgid.icon name="edit" :width="14" :height="14" /></button>
-                        <button type="button" class="idash-lead-iconbtn danger" title="O'chirish"><x-maktabgid.icon name="close" :width="14" :height="14" /></button>
-                        <button type="button" class="idash-vac-cand" data-modal-open="candidates-vacancy-{{ $loop->index }}">Nomzodlar ({{ $v['applicants'] }})</button>
+    @if ($vacancies->isEmpty())
+        <div class="idash-badge-soft">
+            <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Hali e'loningiz yo'q — "Vakansiya ochish" orqali birinchisini joylang
+        </div>
+    @else
+        <div class="idash-vac-grid">
+            @foreach ($vacancies as $v)
+                <div class="idash-vac-card" data-vacancy-id="{{ $v->id }}">
+                    <div class="idash-vac-top">
+                        <span class="idash-pill-neutral" style="background:var(--primary-soft);color:var(--primary-ink)">{{ $employmentLabels[$v->employment_type] ?? $v->employment_type }}</span>
+                    </div>
+                    <h3>{{ $v->title }}</h3>
+                    <div class="idash-vac-meta">
+                        @if ($v->specialization_key)
+                            <span><x-maktabgid.icon name="sparkle" :width="15" :height="15" /> {{ \App\Support\MaktabgidData::specializationLabel($v->specialization_key)['label'] ?? $v->specialization_key }}</span>
+                        @endif
+                        @if ($v->expires_at)
+                            <span><x-maktabgid.icon name="cal" :width="15" :height="15" /> {{ $v->expires_at->format('d.m.Y') }}gacha</span>
+                        @endif
+                    </div>
+                    <div class="idash-vac-foot">
+                        <span class="idash-vac-price">{{ $v->salary_range ?: 'Kelishilgan' }}</span>
+                        <div class="idash-vac-actions">
+                            <button type="button" class="idash-lead-iconbtn danger js-vacancy-delete" data-vacancy-id="{{ $v->id }}" title="O'chirish">
+                                <x-maktabgid.icon name="close" :width="14" :height="14" />
+                            </button>
+                            <button type="button" class="idash-vac-cand" data-modal-open="candidates-vacancy-{{ $v->id }}">Nomzodlar ({{ $v->applications->count() }})</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        @endforeach
-    </div>
+            @endforeach
+        </div>
+    @endif
 
-    <div class="idash-badge-soft">
-        <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Bu bo'lim demo ma'lumot bilan ko'rsatilmoqda — nomzodlar boshqaruvi tez orada ulanadi
-    </div>
-
-    {{-- ===== "Vakansiya ochish" modali — real Vacancy modeliga hali ulanmagan (yuqoridagi
-         $mockVacancies'ga qarang), shuning uchun umumiy "fake form" andozasi orqali ishlaydi
-         — xuddi rezyume joylashdagi to'lov eslatmasi kabi (vakansiya joylash ham pullik). ===== --}}
+    {{-- ===== "Vakansiya ochish" modali — vakansiya joylash pullik xizmat (100 000 so'm),
+         to'lov tizimi (Payme/Click) hali ulanmagani uchun umumiy "fake form" andozasi
+         orqali demo ko'rinishda ishlaydi (ADR-0002). ===== --}}
     <x-maktabgid.modal-shell id="add-vacancy-modal" :width="480">
         <div class="js-modal-body">
             <div class="modal-head js-fake-form-head">
@@ -125,76 +106,40 @@
         </div>
     </x-maktabgid.modal-shell>
 
-    {{-- ===== "Vakansiyani tahrirlash" modali — har bir vakansiya uchun alohida ===== --}}
-    @foreach ($mockVacancies as $v)
-        <x-maktabgid.modal-shell id="edit-vacancy-{{ $loop->index }}" :width="480">
-            <div class="js-modal-body">
-                <div class="modal-head js-fake-form-head">
-                    <h3>Vakansiyani tahrirlash</h3>
-                </div>
-
-                <form class="form js-fake-form">
-                    <x-maktabgid.field label="Lavozim" icon="bag">
-                        <input type="text" value="{{ $v['title'] }}" required />
-                    </x-maktabgid.field>
-                    <div class="form-row2">
-                        <x-maktabgid.field label="Stavka" icon="sliders">
-                            <select required>
-                                <option @selected($v['type'] === "To'liq stavka")>To'liq stavka</option>
-                                <option @selected($v['type'] === 'Yarim stavka')>Yarim stavka</option>
-                            </select>
-                        </x-maktabgid.field>
-                        <x-maktabgid.field label="Maosh diapazoni (mln)" icon="card">
-                            <input type="text" value="{{ $v['salary'] }}" required />
-                        </x-maktabgid.field>
-                    </div>
-                    <x-maktabgid.field label="Talablar" icon="edit">
-                        <textarea rows="3">{{ $v['requirements'] }}</textarea>
-                    </x-maktabgid.field>
-                    <x-maktabgid.field label="Murojaat muddati" icon="cal">
-                        <input type="text" value="{{ $v['until'] }}" required />
-                    </x-maktabgid.field>
-
-                    <div style="display:flex;gap:10px;margin-top:4px">
-                        <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">Saqlash</button>
-                        <button class="btn btn-ghost js-modal-close" type="button">Bekor qilish</button>
-                    </div>
-                </form>
-
-                <x-maktabgid.success-note title="Ma'lumotlar yangilandi!" :close-target="true" class="js-fake-success" style="display:none">
-                    O'zgarishlar e'lon sahifasida ham aks etadi.
-                </x-maktabgid.success-note>
-            </div>
-        </x-maktabgid.modal-shell>
-    @endforeach
-
-    {{-- ===== "Nomzodlar" ko'rish modali — har bir vakansiya uchun alohida (statik namoyish,
-         real ariza/rezyume bog'lanishi hali yo'q, shuning uchun qabul/rad tugmalari hozircha
-         faqat ko'rinish uchun). ===== --}}
-    @foreach ($mockVacancies as $v)
-        <x-maktabgid.modal-shell id="candidates-vacancy-{{ $loop->index }}" :width="560">
+    {{-- ===== "Nomzodlar" ko'rish modali — har bir vakansiya uchun alohida, real
+         VacancyApplication (ADR-0002, Faza 2). Qabul/rad tugmalari real PATCH
+         /ajax/institution/me/vacancy-applications/{id}/status ga ulangan. ===== --}}
+    @foreach ($vacancies as $v)
+        <x-maktabgid.modal-shell id="candidates-vacancy-{{ $v->id }}" :width="560">
             <div class="js-modal-body">
                 <div class="modal-head">
                     <h3>Nomzodlar</h3>
-                    <p>{{ $v['title'] }} — {{ $v['applicants'] }} nomzod</p>
+                    <p>{{ $v->title }} — {{ $v->applications->count() }} nomzod</p>
                 </div>
 
-                <div class="idash-cand-list">
-                    @foreach ($v['candidates'] as $c)
-                        <div class="idash-cand-row">
-                            <x-maktabgid.avatar :name="$c['name']" :size="48" />
-                            <div class="idash-cand-main">
-                                <b>{{ $c['name'] }}</b>
-                                <span>{{ $c['exp'] }} · {{ $c['note'] }} · {{ $c['ago'] }}</span>
+                @if ($v->applications->isEmpty())
+                    <p style="color:var(--ink-3);font-weight:600;font-size:14px">Hali ariza kelmagan.</p>
+                @else
+                    <div class="idash-cand-list">
+                        @foreach ($v->applications->sortByDesc('created_at') as $c)
+                            <div class="idash-cand-row" data-application-id="{{ $c->id }}">
+                                <x-maktabgid.avatar :name="$c->full_name" :size="48" />
+                                <div class="idash-cand-main">
+                                    <b>{{ $c->full_name }}</b>
+                                    <span>{{ $c->phone }} · {{ $c->created_at->diffForHumans() }}@if ($c->note) · {{ \Illuminate\Support\Str::limit($c->note, 60) }} @endif</span>
+                                </div>
+                                @if ($c->status === 'pending')
+                                    <div class="idash-cand-actions">
+                                        <button type="button" class="idash-cand-btn accept js-vacancy-app-status" data-application-id="{{ $c->id }}" data-status="accepted" title="Qabul qilish"><x-maktabgid.icon name="check" :width="16" :height="16" /></button>
+                                        <button type="button" class="idash-cand-btn reject js-vacancy-app-status" data-application-id="{{ $c->id }}" data-status="rejected" title="Rad etish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
+                                    </div>
+                                @else
+                                    <span class="idash-status-pill" style="background:{{ $c->status === 'accepted' ? 'var(--primary-soft)' : 'var(--surface-2)' }};color:{{ $c->status === 'accepted' ? 'var(--primary-ink)' : 'var(--ink-3)' }}">{{ $c->status === 'accepted' ? 'Qabul qilindi' : 'Rad etildi' }}</span>
+                                @endif
                             </div>
-                            <div class="idash-cand-actions">
-                                <button type="button" class="idash-cand-resume">Rezyume</button>
-                                <button type="button" class="idash-cand-btn accept" title="Qabul qilish"><x-maktabgid.icon name="check" :width="16" :height="16" /></button>
-                                <button type="button" class="idash-cand-btn reject" title="Rad etish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </x-maktabgid.modal-shell>
     @endforeach

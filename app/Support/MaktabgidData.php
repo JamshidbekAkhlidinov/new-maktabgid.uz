@@ -331,7 +331,26 @@ class MaktabgidData
             'videos' => self::resolveVideos($institution),
             'steps' => self::resolveAdmissionSteps($institution),
             'stats' => self::resolveStats($institution),
+            'achievements' => self::resolveAchievements($institution),
         ];
+    }
+
+    /** O'quvchilar yutuqlari — real Achievement yozuvlari (ADR-0002, Faza 2). Bo'sh bo'lsa
+     *  ommaviy profilda bo'lim umuman ko'rsatilmaydi (teachers/programs kabi mock fallback yo'q). */
+    private static function resolveAchievements(Institution $institution): array
+    {
+        $achievements = $institution->relationLoaded('achievements')
+            ? $institution->achievements
+            : $institution->achievements()->get();
+
+        return $achievements->map(fn ($a) => [
+            'title' => $a->title,
+            'student' => $a->student_name,
+            'year' => $a->year,
+            'type' => $a->type,
+            'level' => $a->level,
+            'imageUrl' => $a->image_url,
+        ])->all();
     }
 
     /** Muassasa oʻzi tanlagan qulayliklar boʻlsa — shulardan, boʻlmasa toʻliq katalogdan (eski xatti-harakat). */
@@ -442,7 +461,7 @@ class MaktabgidData
 
     public static function schools(): array
     {
-        return Institution::with(['district', 'specializations'])
+        return Institution::with(['district', 'specializations', 'achievements'])
             ->orderBy('id')
             ->get()
             ->map(fn (Institution $institution) => self::mapInstitution($institution))
@@ -451,7 +470,7 @@ class MaktabgidData
 
     public static function school(int $id): ?array
     {
-        $institution = Institution::with(['district', 'specializations', 'media'])->find($id);
+        $institution = Institution::with(['district', 'specializations', 'media', 'achievements'])->find($id);
 
         return $institution ? self::mapInstitution($institution) : null;
     }
@@ -597,6 +616,7 @@ class MaktabgidData
             'date' => self::formatDateUz($a->published_at),
             'g' => $gradients[$a->id % count($gradients)],
             'feat' => (bool) $a->featured,
+            'image' => $a->image_url,
         ];
     }
 
@@ -701,6 +721,16 @@ class MaktabgidData
             'langs' => $r->languages,
             'ago' => $r->created_at?->diffForHumans() ?? '',
         ])->all();
+    }
+
+    /** Blog/maqola media bloki uchun style: haqiqiy rasm bo'lsa shu, bo'lmasa gradient (eski xatti-harakat). */
+    public static function mediaStyle(array $item, int $angle = 140): string
+    {
+        if (! empty($item['image'])) {
+            return "background-image:url('{$item['image']}');background-size:cover;background-position:center";
+        }
+
+        return "background:linear-gradient({$angle}deg, {$item['g'][0]}, {$item['g'][1]})";
     }
 
     /* ---------------- helpers ---------------- */

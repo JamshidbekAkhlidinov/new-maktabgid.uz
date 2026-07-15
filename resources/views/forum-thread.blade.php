@@ -32,6 +32,9 @@
                         <div><b>{{ $thread['author'] }}</b><span>{{ $thread['ago'] }} · {{ $thread['views'] }} koʻrildi</span></div>
                     </div>
                     <p>{{ $thread['body'] }}</p>
+                    <button type="button" class="reply-like js-forum-like" data-thread-id="{{ $thread['id'] }}">
+                        <x-maktabgid.icon name="like" :width="15" :height="15" /> <span class="js-like-count">{{ $thread['likes'] }}</span>
+                    </button>
                 </article>
 
                 <h3 class="reply-head">{{ count($replies) }} ta javob</h3>
@@ -42,14 +45,16 @@
                             <div class="reply-main">
                                 <div class="reply-top"><b>{{ $r['author'] }}</b><time>{{ $r['ago'] }}</time></div>
                                 <p>{{ $r['body'] }}</p>
-                                <button type="button" class="reply-like js-fav"><x-maktabgid.icon name="like" :width="15" :height="15" /> {{ $r['likes'] }}</button>
+                                <button type="button" class="reply-like js-forum-like" data-reply-id="{{ $r['id'] }}">
+                                    <x-maktabgid.icon name="like" :width="15" :height="15" /> <span class="js-like-count">{{ $r['likes'] }}</span>
+                                </button>
                             </div>
                         </div>
                     @endforeach
                 </div>
 
-                <form class="reply-box" onsubmit="event.preventDefault(); this.reset(); return false;">
-                    <textarea rows="3" placeholder="Javobingizni yozing…"></textarea>
+                <form class="reply-box js-reply-form" data-thread-id="{{ $thread['id'] }}">
+                    <textarea name="body" rows="3" required placeholder="Javobingizni yozing…"></textarea>
                     <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> Javob berish</button>
                 </form>
             </div>

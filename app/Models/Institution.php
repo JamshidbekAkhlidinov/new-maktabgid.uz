@@ -81,4 +81,16 @@ class Institution extends Model
     {
         return $this->hasMany(Vacancy::class);
     }
+
+    /** Real profil ko'rishlar jurnali — "Analitika" sahifasi shu yerdan hisoblanadi (ADR-0002, Faza 2). */
+    public function views(): HasMany
+    {
+        return $this->hasMany(InstitutionView::class);
+    }
+
+    /** O'quvchilar yutuqlari — kabinetda qo'shiladi, ommaviy profilda ko'rinadi (ADR-0002, Faza 2). */
+    public function achievements(): HasMany
+    {
+        return $this->hasMany(Achievement::class)->latest();
+    }
 }

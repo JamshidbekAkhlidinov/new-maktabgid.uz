@@ -434,6 +434,238 @@
         });
     });
 
+    /* real vakansiyaga ariza formasi: POST /ajax/vacancies/{id}/apply (vacancy.blade.php,
+       teacher/vacancies.blade.php — mehmon ham yubora oladi, .js-application-form bilan
+       bir xil andoza — ADR-0002, Faza 2). */
+    document.querySelectorAll(".js-vacancy-apply-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var vacancyId = form.dataset.vacancyId;
+            if (!vacancyId) return;
+
+            var data = {};
+            var els = form.elements;
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].name) data[els[i].name] = els[i].value;
+            }
+
+            var oldError = form.querySelector(".js-app-error");
+            if (oldError) oldError.remove();
+
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            jsonFetch("/ajax/vacancies/" + vacancyId + "/apply", "POST", data).then(function (res) {
+                if (submitBtn) submitBtn.disabled = false;
+
+                if (!res.ok) {
+                    var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                    if (res.body) {
+                        if (res.body.errors) {
+                            var firstKey = Object.keys(res.body.errors)[0];
+                            if (firstKey) msg = res.body.errors[firstKey][0];
+                        } else if (res.body.message) {
+                            msg = res.body.message;
+                        }
+                    }
+                    var box = document.createElement("div");
+                    box.className = "js-app-error";
+                    box.style.cssText = "color:#dc2626;font-size:13px;font-weight:600;margin-top:10px";
+                    box.textContent = msg;
+                    form.appendChild(box);
+                    return;
+                }
+
+                var wrap = form.closest(".js-inline-enroll") || form.parentElement;
+                if (!wrap) return;
+                form.style.display = "none";
+                var head = wrap.querySelector(".js-fake-form-head");
+                if (head) head.style.display = "none";
+                var success = wrap.querySelector(".js-fake-success");
+                if (success) success.style.display = "";
+            });
+        });
+    });
+
+    /* real vakansiya/rezyume joylash formalari: POST /ajax/vacancies, /ajax/resumes
+       (careers.blade.php'dagi ommaviy modallar — ADR-0002, Faza 1. .js-application-form
+       bilan bir xil andoza: xatolik ko'rsatish + muvaffaqiyat holatiga almashish). */
+    function wireCareerForm(selector, url) {
+        document.querySelectorAll(selector).forEach(function (form) {
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                var data = {};
+                var els = form.elements;
+                for (var i = 0; i < els.length; i++) {
+                    if (els[i].name) data[els[i].name] = els[i].value;
+                }
+
+                var oldError = form.querySelector(".js-app-error");
+                if (oldError) oldError.remove();
+
+                var submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) submitBtn.disabled = true;
+
+                jsonFetch(url, "POST", data).then(function (res) {
+                    if (submitBtn) submitBtn.disabled = false;
+
+                    if (!res.ok) {
+                        var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                        if (res.body) {
+                            if (res.body.errors) {
+                                var firstKey = Object.keys(res.body.errors)[0];
+                                if (firstKey) msg = res.body.errors[firstKey][0];
+                            } else if (res.body.message) {
+                                msg = res.body.message;
+                            }
+                        }
+                        var box = document.createElement("div");
+                        box.className = "js-app-error";
+                        box.style.cssText = "color:#dc2626;font-size:13px;font-weight:600;margin-top:10px";
+                        box.textContent = msg;
+                        form.appendChild(box);
+                        return;
+                    }
+
+                    var wrap = form.closest(".modal-card") || form.parentElement;
+                    if (!wrap) return;
+                    form.style.display = "none";
+                    var head = wrap.querySelector(".js-fake-form-head");
+                    if (head) head.style.display = "none";
+                    var success = wrap.querySelector(".js-fake-success");
+                    if (success) success.style.display = "";
+                });
+            });
+        });
+    }
+
+    wireCareerForm(".js-vacancy-form", "/ajax/vacancies");
+    wireCareerForm(".js-resume-form", "/ajax/resumes");
+
+    /* real "yangi mavzu" formasi: POST /ajax/forum/threads, muvaffaqiyatli
+       bo'lsa yangi mavzu sahifasiga o'tkaziladi (forum.blade.php — ADR-0002, Faza 2). */
+    document.querySelectorAll(".js-thread-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var data = {};
+            var els = form.elements;
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].name) data[els[i].name] = els[i].value;
+            }
+
+            var oldError = form.querySelector(".js-app-error");
+            if (oldError) oldError.remove();
+
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            jsonFetch("/ajax/forum/threads", "POST", data).then(function (res) {
+                if (submitBtn) submitBtn.disabled = false;
+
+                if (!res.ok) {
+                    var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                    if (res.body) {
+                        if (res.body.errors) {
+                            var firstKey = Object.keys(res.body.errors)[0];
+                            if (firstKey) msg = res.body.errors[firstKey][0];
+                        } else if (res.body.message) {
+                            msg = res.body.message;
+                        }
+                    }
+                    var box = document.createElement("div");
+                    box.className = "js-app-error";
+                    box.style.cssText = "color:#dc2626;font-size:13px;font-weight:600;margin-top:10px";
+                    box.textContent = msg;
+                    form.appendChild(box);
+                    return;
+                }
+
+                var id = res.body.thread && res.body.thread.id;
+                window.location.href = id ? "/forum/" + id : "/forum";
+            });
+        });
+    });
+
+    /* real javob formasi: POST /ajax/forum/threads/{id}/replies (forum-thread.blade.php).
+       Muvaffaqiyatli bo'lsa sahifa qayta yuklanadi — yangi javob serverdan real
+       tartibda chizilishi uchun (institution gallery bilan bir xil andoza). */
+    document.querySelectorAll(".js-reply-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var threadId = form.dataset.threadId;
+            if (!threadId) return;
+
+            var data = {};
+            var els = form.elements;
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].name) data[els[i].name] = els[i].value;
+            }
+
+            var oldError = form.querySelector(".js-app-error");
+            if (oldError) oldError.remove();
+
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            jsonFetch("/ajax/forum/threads/" + threadId + "/replies", "POST", data).then(function (res) {
+                if (res.status === 401 || res.status === 403) {
+                    var kirish = document.getElementById("js-kirish-btn");
+                    if (kirish) kirish.click();
+                    if (submitBtn) submitBtn.disabled = false;
+                    return;
+                }
+
+                if (!res.ok) {
+                    if (submitBtn) submitBtn.disabled = false;
+                    var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                    if (res.body) {
+                        if (res.body.errors) {
+                            var firstKey = Object.keys(res.body.errors)[0];
+                            if (firstKey) msg = res.body.errors[firstKey][0];
+                        } else if (res.body.message) {
+                            msg = res.body.message;
+                        }
+                    }
+                    var box = document.createElement("div");
+                    box.className = "js-app-error";
+                    box.style.cssText = "color:#dc2626;font-size:13px;font-weight:600;margin-top:10px";
+                    box.textContent = msg;
+                    form.appendChild(box);
+                    return;
+                }
+
+                window.location.reload();
+            });
+        });
+    });
+
+    /* forum layk (mavzu/javob): POST /ajax/forum/threads/{id}/like yoki
+       /ajax/forum/replies/{id}/like — toggle, natija darhol sonda ko'rinadi. */
+    document.querySelectorAll(".js-forum-like").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var threadId = btn.dataset.threadId;
+            var replyId = btn.dataset.replyId;
+            var url = threadId ? "/ajax/forum/threads/" + threadId + "/like" : "/ajax/forum/replies/" + replyId + "/like";
+
+            jsonFetch(url, "POST").then(function (res) {
+                if (res.status === 401 || res.status === 403) {
+                    var kirish = document.getElementById("js-kirish-btn");
+                    if (kirish) kirish.click();
+                    return;
+                }
+                if (!res.ok) return;
+
+                btn.classList.toggle("on", !!res.body.liked);
+                var countEl = btn.querySelector(".js-like-count");
+                if (countEl && typeof res.body.likes === "number") countEl.textContent = res.body.likes;
+            });
+        });
+    });
+
     /* ===================== AUTH MODAL & SESSION (real backend, backend.md §5) ===================== */
     (function () {
         /* --- dropdown helpers (auth holatidan mustaqil) --- */
@@ -856,7 +1088,16 @@
                             return;
                         }
 
-                        /* muvaffaqiyatli: sahifani to'liq qayta yuklamasdan slotni yangilaymiz */
+                        /* Galereya sahifasida (data-reload="1") ro'yxat dinamik — yangi
+                         * yozuv serverdan real tartibda (sort_order) qayta chizilishi
+                         * uchun sahifa qayta yuklanadi (institution.gallery.blade.php). */
+                        if (slot.dataset.reload === "1") {
+                            window.location.reload();
+                            return;
+                        }
+
+                        /* Profil sahifasidagi sobit slotlar (upload-slot) — sahifani to'liq
+                         * qayta yuklamasdan slotni joyida yangilaymiz. */
                         var url = result.body.media && result.body.media.url;
                         if (url) {
                             slot.classList.add("filled");
@@ -872,6 +1113,162 @@
                         }
                     }).catch(function () {
                         slot.classList.remove("loading");
+                        alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+                    });
+                });
+            });
+
+            /* --- rasm o'chirish: real DELETE /ajax/institution/me/media/{id} (galereya sahifasi) --- */
+            document.querySelectorAll(".js-media-delete").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var id = btn.dataset.mediaId;
+                    if (!id) return;
+                    if (!window.confirm("Rasmni o'chirishni tasdiqlaysizmi?")) return;
+
+                    btn.disabled = true;
+
+                    fetch("/ajax/institution/me/media/" + id, {
+                        method: "DELETE",
+                        headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+                    }).then(function (res) {
+                        if (res.ok) {
+                            window.location.reload();
+                            return;
+                        }
+                        btn.disabled = false;
+                        alert("Rasmni o'chirib bo'lmadi. Qayta urining.");
+                    }).catch(function () {
+                        btn.disabled = false;
+                        alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+                    });
+                });
+            });
+
+            /* --- vakansiyani o'chirish: real DELETE /ajax/institution/me/vacancies/{id}
+               (institution-cabinet Vakansiyalar sahifasi — ADR-0002, Faza 1/2) --- */
+            document.querySelectorAll(".js-vacancy-delete").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var id = btn.dataset.vacancyId;
+                    if (!id) return;
+                    if (!window.confirm("E'lonni o'chirishni tasdiqlaysizmi?")) return;
+
+                    btn.disabled = true;
+
+                    fetch("/ajax/institution/me/vacancies/" + id, {
+                        method: "DELETE",
+                        headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+                    }).then(function (res) {
+                        if (res.ok) {
+                            window.location.reload();
+                            return;
+                        }
+                        btn.disabled = false;
+                        alert("E'lonni o'chirib bo'lmadi. Qayta urining.");
+                    }).catch(function () {
+                        btn.disabled = false;
+                        alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+                    });
+                });
+            });
+
+            /* --- nomzod arizasini qabul/rad qilish: real PATCH
+               /ajax/institution/me/vacancy-applications/{id}/status (Nomzodlar modali — ADR-0002, Faza 2) --- */
+            document.querySelectorAll(".js-vacancy-app-status").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var id = btn.dataset.applicationId;
+                    var status = btn.dataset.status;
+                    if (!id || !status) return;
+
+                    btn.disabled = true;
+
+                    jsonFetch("/ajax/institution/me/vacancy-applications/" + id + "/status", "PATCH", { status: status }).then(function (res) {
+                        if (res.ok) {
+                            window.location.reload();
+                            return;
+                        }
+                        btn.disabled = false;
+                        alert("Holatni o'zgartirib bo'lmadi. Qayta urining.");
+                    });
+                });
+            });
+
+            /* --- yutuq qo'shish/tahrirlash: real POST /ajax/institution/me/achievements
+               (yaratish) va PUT .../achievements/{id} (tahrirlash) — ADR-0002, Faza 2.
+               Ikkalasi ham multipart/form-data (ixtiyoriy sertifikat rasmi uchun). --- */
+            function submitAchievementForm(form) {
+                var errBox = form.querySelector(".js-form-error");
+                var formData = new FormData(form);
+                var url = form.dataset.achievementId
+                    ? "/ajax/institution/me/achievements/" + form.dataset.achievementId
+                    : "/ajax/institution/me/achievements";
+
+                if (form.dataset.achievementId) formData.append("_method", "PUT");
+
+                var submitBtn = form.querySelector(".form-submit");
+                if (submitBtn) submitBtn.disabled = true;
+                if (errBox) errBox.style.display = "none";
+
+                fetch(url, {
+                    method: "POST",
+                    headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+                    body: formData,
+                }).then(function (res) {
+                    return res.json().catch(function () { return {}; }).then(function (body) {
+                        return { ok: res.ok, body: body };
+                    });
+                }).then(function (result) {
+                    if (submitBtn) submitBtn.disabled = false;
+
+                    if (!result.ok) {
+                        var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                        if (result.body) {
+                            if (result.body.errors) {
+                                var firstKey = Object.keys(result.body.errors)[0];
+                                if (firstKey && result.body.errors[firstKey][0]) msg = result.body.errors[firstKey][0];
+                            } else if (result.body.message) {
+                                msg = result.body.message;
+                            }
+                        }
+                        if (errBox) { errBox.textContent = msg; errBox.style.display = ""; }
+                        else alert(msg);
+                        return;
+                    }
+
+                    window.location.reload();
+                }).catch(function () {
+                    if (submitBtn) submitBtn.disabled = false;
+                    alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+                });
+            }
+
+            document.querySelectorAll(".js-achievement-form").forEach(function (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+                    submitAchievementForm(form);
+                });
+            });
+
+            /* --- yutuqni o'chirish: real DELETE /ajax/institution/me/achievements/{id} --- */
+            document.querySelectorAll(".js-achievement-delete").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var id = btn.dataset.achievementId;
+                    if (!id) return;
+                    if (!window.confirm("Yutuqni o'chirishni tasdiqlaysizmi?")) return;
+
+                    btn.disabled = true;
+
+                    fetch("/ajax/institution/me/achievements/" + id, {
+                        method: "DELETE",
+                        headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+                    }).then(function (res) {
+                        if (res.ok) {
+                            window.location.reload();
+                            return;
+                        }
+                        btn.disabled = false;
+                        alert("Yutuqni o'chirib bo'lmadi. Qayta urining.");
+                    }).catch(function () {
+                        btn.disabled = false;
                         alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
                     });
                 });

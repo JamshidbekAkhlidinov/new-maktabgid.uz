@@ -15,11 +15,14 @@ use Illuminate\View\View;
  * (x-institution.shell) ichida render bo'ladi — shunga sidebar/topbar/
  * tashkilot select'i barcha sahifalarda bir xil qoladi.
  *
- * Eslatma: "Lidlar", "Analitika" va "Tariflar va obuna" uchun hali alohida
- * DB jadvali yo'q — shu sahifalar hozircha vizual/mock ma'lumot bilan
- * ishlaydi (loyihaning shu bosqichida shunday kelishilgan). Qolgan barcha
- * sahifalar (Ekskursiyalar, Suhbatlar, Muassasa profili) real bazadagi
- * ma'lumot bilan ishlaydi.
+ * Eslatma: "Tariflar va obuna" (billing) uchun hali alohida DB jadvali yo'q —
+ * bu sahifa hozircha vizual/mock ma'lumot bilan ishlaydi (to'lov tizimi
+ * ulanmagan). "Lidlar" (Application, type=enrollment), "Analitika"
+ * (InstitutionView/Favorite/Application) va "O'quvchilar yutuqlari"
+ * (Achievement) endi real (ADR-0002, Faza 2); Analitika'dagi trafik-manba va
+ * yosh taqsimoti hali mock — bu ikkisi uchun hech qanday hodisa yozib
+ * olinmaydi. Qolgan barcha sahifalar (Ekskursiyalar, Suhbatlar, Muassasa
+ * profili) real bazadagi ma'lumot bilan ishlaydi.
  */
 class InstitutionCabinetController extends Controller
 {
@@ -64,7 +67,7 @@ class InstitutionCabinetController extends Controller
             'time' => $r->created_at,
         ]))->concat([[
             'type' => 'views',
-            'text' => "E'loningiz bugun {$this->mockTodayViews()} marta ko'rildi", // mock — hisoblagich hali yo'q
+            'text' => "E'loningiz bugun {$this->todayViews($ctx['institution'])} marta ko'rildi",
             'time' => now()->subHours(3),
             'subtitle' => 'Bugun',
         ]])->sortByDesc('time')->take(6)->values();
@@ -79,18 +82,46 @@ class InstitutionCabinetController extends Controller
         ]);
     }
 
+    /**
+     * "Lidlar" — real `Application` (`type=enrollment`) yozuvlari. Alohida lead-
+     * generation modeli qurishning hojati yo'q edi: sayt/kabinetdagi "Ariza
+     * yuborish" formasi allaqachon shu maqsadda ishlatiladi (excursion turi
+     * "Ekskursiyalar" sahifasida, enrollment turi shu yerda) — ADR-0002, Faza 2.
+     */
     public function leads(Request $request): View
     {
-        // Mock: "Lidlar" — hali alohida lead-generation modeli yo'q.
-        return view('institution.leads', $this->context($request));
+        $ctx = $this->context($request);
+        $institution = $ctx['institution'];
+
+        $leads = $institution
+            ? $institution->applications()->where('type', 'enrollment')->latest()->get()
+            : collect();
+
+        return view('institution.leads', $ctx + [
+            'leads' => $leads,
+            'statusLabels' => [
+                'pending' => 'Yangi',
+                'confirmed' => 'Tasdiqlangan',
+                'rejected' => 'Rad etilgan',
+            ],
+            'leadStats' => [
+                'total' => $leads->count(),
+                'pending' => $leads->where('status', 'pending')->count(),
+                'confirmed' => $leads->where('status', 'confirmed')->count(),
+                'rejected' => $leads->where('status', 'rejected')->count(),
+            ],
+        ]);
     }
 
     public function excursions(Request $request): View
     {
         $ctx = $this->context($request);
 
+        // Diqqat: avval bu yerda TYPE bo'yicha filtr yo'q edi — enrollment (Lidlar)
+        // arizalari ham shu ro'yxatga aralashib ketardi. Endi faqat excursion turi
+        // ko'rsatiladi (ADR-0002, Faza 2 — Lidlar sahifasi enrollment turini oladi).
         $applications = $ctx['institution']
-            ? $ctx['institution']->applications()->latest()->get()
+            ? $ctx['institution']->applications()->where('type', 'excursion')->latest()->get()
             : collect();
 
         return view('institution.excursions', $ctx + [
@@ -170,10 +201,61 @@ class InstitutionCabinetController extends Controller
         ]);
     }
 
+    /**
+     * "Analitika" sahifasi — "Jami ko'rishlar", haftalik ko'rishlar dinamikasi,
+     * "Saqlovga qo'shildi" (Favorite) va "Lidga aylanish" (arizalar konversiyasi)
+     * endi real `InstitutionView`/`Favorite`/`Application` yozuvlaridan hisoblanadi
+     * (ADR-0002, Faza 2). Trafik-manba (donut) va bola yoshi bo'yicha taqsimot hali
+     * mock — bu ikkisi uchun hech qanday real ma'lumot manbai yo'q (ko'rish
+     * hodisasida "qayerdan kelgani"/"bola yoshi" umuman yozib olinmaydi).
+     */
     public function analytics(Request $request): View
     {
-        // Mock: profil ko'rishlar hisoblagichi hali yo'q (StatsController'da ham shunday izohlangan).
-        return view('institution.analytics', $this->context($request));
+        $ctx = $this->context($request);
+        $institution = $ctx['institution'];
+
+        $totalViews = $institution ? $institution->views()->count() : 0;
+        $totalFavorites = $institution ? $institution->favorites()->count() : 0;
+        $totalApps = $institution ? $institution->applications()->count() : 0;
+        $confirmedApps = $institution ? $institution->applications()->where('status', 'confirmed')->count() : 0;
+        $conversionRate = $totalApps > 0 ? round($confirmedApps / $totalApps * 100, 1) : 0;
+
+        // Haftalik dinamika — oxirgi 7 kun vs undan oldingi 7 kun, kun-kun ko'rishlar soni.
+        $days = ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'];
+        $cur = array_fill(0, 7, 0);
+        $prev = array_fill(0, 7, 0);
+
+        if ($institution) {
+            $since = now()->startOfDay()->subDays(13);
+            $rows = $institution->views()
+                ->where('created_at', '>=', $since)
+                ->get()
+                ->groupBy(fn ($v) => $v->created_at->toDateString());
+
+            for ($i = 0; $i < 14; $i++) {
+                $date = $since->copy()->addDays($i);
+                $count = $rows->get($date->toDateString())?->count() ?? 0;
+                // ISO: 0=Du(Mon)...6=Ya(Sun)
+                $slot = $date->dayOfWeekIso - 1;
+
+                if ($i < 7) {
+                    $prev[$slot] = $count;
+                } else {
+                    $cur[$slot] = $count;
+                }
+            }
+        }
+
+        $maxVal = max(1, max(array_merge($cur, $prev)));
+
+        return view('institution.analytics', $ctx + [
+            'totalViews' => $totalViews,
+            'totalFavorites' => $totalFavorites,
+            'conversionRate' => $conversionRate,
+            'weekDays' => $days,
+            'weekChart' => ['cur' => $cur, 'prev' => $prev],
+            'weekMax' => $maxVal,
+        ]);
     }
 
     /** Mock: o'qituvchilar ro'yxati hozircha namunaviy — real ma'lumot uchun
@@ -184,25 +266,52 @@ class InstitutionCabinetController extends Controller
         return view('institution.teachers', $this->context($request));
     }
 
-    /** Mock: "O'quvchilar yutuqlari" — hali alohida DB jadvali yo'q. */
+    /** "O'quvchilar yutuqlari" — real `Achievement` (`Institution::achievements()`), ADR-0002 Faza 2. */
     public function achievements(Request $request): View
     {
-        return view('institution.achievements', $this->context($request));
+        $ctx = $this->context($request);
+        $institution = $ctx['institution'];
+
+        return view('institution.achievements', $ctx + [
+            'achievements' => $institution ? $institution->achievements : collect(),
+        ]);
     }
 
-    /** Mock: "Rasmlar" galereyasi — real yuklash InstitutionMedia orqali keyinroq ulanadi
-     *  (hozir faqat ko'rinish, InstitutionMedia hozircha video/boshqa turlar uchun ishlatiladi). */
+    /**
+     * Rasmlar galereyasi — real `InstitutionMedia` (`type=gallery`) bilan ishlaydi.
+     * Yuklash/o'chirish infratuzilmasi (`Institution\MediaController`,
+     * `/ajax/institution/me/media`) allaqachon mavjud edi — bu sahifa endi shu
+     * real ro'yxatni ko'rsatadi (ADR-0002, Faza 1).
+     */
     public function gallery(Request $request): View
     {
-        return view('institution.gallery', $this->context($request));
+        $ctx = $this->context($request);
+        $institution = $ctx['institution'];
+
+        $galleryMedia = $institution ? $institution->media->where('type', 'gallery')->values() : collect();
+
+        return view('institution.gallery', $ctx + [
+            'galleryMedia' => $galleryMedia,
+        ]);
     }
 
-    /** Mock: kabinet ichidagi "Vakansiyalar" boshqaruvi — real Vacancy modeli allaqachon
-     *  mavjud (careers sahifasida ishlatiladi), lekin nomzodlar/holat boshqaruvi hali shu
-     *  kabinetga ulanmagan — shuning uchun hozircha namunaviy ro'yxat bilan ko'rsatiladi. */
+    /**
+     * Kabinet ichidagi "Vakansiyalar" ro'yxati — real `Vacancy` modeli bilan ishlaydi
+     * (`Institution::vacancies()` munosabati). "Vakansiya ochish" (yaratish) formasi
+     * hali pullik-demo bo'lib qoladi (ADR-0002: to'lov tizimi ulanmagan) — faqat
+     * ro'yxat/o'qish tomoni real qilindi.
+     */
     public function vacancies(Request $request): View
     {
-        return view('institution.vacancies', $this->context($request));
+        $ctx = $this->context($request);
+        $institution = $ctx['institution'];
+
+        // "Nomzodlar" modali uchun real arizalar ham birga yuklanadi (ADR-0002, Faza 2).
+        $vacancies = $institution ? $institution->vacancies()->with('applications')->latest()->get() : collect();
+
+        return view('institution.vacancies', $ctx + [
+            'vacancies' => $vacancies,
+        ]);
     }
 
     public function profile(Request $request): View
@@ -318,11 +427,10 @@ class InstitutionCabinetController extends Controller
         ];
     }
 
-    /** Mock: profil ko'rishlar hisoblagichi hali yo'q — "So'nggi harakatlar" oqimidagi
-     *  bitta namuna qator uchun ishlatiladi (StatsController'dagi "profileViews" izohiga qarang). */
-    private function mockTodayViews(): int
+    /** Real: bugungi profil ko'rishlar soni — "So'nggi harakatlar" oqimidagi qator uchun (ADR-0002, Faza 2). */
+    private function todayViews(?\App\Models\Institution $institution): int
     {
-        return 142;
+        return $institution ? $institution->views()->whereDate('created_at', now()->toDateString())->count() : 0;
     }
 
     /** "8-iyun, 14:30" ko'rinishidagi sana — APP_LOCALE'dan mustaqil, doim o'zbekcha oy nomi bilan. */
@@ -376,8 +484,14 @@ class InstitutionCabinetController extends Controller
             'institution' => $institution,
             'organizations' => $organizations,
             'counts' => [
-                'leads' => $institution ? 0 : 0, // Lidlar — hali real hisoblagich yo'q (mock sahifa).
-                'excursions' => $institution ? $institution->applications()->where('status', 'pending')->count() : 0,
+                // Real: yangi (pending) enrollment arizalari — "Lidlar" sahifasi.
+                'leads' => $institution
+                    ? $institution->applications()->where('type', 'enrollment')->where('status', 'pending')->count()
+                    : 0,
+                // Diqqat: faqat excursion turi (enrollment endi "leads" badge'ida hisoblanadi).
+                'excursions' => $institution
+                    ? $institution->applications()->where('type', 'excursion')->where('status', 'pending')->count()
+                    : 0,
                 // Sidebar badge — jami suhbatlar emas, ota-onadan o'qilmagan xabari bor
                 // suhbatlar soni (Message.read_at asosida, real).
                 'conversations' => $institution
@@ -385,9 +499,9 @@ class InstitutionCabinetController extends Controller
                         ->whereHas('messages', fn ($q) => $q->where('sender_type', 'parent')->whereNull('read_at'))
                         ->count()
                     : 0,
-                // Mock: "Vakansiyalar" sidebar badge'i — kabinet ichidagi nomzodlar boshqaruvi
-                // hali ulanmagani uchun hozircha ko'rsatilmaydi (null => badge chiqmaydi).
-                'vacancies' => null,
+                // Real e'lonlar soni (Vacancy) — nomzodlar/holat boshqaruvi hali ulanmagan
+                // bo'lsa ham, "nechta e'lon joylangan" badge sifatida to'g'ri ma'no beradi.
+                'vacancies' => $institution ? $institution->vacancies()->count() : null,
             ],
         ];
     }

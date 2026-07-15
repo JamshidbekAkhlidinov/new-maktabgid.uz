@@ -48,6 +48,7 @@
                 <x-maktabgid.detail.videos :videos="$s['videos']" />
                 <x-maktabgid.detail.facilities :facilities="$facilities" />
                 <x-maktabgid.detail.teachers :teachers="$teachers" />
+                <x-maktabgid.detail.achievements :achievements="$s['achievements']" />
                 <x-maktabgid.detail.steps :steps="$steps" />
                 <x-maktabgid.detail.enroll-form :school="$s" />
                 <x-maktabgid.detail.reviews :school="$s" :reviews="$reviews" :rating-bars="$ratingBars" />

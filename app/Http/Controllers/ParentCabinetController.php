@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\District;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -15,11 +18,10 @@ use Illuminate\View\View;
  * bilan bir xil andozada, saytdagi barcha kabinetlar vizual jihatdan izchil
  * bo'lishi uchun.
  *
- * Eslatma: "Farzandlarim" va "Obuna" uchun hali alohida DB jadvali yo'q —
- * shu sahifalar hozircha mock ma'lumot bilan ishlaydi (InstitutionCabinetController
- * dagi "Lidlar"/"Tariflar" bilan bir xil yondashuv). Qolgan barcha sahifalar
- * (Profil, Saqlanganlar, Arizalarim, Suhbatlar) real bazadagi ma'lumot bilan
- * ishlaydi — avval routes/web.php'dagi closure ichida turgan.
+ * Eslatma: "Obuna" uchun hali alohida DB jadvali yo'q — shu sahifa hozircha
+ * mock ma'lumot bilan ishlaydi (InstitutionCabinetController dagi "Tariflar"
+ * bilan bir xil yondashuv). Qolgan barcha sahifalar (Profil, Farzandlarim,
+ * Saqlanganlar, Arizalarim, Suhbatlar) real bazadagi ma'lumot bilan ishlaydi.
  */
 class ParentCabinetController extends Controller
 {
@@ -30,10 +32,38 @@ class ParentCabinetController extends Controller
         return view('parent.dashboard', $ctx);
     }
 
-    /** Mock: farzand profillari (AI Tanlovchi uchun) hali alohida DB jadvali yo'q. */
+    /** Farzand profillari (AI Tanlovchi uchun) — real jadval, ADR 2026-07-14. */
     public function children(Request $request): View
     {
         return view('parent.children', $this->context());
+    }
+
+    /**
+     * PUT /ajax/me — "Profilni tahrirlash" modali (parent/dashboard.blade.php).
+     * Faqat ism, telefon va tumanni yangilaydi; parol/rol shu yerdan o'zgarmaydi.
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        abort_unless($user && $user->isParent(), 403);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'phone' => ['required', 'string', 'max:30', Rule::unique('users', 'phone')->ignore($user->id)],
+            'district' => ['sometimes', 'nullable', 'string', 'max:150'],
+        ]);
+
+        $district = filled($data['district'] ?? null)
+            ? District::firstOrCreate(['name' => $data['district']])
+            : null;
+
+        $user->fill([
+            'name' => $data['name'],
+            'phone' => $data['phone'],
+            'district_id' => $district?->id,
+        ])->save();
+
+        return response()->json(['user' => $user->fresh('district')]);
     }
 
     public function favorites(Request $request): View
@@ -104,12 +134,9 @@ class ParentCabinetController extends Controller
         return [
             'user' => $user,
             'stats' => $stats,
-            // Mock: farzand profillari (AI Tanlovchi uchun) hali alohida DB jadvali yo'q —
-            // dashboard va "Farzandlarim" sahifasi shu bir xil namunaviy ro'yxatdan foydalanadi.
-            'mockChildren' => [
-                ['name' => 'Asadbek', 'age' => '8 yosh', 'gender' => "O'g'il bola", 'interests' => ['Ingliz tili', 'Futbol']],
-                ['name' => 'Amina', 'age' => '5 yosh', 'gender' => 'Qiz bola', 'interests' => ['Rassomchilik', "Bog'cha"]],
-            ],
+            // Real jadval (children) — dashboard va "Farzandlarim" sahifasi shu bir xil
+            // ro'yxatdan foydalanadi.
+            'children' => $user ? $user->children()->orderBy('id')->get() : collect(),
         ];
     }
 }

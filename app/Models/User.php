@@ -110,4 +110,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Resume::class, 'owner_user_id');
     }
+
+    /** Farzand profillari (AI Tanlovchi uchun, faqat role=parent) */
+    public function children(): HasMany
+    {
+        return $this->hasMany(Child::class, 'parent_user_id');
+    }
 }

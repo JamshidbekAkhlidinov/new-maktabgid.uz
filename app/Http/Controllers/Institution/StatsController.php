@@ -24,8 +24,8 @@ class StatsController extends Controller
                 'favorites' => $institution->favorites()->count(),
                 'rating' => (float) $institution->rating,
                 'reviewCount' => $institution->review_count,
-                // Profil ko'rishlar hisoblagichi hali yo'q (Phase 11'da qo'shiladi).
-                'profileViews' => null,
+                // Real (ADR-0002, Faza 2) — App\Models\InstitutionView.
+                'profileViews' => $institution->views()->count(),
             ],
         ]);
     }
