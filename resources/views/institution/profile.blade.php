@@ -167,22 +167,6 @@
                 </span>
             </label>
 
-            <div class="form-section">Narx va dastur</div>
-            <div class="form-row2">
-                <label class="field">
-                    <span class="field-label">Oylik narx (so'm) <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">ixtiyoriy</em></span>
-                    <span class="field-control">
-                        <input type="number" id="js-f-price" value="{{ $i->monthly_price }}" placeholder="6500000" />
-                    </span>
-                </label>
-                <label class="field">
-                    <span class="field-label" id="js-f-grades-label">{{ $i->type === 'maktab' ? 'Sinflar' : "Yosh oralig'i" }}</span>
-                    <span class="field-control">
-                        <input type="text" id="js-f-grades" value="{{ $i->grades }}" placeholder="1–11" />
-                    </span>
-                </label>
-            </div>
-
             <div class="form-section">Ixtisosliklar <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">(qidiruvda chiqadi)</em></div>
             <div class="chip-row" id="js-spec-chips">
                 @foreach ($specializations as $sp)
@@ -207,80 +191,123 @@
                 @endforeach
             </div>
 
-            <div class="form-section">Narxlar <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">(har sinf/guruh va o'quv tili uchun alohida narx va chegirma)</em></div>
+            <div class="form-section">Narxlar <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">(har sinf/guruh va o'quv tili uchun alohida narx va chegirma — ota-onalar profilingizda ko'radi, kataloqda eng arzoni ko'rsatiladi)</em></div>
             <div class="price-head">
                 <span>Sinf / guruh</span><span>O'quv tili</span><span>Oylik narx (so'm)</span><span>Chegirma</span><span></span>
             </div>
             <div style="display:flex;flex-direction:column;gap:8px" id="js-price-rows">
-                <div class="price-row">
-                    <input type="text" value="{{ $i->grades ?: "1-4-sinf (boshlang'ich)" }}" placeholder="1-4-sinf (boshlang'ich)" />
-                    <select>
-                        <option @selected($i->lang === "O'zbek")>O'zbek</option>
-                        <option @selected($i->lang === 'Rus')>Rus</option>
-                        <option @selected($i->lang === 'Ingliz')>Ingliz</option>
-                    </select>
-                    <input type="text" value="{{ $i->monthly_price ? number_format($i->monthly_price, 0, ',', ' ') : '' }}" placeholder="4 500 000" />
-                    <input type="text" placeholder="—" />
-                    <button type="button" class="price-del js-price-del" title="O'chirish"><x-maktabgid.icon name="close" :width="15" :height="15" /></button>
-                </div>
+                @forelse ($priceRows as $p)
+                    <div class="price-row">
+                        <input type="text" value="{{ $p->grade }}" placeholder="1-4-sinf (boshlang'ich)" />
+                        <select>
+                            <option @selected($p->lang === "O'zbek")>O'zbek</option>
+                            <option @selected($p->lang === 'Rus')>Rus</option>
+                            <option @selected($p->lang === 'Ingliz')>Ingliz</option>
+                        </select>
+                        <input type="text" value="{{ number_format($p->monthly_price, 0, ',', ' ') }}" placeholder="4 500 000" />
+                        <input type="text" value="{{ $p->discount }}" placeholder="—" />
+                        <button type="button" class="price-del js-price-del" title="O'chirish"><x-maktabgid.icon name="close" :width="15" :height="15" /></button>
+                    </div>
+                @empty
+                    <div class="price-row">
+                        <input type="text" value="{{ $i->grades ?: "1-4-sinf (boshlang'ich)" }}" placeholder="1-4-sinf (boshlang'ich)" />
+                        <select>
+                            <option @selected($i->lang === "O'zbek")>O'zbek</option>
+                            <option @selected($i->lang === 'Rus')>Rus</option>
+                            <option @selected($i->lang === 'Ingliz')>Ingliz</option>
+                        </select>
+                        <input type="text" placeholder="4 500 000" />
+                        <input type="text" placeholder="—" />
+                        <button type="button" class="price-del js-price-del" title="O'chirish"><x-maktabgid.icon name="close" :width="15" :height="15" /></button>
+                    </div>
+                @endforelse
             </div>
             <button type="button" class="form-addlink" id="js-price-add">
                 <x-maktabgid.icon name="plus" :width="15" :height="15" /> Sinf / guruh qo'shish
             </button>
 
-            @php $mediaGallery = $i->media->where('type', 'gallery')->values(); @endphp
-            <div class="form-section">Rasmlar <em id="js-media-count" style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">({{ $mediaGallery->count() }} ta yuklangan)</em></div>
-            <div class="upload-row" style="grid-template-columns:1.6fr 1fr 1fr">
-                @for ($slotIdx = 0; $slotIdx < 3; $slotIdx++)
-                    @php $existing = $mediaGallery->get($slotIdx); @endphp
-                    <label class="upload-slot js-media-upload{{ $existing ? ' filled' : '' }}"
-                           data-media-type="gallery"
-                           @if ($existing) style="background-image:url('{{ $existing->url }}')" @endif>
-                        <input type="file" accept="image/*" hidden />
-                        <x-maktabgid.icon name="upload" :width="20" :height="20" />
-                        <span>{{ $existing ? 'Yuklandi ✓' : ($slotIdx === 0 ? 'Asosiy rasm' : "Qo'shish") }}</span>
-                    </label>
-                @endfor
-            </div>
-
             <div class="idash-badge-soft" style="margin-top:4px">
-                <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Mo'ljal, telefon raqamlar ro'yxati, kun-kun jadval va narxlar jadvali hozircha faqat ko'rinish uchun — saqlashda asosiy ish vaqti, Shanba holati va oylik narx real qabul qilinadi
+                <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Mo'ljal, telefon raqamlar ro'yxati va kun-kun jadval hozircha faqat ko'rinish uchun — saqlashda asosiy ish vaqti, Shanba holati va narxlar real qabul qilinadi
             </div>
 
-            <div class="form-section">Ustozlar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Ism Familiya | Yoʻnalish | Tajriba</em></div>
-            <label class="field">
-                <span class="field-control">
-                    <textarea id="js-f-teachers" rows="3" style="width:100%;resize:vertical" placeholder="Aziz Karimov | Matematika | 10 yil">{{ $teachersText }}</textarea>
-                </span>
-            </label>
+            <div class="form-section">Yoʻnalishlar va dastur <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har biri uchun sarlavha va tavsif</em></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="js-program-rows">
+                @forelse ($programRows as $p)
+                    <div class="js-program-row" style="display:flex;gap:10px;align-items:center">
+                        <span class="field-control" style="flex:1"><input type="text" value="{{ $p['t'] ?? '' }}" placeholder="Masalan, Cambridge dasturi" /></span>
+                        <span class="field-control" style="flex:1.4"><input type="text" value="{{ $p['d'] ?? '' }}" placeholder="Xalqaro standart va sertifikat" /></span>
+                        <button type="button" class="phone-del js-program-del" title="O'chirish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
+                    </div>
+                @empty
+                    <div class="js-program-row" style="display:flex;gap:10px;align-items:center">
+                        <span class="field-control" style="flex:1"><input type="text" placeholder="Masalan, Cambridge dasturi" /></span>
+                        <span class="field-control" style="flex:1.4"><input type="text" placeholder="Xalqaro standart va sertifikat" /></span>
+                        <button type="button" class="phone-del js-program-del" title="O'chirish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
+                    </div>
+                @endforelse
+            </div>
+            <button type="button" class="form-addlink" id="js-program-add">
+                <x-maktabgid.icon name="plus" :width="15" :height="15" /> Yoʻnalish qo'shish
+            </button>
 
-            <div class="form-section">Yoʻnalishlar va dastur <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Sarlavha | Tavsif</em></div>
-            <label class="field">
-                <span class="field-control">
-                    <textarea id="js-f-programs" rows="3" style="width:100%;resize:vertical" placeholder="Cambridge dasturi | Xalqaro standart va sertifikat">{{ $programsText }}</textarea>
-                </span>
-            </label>
+            <div class="form-section">Oʻquv jarayonidan lavhalar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har biri — bitta lavha nomi</em></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="js-lesson-rows">
+                @forelse ($lessonRows as $l)
+                    <div class="js-lesson-row" style="display:flex;gap:10px;align-items:center">
+                        <span class="field-control" style="flex:1"><input type="text" value="{{ is_array($l) ? ($l['label'] ?? '') : $l }}" placeholder="Masalan, Matematika darsi" /></span>
+                        <button type="button" class="phone-del js-lesson-del" title="O'chirish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
+                    </div>
+                @empty
+                    <div class="js-lesson-row" style="display:flex;gap:10px;align-items:center">
+                        <span class="field-control" style="flex:1"><input type="text" placeholder="Masalan, Matematika darsi" /></span>
+                        <button type="button" class="phone-del js-lesson-del" title="O'chirish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
+                    </div>
+                @endforelse
+            </div>
+            <button type="button" class="form-addlink" id="js-lesson-add">
+                <x-maktabgid.icon name="plus" :width="15" :height="15" /> Lavha qo'shish
+            </button>
 
-            <div class="form-section">Oʻquv jarayonidan lavhalar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator — bitta lavha nomi</em></div>
-            <label class="field">
-                <span class="field-control">
-                    <textarea id="js-f-lessons" rows="3" style="width:100%;resize:vertical" placeholder="Matematika darsi">{{ $lessonsText }}</textarea>
-                </span>
-            </label>
+            <div class="form-section">
+                Videolar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">real video fayl yuklanadi</em>
+                <button type="button" class="form-addlink" style="margin-left:auto" data-modal-open="add-video-modal">
+                    <x-maktabgid.icon name="plus" :width="15" :height="15" /> Video qo'shish
+                </button>
+            </div>
+            @forelse ($videoItems as $v)
+                <div class="js-video-row" style="display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line-2)">
+                    <span class="idash-ach-ico"><x-maktabgid.icon name="play" :width="18" :height="18" /></span>
+                    <div style="flex:1;min-width:0">
+                        <b style="display:block;font-size:14px">{{ $v->caption ?: 'Video' }}</b>
+                        <span style="font-size:12.5px;color:var(--ink-3);font-weight:600">
+                            {{ collect([$v->duration, $v->description])->filter()->implode(' · ') }}
+                        </span>
+                    </div>
+                    <button type="button" class="idash-lead-iconbtn danger js-video-delete" data-media-id="{{ $v->id }}" title="O'chirish"><x-maktabgid.icon name="close" :width="14" :height="14" /></button>
+                </div>
+            @empty
+                <p style="font-size:13px;color:var(--ink-3);font-weight:600;margin:4px 0">Hali video qo'shilmagan.</p>
+            @endforelse
 
-            <div class="form-section">Videolar <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Sarlavha | Davomiyligi | Izoh</em></div>
-            <label class="field">
-                <span class="field-control">
-                    <textarea id="js-f-videos" rows="3" style="width:100%;resize:vertical" placeholder="Maktab bilan tanishuv | 2:14 | 360° sayohat">{{ $videosText }}</textarea>
-                </span>
-            </label>
-
-            <div class="form-section">Qabul bosqichlari <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har bir qator: Sarlavha | Tavsif</em></div>
-            <label class="field">
-                <span class="field-control">
-                    <textarea id="js-f-steps" rows="3" style="width:100%;resize:vertical" placeholder="Ariza qoldirish | Onlayn forma orqali ariza yuborasiz">{{ $stepsText }}</textarea>
-                </span>
-            </label>
+            <div class="form-section">Qabul bosqichlari <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">har biri uchun sarlavha va tavsif</em></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="js-step-rows">
+                @forelse ($stepRows as $s)
+                    <div class="js-step-row" style="display:flex;gap:10px;align-items:center">
+                        <span class="field-control" style="flex:1"><input type="text" value="{{ $s['t'] ?? '' }}" placeholder="Masalan, Ariza qoldirish" /></span>
+                        <span class="field-control" style="flex:1.4"><input type="text" value="{{ $s['d'] ?? '' }}" placeholder="Onlayn forma orqali ariza yuborasiz" /></span>
+                        <button type="button" class="phone-del js-step-del" title="O'chirish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
+                    </div>
+                @empty
+                    <div class="js-step-row" style="display:flex;gap:10px;align-items:center">
+                        <span class="field-control" style="flex:1"><input type="text" placeholder="Masalan, Ariza qoldirish" /></span>
+                        <span class="field-control" style="flex:1.4"><input type="text" placeholder="Onlayn forma orqali ariza yuborasiz" /></span>
+                        <button type="button" class="phone-del js-step-del" title="O'chirish"><x-maktabgid.icon name="close" :width="16" :height="16" /></button>
+                    </div>
+                @endforelse
+            </div>
+            <button type="button" class="form-addlink" id="js-step-add">
+                <x-maktabgid.icon name="plus" :width="15" :height="15" /> Bosqich qo'shish
+            </button>
 
             <div class="form-section">Koʻrsatkichlar <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">(sarlavha ostida chiqadi)</em></div>
             <div class="form-row2">
@@ -341,6 +368,49 @@
             <p class="preview-hint">O'zgartirishlar real vaqtda ko'rinadi. Saqlangach katalogda e'lon qilinadi.</p>
         </div>
     </div>
+
+    {{-- ===== "Video qo'shish" modali — real POST /ajax/institution/me/media (type=video),
+         haqiqiy video fayl (mp4/webm/mov, maks 100MB) yoki tashqi havola (YouTube/Vimeo) bilan. ===== --}}
+    <x-maktabgid.modal-shell id="add-video-modal" :width="480">
+        <div class="js-modal-body">
+            <div class="modal-head">
+                <h3>Video qo'shish</h3>
+            </div>
+
+            <form class="form js-video-form" enctype="multipart/form-data">
+                <input type="hidden" name="type" value="video" />
+                <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
+
+                <x-maktabgid.field label="Sarlavha" icon="play">
+                    <input type="text" name="caption" required placeholder="Masalan, Maktab bilan tanishuv" />
+                </x-maktabgid.field>
+                <div class="form-row2">
+                    <x-maktabgid.field label="Davomiyligi" hint="ixtiyoriy" icon="clock">
+                        <input type="text" name="duration" placeholder="2:14" />
+                    </x-maktabgid.field>
+                    <x-maktabgid.field label="Izoh" hint="ixtiyoriy" icon="book">
+                        <input type="text" name="description" placeholder="360° sayohat" />
+                    </x-maktabgid.field>
+                </div>
+
+                <label class="upload-slot" style="flex-direction:row;justify-content:center;padding:16px">
+                    <input type="file" name="file" accept="video/*" hidden />
+                    <x-maktabgid.icon name="upload" :width="18" :height="18" />
+                    <span>Video fayl yuklash (mp4/webm/mov, maks 100MB)</span>
+                </label>
+
+                <p class="form-note" style="text-align:center">yoki</p>
+                <x-maktabgid.field label="Video havolasi" hint="ixtiyoriy, fayl o'rniga" icon="send">
+                    <input type="url" name="url" placeholder="https://youtube.com/..." />
+                </x-maktabgid.field>
+
+                <div style="display:flex;gap:10px;margin-top:4px">
+                    <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">Saqlash</button>
+                    <button class="btn btn-ghost js-modal-close" type="button">Bekor qilish</button>
+                </div>
+            </form>
+        </div>
+    </x-maktabgid.modal-shell>
 
     @endif
 </x-institution.shell>

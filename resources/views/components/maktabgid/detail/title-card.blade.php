@@ -20,10 +20,12 @@
                 <span><x-maktabgid.icon name="map" :width="16" :height="16" /> markazdan {{ $school['dist'] }} km</span>
             </div>
         </div>
+        @if (count($stats))
         <div class="title-stats">
             @foreach ($stats as $st)
                 <div class="tstat"><b>{{ $st['v'] }}</b><span>{{ $st['k'] }}</span></div>
             @endforeach
         </div>
+        @endif
     </div>
 </div>

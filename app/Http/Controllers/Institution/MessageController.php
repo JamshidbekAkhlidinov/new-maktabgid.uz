@@ -12,7 +12,7 @@ class MessageController extends Controller
 {
     public function store(Request $request, Conversation $conversation): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
 
         abort_unless($conversation->institution_id === $institution->id, 403);
 

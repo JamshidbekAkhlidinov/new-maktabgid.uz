@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Institution\UpdateProfileRequest;
 use App\Http\Resources\InstitutionResource;
 use App\Models\District;
+use App\Models\Institution;
 use App\Models\Specialization;
 use App\Services\Geo\TwoGisGeocodingService;
 use Illuminate\Http\JsonResponse;
@@ -15,9 +16,7 @@ class ProfileController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
-        $institution = $request->user()->institution()
-            ->with(['district', 'specializations', 'media'])
-            ->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request, ['district', 'specializations', 'media']);
 
         $this->authorize('view', $institution);
 
@@ -26,7 +25,7 @@ class ProfileController extends Controller
 
     public function update(UpdateProfileRequest $request, TwoGisGeocodingService $geocoder): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
 
         $this->authorize('update', $institution);
 
@@ -46,10 +45,6 @@ class ProfileController extends Controller
             'grades' => $data['grades'] ?? null,
             'work_hours' => $data['work_hours'] ?? null,
         ], fn ($v) => $v !== null));
-
-        if (array_key_exists('monthly_price', $data)) {
-            $institution->monthly_price = $data['monthly_price'];
-        }
 
         if (array_key_exists('works_saturday', $data)) {
             $institution->works_saturday = (bool) $data['works_saturday'];
@@ -101,9 +96,38 @@ class ProfileController extends Controller
             $institution->specializations()->sync($ids);
         }
 
+        if (isset($data['prices'])) {
+            $this->syncPrices($institution, $data['prices']);
+        }
+
         return response()->json([
-            'institution' => new InstitutionResource($institution->fresh(['district', 'specializations', 'media'])),
+            'institution' => new InstitutionResource($institution->fresh(['district', 'specializations', 'media', 'prices'])),
         ]);
+    }
+
+    /**
+     * "Narxlar" bo'limi — har bir saqlashda butun ro'yxat almashtiriladi (o'chirish +
+     * qayta yaratish, xuddi shu bo'limning o'zi kabi "eng kichik narx" tez-tez o'zgarib
+     * turmasligi kutiladi). Saqlangach `institutions.monthly_price` shular ichidan ENG
+     * KICHIGI bilan yangilanadi — katalog ro'yxati/filtri/kartochkasi shu ustunni
+     * ishlatib kelgan, hech qanday boshqa joyni o'zgartirish shart emas (2026-07-15).
+     */
+    private function syncPrices(Institution $institution, array $rows): void
+    {
+        $institution->prices()->delete();
+
+        foreach (array_values($rows) as $i => $row) {
+            $institution->prices()->create([
+                'grade' => $row['grade'],
+                'lang' => $row['lang'] ?? null,
+                'monthly_price' => $row['price'],
+                'discount' => $row['discount'] ?? null,
+                'sort_order' => $i,
+            ]);
+        }
+
+        $institution->monthly_price = $institution->prices()->min('monthly_price');
+        $institution->save();
     }
 
     /**

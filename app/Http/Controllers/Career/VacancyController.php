@@ -19,7 +19,7 @@ class VacancyController extends Controller
     {
         $data = $request->validated();
         $user = $request->user();
-        $institution = $user->isInstitution() ? $user->institution()->first() : null;
+        $institution = $user->isInstitution() ? $this->activeInstitution($request) : null;
 
         $vacancy = Vacancy::create([
             'title' => $data['title'],

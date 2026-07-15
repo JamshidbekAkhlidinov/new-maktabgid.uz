@@ -18,7 +18,7 @@ class VacancyController extends Controller
 {
     public function destroy(Request $request, Vacancy $vacancy): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
 
         abort_unless($vacancy->institution_id === $institution->id, 403);
 
@@ -30,7 +30,7 @@ class VacancyController extends Controller
     /** Nomzod arizasi holatini o'zgartirish (qabul/rad) — real VacancyApplication (ADR-0002, Faza 2). */
     public function updateApplicationStatus(Request $request, VacancyApplication $application): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
 
         abort_unless($application->vacancy->institution_id === $institution->id, 403);
 

@@ -57,6 +57,12 @@ class Institution extends Model
         return $this->hasMany(InstitutionMedia::class)->orderBy('sort_order');
     }
 
+    /** "Narxlar" — sinf/guruh + o'quv tili bo'yicha alohida narx-chegirma (2026-07-15). */
+    public function prices(): HasMany
+    {
+        return $this->hasMany(InstitutionPrice::class)->orderBy('sort_order')->orderBy('id');
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

@@ -62,13 +62,14 @@
                     </a>
                 </div>
                 <div class="cab-child-grid">
-                    @foreach ($mockChildren as $ch)
+                    @php $genderLabel = ['ogil' => "O'g'il bola", 'qiz' => 'Qiz bola']; @endphp
+                    @foreach ($children as $ch)
                         <div class="cab-child-card">
                             <div class="cab-child-top">
-                                <x-maktabgid.avatar :name="$ch['name']" :size="48" :square="true" />
+                                <x-maktabgid.avatar :name="$ch->name" :size="48" :square="true" />
                                 <div class="cab-child-main">
-                                    <b>{{ $ch['name'] }}</b>
-                                    <span>{{ $ch['age'] }} · {{ $ch['gender'] }}</span>
+                                    <b>{{ trim($ch->name . ' ' . $ch->last_name) }}</b>
+                                    <span>{{ $ch->age }} yosh · {{ $genderLabel[$ch->gender] ?? '' }}</span>
                                 </div>
                             </div>
                         </div>
@@ -78,22 +79,24 @@
         </div>
     </div>
 
-    {{-- ===== "Profilni tahrirlash" modali — real PATCH /ajax/parent/me hali qurilmagan,
-         shuning uchun umumiy "fake form" andozasi orqali ishlaydi. ===== --}}
+    {{-- ===== "Profilni tahrirlash" modali — real PUT /ajax/me ===== --}}
     <x-maktabgid.modal-shell id="edit-parent-profile-modal" :width="440">
         <div class="js-modal-body">
-            <div class="modal-head js-fake-form-head">
+            <div class="modal-head">
                 <h3>Profilni tahrirlash</h3>
             </div>
-            <form class="form js-fake-form">
+            <form class="form js-parent-profile-form">
+                <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
+
                 <x-maktabgid.field label="Ism-familiya" icon="user">
-                    <input type="text" value="{{ $user->name }}" required />
+                    <input type="text" name="name" value="{{ $user->name }}" required />
                 </x-maktabgid.field>
                 <x-maktabgid.field label="Telefon" icon="phone">
-                    <input type="tel" value="{{ $user->phone }}" required />
+                    <input type="tel" name="phone" value="{{ $user->phone }}" required />
                 </x-maktabgid.field>
                 <x-maktabgid.field label="Tuman" icon="pin">
-                    <select>
+                    <select name="district">
+                        <option value="">—</option>
                         @foreach (\App\Support\MaktabgidData::districts() as $d)
                             <option value="{{ $d }}" @selected($user->district?->name === $d)>{{ $d }}</option>
                         @endforeach
@@ -101,9 +104,6 @@
                 </x-maktabgid.field>
                 <button class="btn btn-primary form-submit" type="submit">Saqlash</button>
             </form>
-            <x-maktabgid.success-note title="Profil yangilandi!" :close-target="true" class="js-fake-success" style="display:none">
-                O'zgarishlar saqlandi.
-            </x-maktabgid.success-note>
         </div>
     </x-maktabgid.modal-shell>
     @endif

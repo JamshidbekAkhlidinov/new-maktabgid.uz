@@ -20,6 +20,7 @@ use App\Http\Controllers\Institution\AchievementController;
 use App\Http\Controllers\Institution\InboxController;
 use App\Http\Controllers\Institution\MediaController;
 use App\Http\Controllers\Institution\MessageController;
+use App\Http\Controllers\Institution\OrganizationController;
 use App\Http\Controllers\Institution\ProfileController;
 use App\Http\Controllers\Institution\StatsController as InstitutionStatsController;
 use App\Http\Controllers\Institution\VacancyController as InstitutionVacancyController;
@@ -76,6 +77,10 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::post('achievements', [AchievementController::class, 'store']);
         Route::put('achievements/{achievement}', [AchievementController::class, 'update']);
         Route::delete('achievements/{achievement}', [AchievementController::class, 'destroy']);
+
+        // Ko'p-filial: "Yangi muassasa qo'shish" + tashkilot almashtirish (2026-07-15)
+        Route::post('organizations', [OrganizationController::class, 'store']);
+        Route::patch('active', [OrganizationController::class, 'activate']);
     });
 
     // Arizalar — mehmon ham yubora oladi (backend.md Phase 4)

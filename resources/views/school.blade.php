@@ -44,6 +44,7 @@
             <div class="detail-main">
                 <x-maktabgid.detail.about :school="$s" :cat-label="$catLabel" />
                 <x-maktabgid.detail.programs :programs="$s['programs']" />
+                <x-maktabgid.detail.prices :prices="$s['prices']" />
                 <x-maktabgid.detail.lessons :lessons="$s['lessons']" />
                 <x-maktabgid.detail.videos :videos="$s['videos']" />
                 <x-maktabgid.detail.facilities :facilities="$facilities" />

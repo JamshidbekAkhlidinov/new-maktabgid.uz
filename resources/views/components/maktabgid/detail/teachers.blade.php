@@ -1,5 +1,6 @@
 @props(['teachers'])
 
+@if (count($teachers))
 <section class="card-block">
     <h3><x-maktabgid.icon name="users" :width="19" :height="19" /> Ustozlar</h3>
     <div class="teach-grid">
@@ -13,3 +14,4 @@
         @endforeach
     </div>
 </section>
+@endif

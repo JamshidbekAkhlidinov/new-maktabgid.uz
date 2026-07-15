@@ -1,5 +1,6 @@
 @props(['steps'])
 
+@if (count($steps))
 <section class="card-block">
     <h3><x-maktabgid.icon name="badge" :width="19" :height="19" /> Qabul bosqichlari</h3>
     <ol class="steps">
@@ -8,3 +9,4 @@
         @endforeach
     </ol>
 </section>
+@endif

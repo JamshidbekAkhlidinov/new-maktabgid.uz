@@ -14,7 +14,7 @@ class InboxController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
         $this->authorize('view', $institution);
 
         $applications = $institution->applications()

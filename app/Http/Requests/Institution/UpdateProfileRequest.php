@@ -21,7 +21,6 @@ class UpdateProfileRequest extends FormRequest
             'about' => ['sometimes', 'nullable', 'string'],
             'district' => ['sometimes', 'nullable', 'string', 'max:255'],
             'address' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'monthly_price' => ['sometimes', 'nullable', 'integer', 'min:0'],
             'grades' => ['sometimes', 'nullable', 'string', 'max:100'],
             'work_hours' => ['sometimes', 'nullable', 'string', 'max:100'],
             'works_saturday' => ['sometimes', 'boolean'],
@@ -40,6 +39,14 @@ class UpdateProfileRequest extends FormRequest
             'stat_experience_years' => ['sometimes', 'nullable', 'string', 'max:50'],
             'stat_admission_rate' => ['sometimes', 'nullable', 'string', 'max:50'],
             'stat_first_grade_seats' => ['sometimes', 'nullable', 'string', 'max:50'],
+
+            // "Narxlar" — sinf/guruh + o'quv tili bo'yicha alohida narx-chegirma (2026-07-15).
+            // institutions.monthly_price endi shulardan avtomatik hisoblanadi (ProfileController::update()).
+            'prices' => ['sometimes', 'array'],
+            'prices.*.grade' => ['required', 'string', 'max:100'],
+            'prices.*.lang' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'prices.*.price' => ['required', 'integer', 'min:0'],
+            'prices.*.discount' => ['sometimes', 'nullable', 'string', 'max:50'],
         ];
     }
 }

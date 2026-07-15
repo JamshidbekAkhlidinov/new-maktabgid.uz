@@ -52,6 +52,16 @@ class InstitutionResource extends JsonResource
                     'sortOrder' => $m->sort_order,
                 ])->values()
             ),
+            'prices' => $this->whenLoaded(
+                'prices',
+                fn () => $this->prices->map(fn ($p) => [
+                    'id' => $p->id,
+                    'grade' => $p->grade,
+                    'lang' => $p->lang,
+                    'monthlyPrice' => $p->monthly_price,
+                    'discount' => $p->discount,
+                ])->values()
+            ),
         ];
     }
 }

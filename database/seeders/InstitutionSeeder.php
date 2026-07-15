@@ -46,6 +46,129 @@ class InstitutionSeeder extends Seeder
         ];
     }
 
+    /* ==================================================================
+     * 2026-07-15: /maktab/{id} sahifasi endi faqat DB'dagi haqiqiy
+     * ma'lumotni ko'rsatadi (MaktabgidData::resolve* runtime mock fallback
+     * olib tashlandi). Demo katalog bo'sh ko'rinib qolmasligi uchun har
+     * bir muassasaga qulaylik/o'qituvchi/dastur/dars/qabul bosqichi/
+     * statistika endi shu yerda — haqiqiy seed qatorlari sifatida —
+     * beriladi (ilgari MaktabgidData'dagi umumiy presetlar orqali
+     * "ko'rinardi", aslida DB'da yo'q edi).
+     * ================================================================== */
+
+    private static function facilitiesFor(string $cat): array
+    {
+        if ($cat === 'bogcha') {
+            return ['classrooms', 'sport', 'library', 'canteen', 'medical', 'wifi'];
+        }
+
+        if ($cat === 'markaz') {
+            return ['classrooms', 'it', 'library', 'wifi', 'canteen'];
+        }
+
+        return ['classrooms', 'lab', 'it', 'sport', 'library', 'canteen', 'medical', 'bus', 'wifi'];
+    }
+
+    /** 12 ta o'qituvchi shabloni — har bir muassasaga indeksga qarab siljitilgan 4 tasi tanlanadi
+     *  (schools() bilan bir xil "index bo'yicha aylanma tanlov" uslubi, specPlan() ga qarang). */
+    private static function teacherPool(): array
+    {
+        return [
+            ['n' => 'Madina Yusupova', 'role' => 'Ingliz tili', 'exp' => '6 yil'],
+            ['n' => 'Aziz Rahimov', 'role' => 'Matematika', 'exp' => '10 yil'],
+            ['n' => 'Sevara Tosheva', 'role' => 'Boshlangʻich sinf', 'exp' => '4 yil'],
+            ['n' => 'Jamshid Karimov', 'role' => 'IT / Robototexnika', 'exp' => '7 yil'],
+            ['n' => 'Nodira Xolova', 'role' => 'Fizika', 'exp' => '9 yil'],
+            ['n' => 'Bekzod Aliyev', 'role' => 'Kimyo', 'exp' => '5 yil'],
+            ['n' => 'Gulnora Saidova', 'role' => 'Rus tili', 'exp' => '8 yil'],
+            ['n' => 'Otabek Nazarov', 'role' => 'Jismoniy tarbiya', 'exp' => '6 yil'],
+            ['n' => 'Zarina Qodirova', 'role' => 'Musiqa', 'exp' => '3 yil'],
+            ['n' => 'Sardor Yoʻldoshev', 'role' => 'Tarix', 'exp' => '11 yil'],
+            ['n' => 'Malika Ergasheva', 'role' => 'Biologiya', 'exp' => '7 yil'],
+            ['n' => 'Farrux Toshpulatov', 'role' => 'IELTS / SAT', 'exp' => '5 yil'],
+        ];
+    }
+
+    private static function teachersFor(int $i): array
+    {
+        $pool = self::teacherPool();
+        $n = count($pool);
+        $offset = ($i * 3) % $n;
+
+        return collect(range(0, 3))->map(fn ($k) => $pool[($offset + $k) % $n])->all();
+    }
+
+    private static function programsFor(string $cat): array
+    {
+        if ($cat === 'bogcha') {
+            return [
+                ['t' => 'Erta rivojlanish', 'd' => 'Yosh xususiyatiga mos kompleks dastur'],
+                ['t' => 'Ikki tilli muhit', 'd' => 'Oʻzbek va ingliz tilida muloqot'],
+                ['t' => 'Ijodiy ustaxonalar', 'd' => 'Rasm, musiqa, qoʻl mehnati'],
+                ['t' => 'Montessori yondashuv', 'd' => 'Mustaqillik va tabiiy oʻrganish'],
+            ];
+        }
+
+        if ($cat === 'markaz') {
+            return [
+                ['t' => 'IELTS / SAT tayyorlov', 'd' => 'Maqsadli bal kafolati bilan'],
+                ['t' => 'Speaking club', 'd' => 'Native speaker bilan amaliyot'],
+                ['t' => 'Individual mashgʻulot', 'd' => 'Shaxsiy reja asosida'],
+                ['t' => 'Onlayn platforma', 'd' => 'Uy vazifasi va kuzatuv tizimi'],
+            ];
+        }
+
+        return [
+            ['t' => 'Cambridge dasturi', 'd' => 'Xalqaro standart va sertifikat'],
+            ['t' => 'STEM laboratoriyasi', 'd' => 'Amaliy fan va tajribalar'],
+            ['t' => 'Robototexnika', 'd' => 'Dasturlash va muhandislik toʻgaragi'],
+            ['t' => 'Olimpiadaga tayyorlov', 'd' => 'Iqtidorli oʻquvchilar uchun'],
+        ];
+    }
+
+    private static function lessonsFor(string $cat): array
+    {
+        if ($cat === 'bogcha') {
+            return ['Rasm chizish', 'Musiqa mashgʻuloti', 'Erta rivojlanish', 'Ingliz tili oʻyini', 'Jismoniy faollik', 'Ertak vaqti'];
+        }
+
+        if ($cat === 'markaz') {
+            return ['Ingliz tili darsi', 'IELTS mock test', 'Speaking club', 'Dasturlash', 'Grammatika', 'Imtihon tahlili'];
+        }
+
+        return ['Matematika darsi', 'Ingliz tili', 'Ilmiy laboratoriya', 'Robototexnika', 'Sanʼat studiyasi', 'Jismoniy tarbiya'];
+    }
+
+    private static function admissionStepsFor(): array
+    {
+        return [
+            ['t' => 'Ariza qoldirish', 'd' => 'Onlayn forma orqali ariza yuborasiz'],
+            ['t' => 'Tanishuv / ekskursiya', 'd' => 'Muassasaga tashrif buyurib, muhit bilan tanishasiz'],
+            ['t' => 'Suhbat va kirish testi', 'd' => 'Bola bilan qisqa suhbat oʻtkaziladi'],
+            ['t' => 'Shartnoma va joylashtirish', 'd' => 'Hujjatlar rasmiylashtirilib, oʻquvchi qabul qilinadi'],
+        ];
+    }
+
+    /** [sinf hajmi, tajriba yili, qabul foizi, 1-sinf joylari] — kategoriya bazasi + id bo'yicha
+     *  kichik tebranish (namoyish uchun, hammasi bir xil ko'rinmasin). */
+    private static function statsFor(string $cat, int $id): array
+    {
+        $base = match ($cat) {
+            'bogcha' => [12, 8, null, 18],
+            'markaz' => [6, 9, null, 12],
+            default => [16, 12, 98, 24],
+        };
+
+        $wobble = $id % 5;
+
+        return [
+            (string) ($base[0] + ($wobble % 3)),
+            (string) ($base[1] + ($wobble % 4)),
+            $base[2] !== null ? ($base[2] - $wobble).'%' : null,
+            (string) ($base[3] + $wobble),
+        ];
+    }
+
     public function run(): void
     {
         $districts = District::pluck('id', 'name');
@@ -59,6 +182,8 @@ class InstitutionSeeder extends Seeder
         ];
 
         foreach (self::schools() as $i => $s) {
+            [$classSize, $expYears, $admissionRate, $firstGradeSeats] = self::statsFor($s['cat'], $s['id']);
+
             $institution = Institution::updateOrCreate(
                 ['name' => $s['name']],
                 [
@@ -75,6 +200,15 @@ class InstitutionSeeder extends Seeder
                     'rating' => $s['rating'],
                     'review_count' => $s['reviews'],
                     'badge' => $s['badge'] ?? null,
+                    'facilities' => self::facilitiesFor($s['cat']),
+                    'teachers' => self::teachersFor($i),
+                    'programs' => self::programsFor($s['cat']),
+                    'lessons' => self::lessonsFor($s['cat']),
+                    'admission_steps' => self::admissionStepsFor(),
+                    'stat_class_size' => $classSize,
+                    'stat_experience_years' => $expYears,
+                    'stat_admission_rate' => $admissionRate,
+                    'stat_first_grade_seats' => $firstGradeSeats,
                 ]
             );
 

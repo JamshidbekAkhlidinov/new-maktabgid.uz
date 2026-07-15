@@ -326,11 +326,6 @@ class InstitutionCabinetController extends Controller
         $myFacilities = $i ? ($i->facilities ?? []) : [];
         $statLabels = array_column(MaktabgidData::detailStats($i?->type ?? 'maktab'), 'k');
 
-        $pipeLinesToText = fn ($rows, $keys) => $rows
-            ? implode("\n", array_map(fn ($r) => implode(' | ', array_map(fn ($k) => $r[$k] ?? '', $keys)), $rows))
-            : '';
-        $plainLinesToText = fn ($rows) => $rows ? implode("\n", array_map(fn ($r) => is_array($r) ? ($r['label'] ?? '') : $r, $rows)) : '';
-
         return view('institution.profile', $ctx + [
             'specializations' => $specializations,
             'districts' => $districts,
@@ -338,11 +333,14 @@ class InstitutionCabinetController extends Controller
             'facilityCatalog' => $facilityCatalog,
             'myFacilities' => $myFacilities,
             'statLabels' => $statLabels,
-            'teachersText' => $i ? $pipeLinesToText($i->teachers ?? [], ['n', 'role', 'exp']) : '',
-            'programsText' => $i ? $pipeLinesToText($i->programs ?? [], ['t', 'd']) : '',
-            'lessonsText' => $i ? $plainLinesToText($i->lessons ?? []) : '',
-            'videosText' => $i ? $pipeLinesToText($i->videos ?? [], ['title', 'dur', 'sub']) : '',
-            'stepsText' => $i ? $pipeLinesToText($i->admission_steps ?? [], ['t', 'd']) : '',
+            'programRows' => $i ? ($i->programs ?? []) : [],
+            'lessonRows' => $i ? ($i->lessons ?? []) : [],
+            'stepRows' => $i ? ($i->admission_steps ?? []) : [],
+            // "Narxlar" — real jadval (InstitutionPrice), endi vizual-only emas (2026-07-15).
+            'priceRows' => $i ? $i->prices : collect(),
+            // "Videolar" — endi real fayl yuklanadi (InstitutionMedia type=video), pipe-matnli
+            // textarea o'rniga real qo'shish/o'chirish (2026-07-15).
+            'videoItems' => $i ? $i->media->where('type', 'video')->values() : collect(),
         ]);
     }
 
@@ -454,30 +452,34 @@ class InstitutionCabinetController extends Controller
 
     /**
      * Barcha muassasa kabineti sahifalari uchun umumiy kontekst: joriy foydalanuvchi,
-     * uning muassasasi, sidebar'dagi badge sonlar va tashkilotlar ro'yxati (select uchun).
+     * uning "faol" muassasasi, sidebar'dagi badge sonlar va tashkilotlar ro'yxati (select uchun).
      *
-     * "organizations" — bitta foydalanuvchi bir nechta filialga ega bo'lish imkoniyati uchun
-     * tayyorlangan struktura. Hozircha DB darajasida ko'p-ko'pga bog'lanish yo'q (faqat UI),
-     * shuning uchun ro'yxatda foydalanuvchining o'z (yagona) muassasasi chiqadi — lekin
-     * komponent va markup allaqachon bir nechta tashkilotni ko'rsatishga tayyor.
+     * "organizations" — bitta foydalanuvchi bir nechta filialga ega bo'lishi (ko'p-filial
+     * qo'llab-quvvatlash, 2026-07-15): $user->institutions() orqali egalik qilingan barcha
+     * muassasalar ro'yxati chiqadi, "faol" (session'dagi active_institution_id) belgilanadi.
+     * Qolgan barcha kabinet kontrollerlari shu bilan bir xil ID'ni ResolvesActiveInstitution
+     * orqali ishlatadi.
      */
     private function context(Request $request): array
     {
         $user = Auth::user();
         $institution = null;
+        $organizations = [];
 
         if ($user && $user->isInstitution()) {
-            $institution = $user->institution()->with(['district', 'specializations', 'media'])->first();
-        }
+            $institution = $this->activeInstitution($request, ['district', 'specializations', 'media']);
 
-        $organizations = $institution ? [[
-            'id' => $institution->id,
-            'name' => $institution->name,
-            'meta' => (['maktab' => "Xususiy maktab", 'bogcha' => "Xususiy bog'cha", 'markaz' => "O'quv markazi"][$institution->type] ?? 'Muassasa').
-                ($institution->district?->name ? ' · '.$institution->district->name : ''),
-            'mono' => MaktabgidData::monogram($institution->name),
-            'active' => true,
-        ]] : [];
+            $typeLabels = ['maktab' => 'Xususiy maktab', 'bogcha' => "Xususiy bog'cha", 'markaz' => "O'quv markazi"];
+
+            $organizations = $user->institutions()->with('district')->get()->map(fn ($org) => [
+                'id' => $org->id,
+                'name' => $org->name,
+                'meta' => ($typeLabels[$org->type] ?? 'Muassasa').
+                    ($org->district?->name ? ' · '.$org->district->name : ''),
+                'mono' => MaktabgidData::monogram($org->name),
+                'active' => $institution && $org->id === $institution->id,
+            ])->all();
+        }
 
         return [
             'user' => $user,

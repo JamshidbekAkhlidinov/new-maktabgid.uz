@@ -20,7 +20,14 @@
                     <tr>
                         <td class="px-4 py-3 text-slate-500 font-mono text-xs">{{ $spec->key }}</td>
                         <td class="px-4 py-3 font-medium text-slate-800">{{ $spec->label }}</td>
-                        <td class="px-4 py-3 text-slate-600">{{ $spec->icon }}</td>
+                        <td class="px-4 py-3 text-slate-600">
+                            <span class="inline-flex items-center gap-2">
+                                <span class="flex items-center justify-center w-8 h-8 rounded-lg border border-slate-200 bg-slate-50 text-slate-600">
+                                    <x-maktabgid.icon :name="$spec->icon" :width="16" :height="16" />
+                                </span>
+                                <span class="text-xs text-slate-400 font-mono">{{ $spec->icon }}</span>
+                            </span>
+                        </td>
                         <td class="px-4 py-3">
                             <x-admin.row-actions
                                 :editRoute="route('admin.specializations.edit', $spec)" editPermission="specializations.update"

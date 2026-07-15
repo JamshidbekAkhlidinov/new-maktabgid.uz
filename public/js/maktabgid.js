@@ -834,18 +834,27 @@
                 return abbrs.length ? abbrs.join(", ") : "Dam olish kunlari";
             }
 
+            /* "Narxlar" jadvalidagi eng kichik narx — real saqlashda ham
+               (institutions.monthly_price) xuddi shu mantiq ishlatiladi
+               (Institution\ProfileController::syncPrices(), 2026-07-15). */
+            function minPriceFromRows() {
+                var rows = Array.prototype.slice.call(document.querySelectorAll("#js-price-rows .price-row"));
+                var vals = rows.map(function (row) {
+                    var inp = row.querySelectorAll("input")[1];
+                    return inp ? parseInt((inp.value || "").replace(/\D/g, ""), 10) : NaN;
+                }).filter(function (n) { return !isNaN(n) && n > 0; });
+
+                return vals.length ? Math.min.apply(Math, vals) : 0;
+            }
+
             function updatePreview() {
                 var name = document.getElementById("js-f-name");
                 var kind = document.getElementById("js-f-kind");
                 var district = document.getElementById("js-f-district");
                 var hours = document.getElementById("js-f-hours");
-                var price = document.getElementById("js-f-price");
                 var nameVal = name ? name.value : "";
                 var kindVal = kind ? kind.value : "maktab";
                 var kindMap = { maktab: "Xususiy maktab", bogcha: "Xususiy bog'cha", markaz: "O'quv markazi" };
-
-                var gradesLabel = document.getElementById("js-f-grades-label");
-                if (gradesLabel) gradesLabel.textContent = kindVal === "maktab" ? "Sinflar" : "Yosh oralig'i";
 
                 var pMono = document.getElementById("js-prev-mono");
                 var pName = document.getElementById("js-prev-name");
@@ -862,17 +871,19 @@
                 if (pDistrict) pDistrict.textContent = (district && district.value) ? district.value : "Tuman";
                 if (pHours) pHours.textContent = (hours && hours.value) ? hours.value : "08:00 – 18:00";
                 if (pPrice) {
-                    var priceVal = price ? parseInt(price.value, 10) : 0;
+                    var priceVal = minPriceFromRows();
                     pPrice.innerHTML = priceVal > 0
                         ? "<b>" + fmtPrice(priceVal) + "</b> <span>so'mdan / oy</span>"
                         : "<span>Narx kelishilgan</span>";
                 }
             }
 
-            ["js-f-name", "js-f-kind", "js-f-district", "js-f-hours", "js-f-price"].forEach(function (id) {
+            ["js-f-name", "js-f-kind", "js-f-district", "js-f-hours"].forEach(function (id) {
                 var el = document.getElementById(id);
                 if (el) el.addEventListener("input", updatePreview);
             });
+            var priceRowsForPreview = document.getElementById("js-price-rows");
+            if (priceRowsForPreview) priceRowsForPreview.addEventListener("input", updatePreview);
             updatePreview();
 
             /* --- kategoriya pillari: js-f-kind hidden select bilan sinxron --- */
@@ -957,6 +968,67 @@
                 });
             }
 
+            /* --- Yoʻnalishlar va dastur / Oʻquv jarayonidan lavhalar / Qabul bosqichlari:
+               endi bitta pipe-matnli textarea o'rniga alohida-input qatorlar (2026-07-15).
+               Saqlashda har bir guruh o'zining pipe-matn qatoriga yig'iladi (backend
+               ProfileController hech narsa o'zgarmadi — teachers_text/programs_text/
+               lessons_text/admission_steps_text hamon shu formatni kutadi). --- */
+            function wireGenericRowGroup(listId, addId, rowClass, delClass, minRows, rowHtml) {
+                var list = document.getElementById(listId);
+                var addBtn = document.getElementById(addId);
+                if (!list) return;
+
+                function wireDelete(row) {
+                    var btn = row.querySelector("." + delClass);
+                    if (btn) btn.addEventListener("click", function () {
+                        if (list.querySelectorAll("." + rowClass).length > (minRows || 0)) row.remove();
+                    });
+                }
+
+                Array.prototype.slice.call(list.querySelectorAll("." + rowClass)).forEach(wireDelete);
+
+                if (addBtn) {
+                    addBtn.addEventListener("click", function () {
+                        var row = document.createElement("div");
+                        row.className = rowClass;
+                        row.style.cssText = "display:flex;gap:10px;align-items:center";
+                        row.innerHTML = rowHtml;
+                        list.appendChild(row);
+                        wireDelete(row);
+                    });
+                }
+            }
+
+            var closeIconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12"/><path d="M18 6L6 18"/></svg>';
+
+            wireGenericRowGroup("js-program-rows", "js-program-add", "js-program-row", "js-program-del", 0,
+                '<span class="field-control" style="flex:1"><input type="text" placeholder="Masalan, Cambridge dasturi" /></span>' +
+                '<span class="field-control" style="flex:1.4"><input type="text" placeholder="Xalqaro standart va sertifikat" /></span>' +
+                '<button type="button" class="phone-del js-program-del" title="O\'chirish">' + closeIconSvg + '</button>');
+
+            wireGenericRowGroup("js-lesson-rows", "js-lesson-add", "js-lesson-row", "js-lesson-del", 0,
+                '<span class="field-control" style="flex:1"><input type="text" placeholder="Masalan, Matematika darsi" /></span>' +
+                '<button type="button" class="phone-del js-lesson-del" title="O\'chirish">' + closeIconSvg + '</button>');
+
+            wireGenericRowGroup("js-step-rows", "js-step-add", "js-step-row", "js-step-del", 0,
+                '<span class="field-control" style="flex:1"><input type="text" placeholder="Masalan, Ariza qoldirish" /></span>' +
+                '<span class="field-control" style="flex:1.4"><input type="text" placeholder="Onlayn forma orqali ariza yuborasiz" /></span>' +
+                '<button type="button" class="phone-del js-step-del" title="O\'chirish">' + closeIconSvg + '</button>');
+
+            /* Bitta qator "Sarlavha | Tavsif" pipe-matniga yig'iladi (ikki input), yoki bitta
+               inputli qatorlar uchun faqat qiymati olinadi — bo'sh qatorlar e'tiborsiz qoldiriladi. */
+            function collectPipeRows(rowsId, rowClass) {
+                var list = document.getElementById(rowsId);
+                if (!list) return "";
+                return Array.prototype.slice.call(list.querySelectorAll("." + rowClass))
+                    .map(function (row) {
+                        var inputs = Array.prototype.slice.call(row.querySelectorAll("input"));
+                        return inputs.map(function (inp) { return (inp.value || "").trim(); }).join(" | ");
+                    })
+                    .filter(function (line) { return line.replace(/\|/g, "").trim() !== ""; })
+                    .join("\n");
+            }
+
             /* --- qabul holati: real PATCH /ajax/institution/me/accepting --- */
             var acceptCard = document.getElementById("js-accept-card");
             var acceptToggle = document.getElementById("js-accept-toggle");
@@ -996,8 +1068,23 @@
                     var facilities = Array.prototype.slice.call(document.querySelectorAll("#js-facility-chips .chip.on"))
                         .map(function (c) { return c.dataset.facility; });
 
-                    var priceEl = document.getElementById("js-f-price");
-                    var priceVal = priceEl && priceEl.value ? parseInt(priceEl.value, 10) : null;
+                    // "Narxlar" jadvali endi real saqlanadi — har qatordan sinf/guruh,
+                    // o'quv tili, narx, chegirma yig'ib olinadi (bo'sh narxli qatorlar
+                    // e'tiborsiz qoldiriladi). institutions.monthly_price serverda shular
+                    // ichidan eng kichigi bilan avtomatik yangilanadi (2026-07-15).
+                    var prices = Array.prototype.slice.call(document.querySelectorAll("#js-price-rows .price-row"))
+                        .map(function (row) {
+                            var inputs = row.querySelectorAll("input");
+                            var select = row.querySelector("select");
+                            var priceNum = parseInt(((inputs[1] && inputs[1].value) || "").replace(/\D/g, ""), 10);
+                            return {
+                                grade: inputs[0] ? inputs[0].value.trim() : "",
+                                lang: select ? select.value : "",
+                                price: isNaN(priceNum) ? null : priceNum,
+                                discount: inputs[2] ? inputs[2].value.trim() : "",
+                            };
+                        })
+                        .filter(function (row) { return row.grade !== "" && row.price !== null; });
 
                     var payload = {
                         name: (document.getElementById("js-f-name") || {}).value || "",
@@ -1006,17 +1093,24 @@
                         about: (document.getElementById("js-f-about") || {}).value || "",
                         district: (document.getElementById("js-f-district") || {}).value || "",
                         address: (document.getElementById("js-f-address") || {}).value || "",
-                        monthly_price: priceVal,
-                        grades: (document.getElementById("js-f-grades") || {}).value || "",
+                        prices: prices,
+                        // Diqqat: "grades" (Sinflar/Yosh oralig'i) inputi bu sahifadan olib
+                        // tashlandi, shuning uchun bu yerdan ham yubormaymiz — aks holda
+                        // saqlashda mavjud qiymat bo'sh qator bilan ustidan yozilib ketardi.
                         work_hours: (document.getElementById("js-f-hours") || {}).value || "",
                         works_saturday: !!(satToggle && satToggle.classList.contains("on")),
                         specializations: specs,
                         facilities: facilities,
-                        teachers_text: (document.getElementById("js-f-teachers") || {}).value || "",
-                        programs_text: (document.getElementById("js-f-programs") || {}).value || "",
-                        lessons_text: (document.getElementById("js-f-lessons") || {}).value || "",
-                        videos_text: (document.getElementById("js-f-videos") || {}).value || "",
-                        admission_steps_text: (document.getElementById("js-f-steps") || {}).value || "",
+                        // Diqqat: "teachers_text" endi bu sahifada yo'q (Ustozlar bo'limi olib
+                        // tashlandi — /institution-cabinet/teachers'da boshqariladi), shuning
+                        // uchun bu yerdan yubormaymiz — aks holda saqlashda mavjud ustozlar
+                        // ma'lumoti bo'sh qator bilan ustidan yozilib ketardi.
+                        programs_text: collectPipeRows("js-program-rows", "js-program-row"),
+                        lessons_text: collectPipeRows("js-lesson-rows", "js-lesson-row"),
+                        // Diqqat: "videos_text" ham endi bu sahifada yo'q — "Videolar" real fayl
+                        // yuklash orqali (/ajax/institution/me/media, type=video) o'z alohida
+                        // formasida saqlanadi, shuning uchun bu yerdan yubormaymiz.
+                        admission_steps_text: collectPipeRows("js-step-rows", "js-step-row"),
                         stat_class_size: (document.getElementById("js-f-stat1") || {}).value || "",
                         stat_experience_years: (document.getElementById("js-f-stat2") || {}).value || "",
                         stat_admission_rate: (document.getElementById("js-f-stat3") || {}).value || "",
@@ -1047,8 +1141,19 @@
                     });
                 });
             }
+        }
 
-            /* --- rasm yuklash: real POST /ajax/institution/me/media (multipart) --- */
+        /* Diqqat (2026-07-15): quyidagi bloklar (rasm/video yuklash-o'chirish,
+           yutuq CRUD, vakansiya o'chirish/holat) ilgari yuqoridagi
+           "if (instNameField)" ichida edi — shu sabab ular FAQAT
+           institution/profile.blade.php sahifasida ishlar edi (chunki
+           #js-f-name faqat o'sha sahifada bor), garchi galereya, yutuqlar,
+           vakansiyalar kabi boshqa sahifalarda ham kerak bo'lsa-da. Endi
+           bu kod shartsiz ishga tushadi — har bir bo'lim o'z elementi
+           mavjud bo'lmagan sahifada oddiygina hech narsa qilmaydi
+           (querySelectorAll bo'sh natija qaytaradi). */
+
+        /* --- rasm yuklash: real POST /ajax/institution/me/media (multipart) --- */
             document.querySelectorAll(".js-media-upload").forEach(function (slot) {
                 var input = slot.querySelector("input[type=file]");
                 if (!input) return;
@@ -1137,6 +1242,79 @@
                         }
                         btn.disabled = false;
                         alert("Rasmni o'chirib bo'lmadi. Qayta urining.");
+                    }).catch(function () {
+                        btn.disabled = false;
+                        alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+                    });
+                });
+            });
+
+            /* --- "Video qo'shish": real POST /ajax/institution/me/media (type=video),
+               haqiqiy fayl (multipart) yoki tashqi havola bilan (2026-07-15). --- */
+            document.querySelectorAll(".js-video-form").forEach(function (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    var errBox = form.querySelector(".js-form-error");
+                    if (errBox) errBox.style.display = "none";
+
+                    var formData = new FormData(form);
+                    var submitBtn = form.querySelector(".form-submit");
+                    if (submitBtn) submitBtn.disabled = true;
+
+                    fetch("/ajax/institution/me/media", {
+                        method: "POST",
+                        headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+                        body: formData,
+                    }).then(function (res) {
+                        return res.json().catch(function () { return {}; }).then(function (body) {
+                            return { ok: res.ok, body: body };
+                        });
+                    }).then(function (result) {
+                        if (submitBtn) submitBtn.disabled = false;
+
+                        if (!result.ok) {
+                            var msg = "Xatolik yuz berdi. Ma'lumotlarni tekshirib qayta urining.";
+                            if (result.body) {
+                                if (result.body.errors) {
+                                    var firstKey = Object.keys(result.body.errors)[0];
+                                    if (firstKey && result.body.errors[firstKey][0]) msg = result.body.errors[firstKey][0];
+                                } else if (result.body.message) {
+                                    msg = result.body.message;
+                                }
+                            }
+                            if (errBox) { errBox.textContent = msg; errBox.style.display = ""; }
+                            else alert(msg);
+                            return;
+                        }
+
+                        window.location.reload();
+                    }).catch(function () {
+                        if (submitBtn) submitBtn.disabled = false;
+                        if (errBox) { errBox.textContent = "Tarmoq xatosi. Internet aloqasini tekshirib qayta urining."; errBox.style.display = ""; }
+                    });
+                });
+            });
+
+            /* --- videoni o'chirish: real DELETE /ajax/institution/me/media/{id} --- */
+            document.querySelectorAll(".js-video-delete").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    var id = btn.dataset.mediaId;
+                    if (!id) return;
+                    if (!window.confirm("Videoni o'chirishni tasdiqlaysizmi?")) return;
+
+                    btn.disabled = true;
+
+                    fetch("/ajax/institution/me/media/" + id, {
+                        method: "DELETE",
+                        headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+                    }).then(function (res) {
+                        if (res.ok) {
+                            window.location.reload();
+                            return;
+                        }
+                        btn.disabled = false;
+                        alert("Videoni o'chirib bo'lmadi. Qayta urining.");
                     }).catch(function () {
                         btn.disabled = false;
                         alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
@@ -1273,7 +1451,6 @@
                     });
                 });
             });
-        }
     }());
 })();
 
@@ -1300,7 +1477,12 @@
             closeAllDD();
             menu.hidden = open;
         });
-        menu.addEventListener("click", function (e) { e.stopPropagation(); });
+        // Diqqat: bu yerda menyu ichidagi bosishlarni "menu.addEventListener('click', stopPropagation)"
+        // bilan to'xtatib qo'yish XATO edi — shu sabab "Chiqish" (.js-logout-trigger) va boshqa
+        // menyu ichidagi tugmalar hech narsa qilmasdi: ularning click hodisasi document darajasidagi
+        // haqiqiy handlerlarga (logout, va h.k.) hech qachon yetib bormasdi (bubble to'xtab qolardi).
+        // Endi hech narsa to'xtatilmaydi — menyu ichida real havola/tugma bosilganda o'z ishini
+        // qiladi, bo'sh joy bosilsa esa pastdagi document-level closeAllDD orqali yopiladi (kutilgan holat).
     });
 
     document.addEventListener("click", closeAllDD);
@@ -1416,6 +1598,199 @@
         btns.forEach(function (btn) {
             btn.addEventListener("click", function () {
                 btns.forEach(function (b) { b.classList.toggle("on", b === btn); });
+            });
+        });
+    });
+})();
+
+/* ===== Ota-ona kabineti: "Profilni tahrirlash" (real PUT /ajax/me) va
+   "Farzandlarim" qo'shish/tahrirlash/o'chirish (real POST/PUT/DELETE
+   /ajax/children) — parent/dashboard.blade.php, parent/children.blade.php.
+   AchievementController JS'idagi bilan bir xil xato ko'rsatish andozasi. ===== */
+(function () {
+    "use strict";
+
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        return meta ? meta.content : "";
+    }
+
+    function jsonFetch(url, method, data) {
+        return fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "X-CSRF-TOKEN": csrfToken(),
+            },
+            body: data !== undefined ? JSON.stringify(data) : undefined,
+        }).then(function (res) {
+            return res.json().catch(function () { return {}; }).then(function (body) {
+                return { ok: res.ok, status: res.status, body: body };
+            });
+        });
+    }
+
+    function errorMessage(body) {
+        var msg = "Xatolik yuz berdi. Ma'lumotlarni tekshirib qayta urining.";
+        if (body) {
+            if (body.errors) {
+                var firstKey = Object.keys(body.errors)[0];
+                if (firstKey && body.errors[firstKey][0]) msg = body.errors[firstKey][0];
+            } else if (body.message) {
+                msg = body.message;
+            }
+        }
+        return msg;
+    }
+
+    function showFormError(form, msg) {
+        var errBox = form.querySelector(".js-form-error");
+        if (errBox) { errBox.textContent = msg; errBox.style.display = ""; }
+        else alert(msg);
+    }
+
+    /* --- Profilni tahrirlash: real PUT /ajax/me --- */
+    document.querySelectorAll(".js-parent-profile-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var errBox = form.querySelector(".js-form-error");
+            if (errBox) errBox.style.display = "none";
+
+            var data = {
+                name: (form.querySelector('[name="name"]') || {}).value || "",
+                phone: (form.querySelector('[name="phone"]') || {}).value || "",
+                district: (form.querySelector('[name="district"]') || {}).value || "",
+            };
+
+            var submitBtn = form.querySelector(".form-submit");
+            if (submitBtn) submitBtn.disabled = true;
+
+            jsonFetch("/ajax/me", "PUT", data).then(function (res) {
+                if (submitBtn) submitBtn.disabled = false;
+                if (!res.ok) { showFormError(form, errorMessage(res.body)); return; }
+                window.location.reload();
+            }).catch(function () {
+                if (submitBtn) submitBtn.disabled = false;
+                showFormError(form, "Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+            });
+        });
+    });
+
+    /* --- Farzand qo'shish/tahrirlash: real POST /ajax/children (yaratish) va
+       PUT /ajax/children/{id} (tahrirlash). Jinsi/qiziqishlar submit paytida
+       .choice-btn.on / .chip.on'dan o'qiladi (vizual toggle allaqachon mavjud). --- */
+    document.querySelectorAll(".js-child-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var errBox = form.querySelector(".js-form-error");
+            if (errBox) errBox.style.display = "none";
+
+            var genderBtn = form.querySelector(".js-child-gender .choice-btn.on");
+            var interests = Array.prototype.slice
+                .call(form.querySelectorAll(".js-child-interests .chip.on"))
+                .map(function (c) { return c.dataset.interest; });
+
+            var data = {
+                name: (form.querySelector('[name="name"]') || {}).value || "",
+                last_name: (form.querySelector('[name="last_name"]') || {}).value || "",
+                age: (form.querySelector('[name="age"]') || {}).value || "",
+                gender: genderBtn ? genderBtn.dataset.gender : "",
+                interests: interests,
+            };
+
+            var childId = form.dataset.childId;
+            var url = childId ? "/ajax/children/" + childId : "/ajax/children";
+            var method = childId ? "PUT" : "POST";
+
+            var submitBtn = form.querySelector(".form-submit");
+            if (submitBtn) submitBtn.disabled = true;
+
+            jsonFetch(url, method, data).then(function (res) {
+                if (submitBtn) submitBtn.disabled = false;
+                if (!res.ok) { showFormError(form, errorMessage(res.body)); return; }
+                window.location.reload();
+            }).catch(function () {
+                if (submitBtn) submitBtn.disabled = false;
+                showFormError(form, "Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+            });
+        });
+    });
+
+    /* --- Farzandni o'chirish: real DELETE /ajax/children/{id} --- */
+    document.querySelectorAll(".js-child-delete").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var id = btn.dataset.childId;
+            if (!id) return;
+            if (!window.confirm("Farzand profilini o'chirishni tasdiqlaysizmi?")) return;
+
+            btn.disabled = true;
+
+            fetch("/ajax/children/" + id, {
+                method: "DELETE",
+                headers: { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() },
+            }).then(function (res) {
+                if (res.ok) { window.location.reload(); return; }
+                btn.disabled = false;
+                alert("Farzandni o'chirib bo'lmadi. Qayta urining.");
+            }).catch(function () {
+                btn.disabled = false;
+                alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+            });
+        });
+    });
+
+    /* --- Muassasa kabineti: ko'p-filial — tashkilot almashtirish, real
+       PATCH /ajax/institution/me/active (ResolvesActiveInstitution, 2026-07-15) --- */
+    document.querySelectorAll(".js-org-switch").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            if (btn.disabled) return;
+            var id = btn.dataset.institutionId;
+            if (!id) return;
+
+            btn.disabled = true;
+
+            jsonFetch("/ajax/institution/me/active", "PATCH", { institution_id: id }).then(function (res) {
+                if (!res.ok) {
+                    btn.disabled = false;
+                    alert(errorMessage(res.body));
+                    return;
+                }
+                window.location.reload();
+            }).catch(function () {
+                btn.disabled = false;
+                alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+            });
+        });
+    });
+
+    /* --- Muassasa kabineti: "Yangi muassasa qo'shish", real
+       POST /ajax/institution/me/organizations — qo'shilgach darhol faol bo'ladi --- */
+    document.querySelectorAll(".js-org-add-form").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            var errBox = form.querySelector(".js-form-error");
+            if (errBox) errBox.style.display = "none";
+
+            var data = {
+                name: (form.querySelector('[name="name"]') || {}).value || "",
+                type: (form.querySelector('[name="type"]') || {}).value || "",
+                district: (form.querySelector('[name="district"]') || {}).value || "",
+            };
+
+            var submitBtn = form.querySelector(".form-submit");
+            if (submitBtn) submitBtn.disabled = true;
+
+            jsonFetch("/ajax/institution/me/organizations", "POST", data).then(function (res) {
+                if (submitBtn) submitBtn.disabled = false;
+                if (!res.ok) { showFormError(form, errorMessage(res.body)); return; }
+                window.location.reload();
+            }).catch(function () {
+                if (submitBtn) submitBtn.disabled = false;
+                showFormError(form, "Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
             });
         });
     });

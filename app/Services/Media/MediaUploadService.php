@@ -18,8 +18,15 @@ class MediaUploadService
         return config('filesystems.media_disk', 'public');
     }
 
-    public function store(Institution $institution, string $type, ?UploadedFile $file, ?string $externalUrl, ?string $caption): InstitutionMedia
-    {
+    public function store(
+        Institution $institution,
+        string $type,
+        ?UploadedFile $file,
+        ?string $externalUrl,
+        ?string $caption,
+        ?string $duration = null,
+        ?string $description = null,
+    ): InstitutionMedia {
         $disk = $this->disk();
         $path = null;
         $url = $externalUrl;
@@ -37,6 +44,8 @@ class MediaUploadService
             'url' => $url,
             'path' => $path,
             'caption' => $caption,
+            'duration' => $duration,
+            'description' => $description,
             'sort_order' => $sortOrder,
         ]);
     }

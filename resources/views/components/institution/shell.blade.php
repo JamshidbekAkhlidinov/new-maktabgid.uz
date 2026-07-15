@@ -58,6 +58,10 @@
             ],
         ];
         $userDisplayName = $user?->name ?: $institution->name;
+        // Tepadagi tashkilot tugmasi doim "hozir faol" muassasani ko'rsatishi kerak —
+        // organizations[0] emas (ko'p filial bo'lsa almashtirilgach shu yerda bilinishi
+        // uchun, 2026-07-15).
+        $activeOrg = collect($organizations)->firstWhere('active', true) ?? ($organizations[0] ?? null);
     @endphp
 
     <div class="idash-shell">
@@ -71,10 +75,10 @@
             {{-- ===== Tashkilot select (bir nechta filial uchun tayyor komponent) ===== --}}
             <div class="idash-org-wrap">
                 <button type="button" class="idash-org-btn" data-dd-toggle="idash-org-menu">
-                    <span class="idash-org-mono">{{ $organizations[0]['mono'] ?? '—' }}</span>
+                    <span class="idash-org-mono">{{ $activeOrg['mono'] ?? '—' }}</span>
                     <span class="idash-org-info">
-                        <b>{{ $organizations[0]['name'] ?? 'Tashkilot' }}</b>
-                        <span>{{ $organizations[0]['meta'] ?? '' }}</span>
+                        <b>{{ $activeOrg['name'] ?? 'Tashkilot' }}</b>
+                        <span>{{ $activeOrg['meta'] ?? '' }}</span>
                     </span>
                     <x-maktabgid.icon name="chevron" :width="16" :height="16" />
                 </button>
@@ -82,7 +86,7 @@
                 <div class="idash-dd" id="idash-org-menu" data-dd-menu hidden>
                     <div class="idash-dd-label">Tashkilotlar</div>
                     @foreach ($organizations as $org)
-                        <button type="button" class="idash-org-item">
+                        <button type="button" class="idash-org-item js-org-switch" data-institution-id="{{ $org['id'] }}" @disabled($org['active'] ?? false)>
                             <span class="idash-org-mono">{{ $org['mono'] }}</span>
                             <span style="flex:1;min-width:0">
                                 <b>{{ $org['name'] }}</b>
@@ -196,18 +200,18 @@
         </div>
     </div>
 
-    {{-- ===== "Yangi muassasa qo'shish" — forma tayyor, lekin bir nechta filialni real
-         boshqarish (backend'da institution_user ko'p-ko'pga bog'lanishi) hali ulanmagan,
-         shuning uchun umumiy "fake form" andozasi (js-fake-form → js-fake-success) orqali
-         ishlaydi — xuddi saytdagi boshqa hali-backend'siz formalar kabi (masalan
-         excursion-modal.blade.php). ===== --}}
+    {{-- ===== "Yangi muassasa qo'shish" — real POST /ajax/institution/me/organizations
+         (ko'p-filial qo'llab-quvvatlash, 2026-07-15). Qo'shilgan zahoti "faol" tashkilot
+         bo'ladi va sahifa shu profilni ko'rsatadi (profilni to'ldirish uchun). ===== --}}
     <x-maktabgid.modal-shell id="idash-org-add-modal" :width="440">
         <div class="js-modal-body">
-            <div class="modal-head js-fake-form-head">
+            <div class="modal-head">
                 <h3>Yangi muassasa qo'shish</h3>
                 <p>Maktab, bog'cha yoki o'quv markazingizni platformaga joylashtiring.</p>
             </div>
-            <form class="form js-fake-form">
+            <form class="form js-org-add-form">
+                <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
+
                 <x-maktabgid.field label="Muassasa nomi" icon="building">
                     <input type="text" name="name" required placeholder="Masalan, Yangi Avlod maktabi" />
                 </x-maktabgid.field>
@@ -230,9 +234,6 @@
                 </button>
                 <p class="form-note"><x-maktabgid.icon name="shield" :width="15" :height="15" /> Qo'shilgach qoralama sifatida saqlanadi. Tarif tanlagach e'lon qilinadi.</p>
             </form>
-            <x-maktabgid.success-note title="Muassasa qo'shildi!" :close-target="true" class="js-fake-success" style="display:none">
-                Endi profilini to'ldiring va tarif tanlab e'lon qiling — bu bo'lim ko'p filialni real boshqarishni qo'llab-quvvatlaganda avtomatik faollashadi.
-            </x-maktabgid.success-note>
         </div>
     </x-maktabgid.modal-shell>
 @endunless

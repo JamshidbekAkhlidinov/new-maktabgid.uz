@@ -12,7 +12,7 @@ class AcceptingController extends Controller
     {
         $data = $request->validate(['accepting' => ['required', 'boolean']]);
 
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
 
         $this->authorize('update', $institution);
 

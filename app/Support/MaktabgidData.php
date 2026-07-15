@@ -327,6 +327,7 @@ class MaktabgidData
             'facilities' => self::resolveFacilities($institution),
             'teachers' => self::resolveTeachers($institution),
             'programs' => self::resolvePrograms($institution),
+            'prices' => self::resolvePrices($institution),
             'lessons' => self::resolveLessons($institution),
             'videos' => self::resolveVideos($institution),
             'steps' => self::resolveAdmissionSteps($institution),
@@ -353,11 +354,14 @@ class MaktabgidData
         ])->all();
     }
 
-    /** Muassasa oʻzi tanlagan qulayliklar boʻlsa — shulardan, boʻlmasa toʻliq katalogdan (eski xatti-harakat). */
+    /** Muassasa oʻzi tanlagan qulayliklar — faqat shulardan. Toʻliq katalogdan avtomatik
+     *  toʻldirish (eski xatti-harakat) olib tashlandi: muassasa hech narsa tanlamagan boʻlsa
+     *  boʻsh massiv qaytadi va bo'lim sahifada ko'rsatilmaydi (achievements/prices bilan bir
+     *  xil qoida, 2026-07-15). */
     private static function resolveFacilities(Institution $institution): array
     {
         if (empty($institution->facilities)) {
-            return self::facilities();
+            return [];
         }
 
         $selected = $institution->facilities;
@@ -368,10 +372,12 @@ class MaktabgidData
         ));
     }
 
+    /** Ustozlar — real Institution.teachers boʻlsa shulardan, aks holda boʻsh (avval hamma
+     *  muassasa uchun bir xil "Madina Yusupova" kabi namunaviy roʻyxat chiqardi — endi yoʻq). */
     private static function resolveTeachers(Institution $institution): array
     {
         if (empty($institution->teachers)) {
-            return self::teachers();
+            return [];
         }
 
         $gradients = self::gradients();
@@ -384,10 +390,12 @@ class MaktabgidData
         ])->all();
     }
 
+    /** Yoʻnalish/dastur — real Institution.programs boʻlsa shulardan, aks holda boʻsh
+     *  (kategoriya boʻyicha umumiy dastur roʻyxati endi ishlatilmaydi). */
     private static function resolvePrograms(Institution $institution): array
     {
         if (empty($institution->programs)) {
-            return self::mediaFor($institution->type)['programs'];
+            return [];
         }
 
         $icons = ['award', 'flask', 'code', 'trophy', 'target', 'book', 'globe', 'users'];
@@ -399,10 +407,26 @@ class MaktabgidData
         ])->all();
     }
 
+    /** "Narxlar" — real InstitutionPrice qatorlari (sinf/guruh + til + narx + chegirma).
+     *  Achievements kabi mock fallback yo'q — hali qo'shilmagan bo'lsa bo'lim ko'rsatilmaydi (2026-07-15). */
+    private static function resolvePrices(Institution $institution): array
+    {
+        $prices = $institution->relationLoaded('prices') ? $institution->prices : $institution->prices()->get();
+
+        return $prices->map(fn ($p) => [
+            'grade' => $p->grade,
+            'lang' => $p->lang,
+            'price' => $p->monthly_price,
+            'discount' => $p->discount,
+        ])->all();
+    }
+
+    /** Oʻquv jarayoni lavhalari — real Institution.lessons boʻlsa shulardan, aks holda boʻsh
+     *  (kategoriya boʻyicha umumiy roʻyxat endi ishlatilmaydi, 2026-07-15). */
     private static function resolveLessons(Institution $institution): array
     {
         if (empty($institution->lessons)) {
-            return self::mediaFor($institution->type)['lessons'];
+            return [];
         }
 
         $icons = ['camera', 'book', 'target', 'globe', 'dumbbell', 'palette', 'code', 'users'];
@@ -413,23 +437,32 @@ class MaktabgidData
         ])->all();
     }
 
+    /** "Videolar" — real InstitutionMedia (type=video) yozuvlari, haqiqiy fayl yoki tashqi
+     *  havola bilan. Prices/achievements kabi mock fallback yo'q — hali qo'shilmagan bo'lsa
+     *  bo'lim ko'rsatilmaydi (avval `institution->videos` json'dan o'qirdi, 2026-07-15).
+     *  "photos" bilan bir xil qoida: 'media' eager-load qilinmagan bo'lsa (masalan katalog
+     *  ro'yxati) N+1 so'rovning oldini olish uchun bo'sh massiv qaytadi — faqat bitta
+     *  muassasa sahifasida ('media' bilan yuklanadi) real ro'yxat chiqadi. */
     private static function resolveVideos(Institution $institution): array
     {
-        if (empty($institution->videos)) {
-            return self::mediaFor($institution->type)['videos'];
+        if (! $institution->relationLoaded('media')) {
+            return [];
         }
 
-        return collect($institution->videos)->values()->map(fn ($v) => [
-            'title' => $v['title'] ?? '',
-            'dur' => $v['dur'] ?? '',
-            'sub' => $v['sub'] ?? '',
+        return $institution->media->where('type', 'video')->values()->map(fn ($v) => [
+            'title' => $v->caption ?? '',
+            'dur' => $v->duration ?? '',
+            'sub' => $v->description ?? '',
+            'url' => $v->url,
         ])->all();
     }
 
+    /** Qabul bosqichlari — real Institution.admission_steps boʻlsa shulardan, aks holda boʻsh
+     *  (avval hamma muassasa uchun bir xil umumiy 4 bosqich koʻrsatilardi — endi mock yoʻq). */
     private static function resolveAdmissionSteps(Institution $institution): array
     {
         if (empty($institution->admission_steps)) {
-            return self::admissionSteps();
+            return [];
         }
 
         return collect($institution->admission_steps)->values()->map(fn ($s) => [
@@ -438,10 +471,13 @@ class MaktabgidData
         ])->all();
     }
 
-    /** 4 ta koʻrsatkich — muassasa qiymat kiritgan boʻlsa oʻshani, aks holda kategoriya boʻyicha default. */
+    /** 4 ta koʻrsatkich — faqat muassasa oʻzi kiritgan qiymatlar (stat_*). Kategoriya boʻyicha
+     *  umumiy default (masalan har doim "16 / 12 / 98% / 24") endi ishlatilmaydi — bu raqamlar
+     *  muassasaga tegishli emas edi. Hech qaysi maydon toʻldirilmagan boʻlsa boʻsh massiv
+     *  qaytadi va title-card koʻrsatkichlar qatorini umuman koʻrsatmaydi (2026-07-15). */
     private static function resolveStats(Institution $institution): array
     {
-        $stats = self::detailStats($institution->type);
+        $labels = self::detailStats($institution->type);
 
         $overrides = [
             $institution->stat_class_size,
@@ -450,9 +486,10 @@ class MaktabgidData
             $institution->stat_first_grade_seats,
         ];
 
+        $stats = [];
         foreach ($overrides as $i => $v) {
             if (filled($v)) {
-                $stats[$i]['v'] = $v;
+                $stats[] = ['v' => $v, 'k' => $labels[$i]['k']];
             }
         }
 
@@ -461,7 +498,7 @@ class MaktabgidData
 
     public static function schools(): array
     {
-        return Institution::with(['district', 'specializations', 'achievements'])
+        return Institution::with(['district', 'specializations', 'achievements', 'prices'])
             ->orderBy('id')
             ->get()
             ->map(fn (Institution $institution) => self::mapInstitution($institution))
@@ -470,7 +507,7 @@ class MaktabgidData
 
     public static function school(int $id): ?array
     {
-        $institution = Institution::with(['district', 'specializations', 'media', 'achievements'])->find($id);
+        $institution = Institution::with(['district', 'specializations', 'media', 'achievements', 'prices'])->find($id);
 
         return $institution ? self::mapInstitution($institution) : null;
     }

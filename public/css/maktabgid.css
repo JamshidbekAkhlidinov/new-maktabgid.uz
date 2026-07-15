@@ -233,6 +233,9 @@ svg { display: block; }
 .chip {
   padding: 7px 12px; border-radius: var(--r-pill); border: 1.5px solid var(--line); background: var(--surface);
   font-size: 13px; font-weight: 600; color: var(--ink-2); transition: .14s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .chip:hover { border-color: var(--primary); color: var(--ink); }
 .chip.on { background: var(--primary-soft); border-color: var(--primary); color: var(--primary-ink); }
@@ -802,7 +805,7 @@ svg { display: block; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 26px; box-shadow: var(--shadow-sm); }
 .panel + .panel { margin-top: 18px; }
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
-.panel-head h3 { font-size: 21px; }
+.panel-head h3 { font-size: 21px;  display: flex; }
 .saved-pill { display: inline-flex; align-items: center; gap: 6px; color: var(--ok); background: #e7f6ec; font-weight: 700; font-size: 13px; padding: 6px 12px; border-radius: var(--r-pill); }
 .kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .kv { background: var(--surface-2); border-radius: var(--r-md); padding: 14px 16px; }
@@ -1000,6 +1003,7 @@ svg { display: block; }
 .vcard:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .vthumb { position: relative; aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; }
 .vcard-wm { position: absolute; right: -10px; bottom: -10px; color: rgba(255,255,255,.18); }
+.vplay-link { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .vplay { width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,.92); color: var(--primary); display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md); transition: .15s; }
 .vplay svg { margin-left: 3px; }
 .vcard:hover .vplay { transform: scale(1.1); background: #fff; }
@@ -1040,6 +1044,17 @@ svg { display: block; }
 .step-n { width: 36px; height: 36px; border-radius: 50%; background: var(--primary); color: #fff; font-family: var(--font-display); font-weight: 800; display: flex; align-items: center; justify-content: center; flex: none; z-index: 1; }
 .steps b { display: block; font-family: var(--font-display); font-size: 16px; }
 .steps span { font-size: 13.5px; color: var(--ink-2); }
+
+/* ---------- narxlar (school detail — real InstitutionPrice qatorlari) ---------- */
+.price-list { display: flex; flex-direction: column; gap: 2px; }
+.price-list-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 13px 0; border-bottom: 1px solid var(--line-2); }
+.price-list-row:last-child { border-bottom: none; }
+.price-list-main b { display: block; font-family: var(--font-display); font-size: 15.5px; }
+.price-list-main span { font-size: 13px; color: var(--ink-3); font-weight: 600; }
+.price-list-amount { text-align: right; flex: none; }
+.price-list-amount b { font-family: var(--font-display); font-size: 16px; color: var(--primary-ink); }
+.price-list-amount span { font-size: 12.5px; color: var(--ink-3); font-weight: 600; margin-left: 3px; }
+.price-list-amount em { display: block; font-style: normal; font-size: 12px; color: var(--ok, #1f9d55); font-weight: 700; }
 
 /* enrollment block */
 .enroll-block { background: linear-gradient(150deg, color-mix(in oklab, var(--primary-soft) 60%, var(--surface)), var(--surface)); border-color: color-mix(in oklab, var(--primary) 22%, var(--line)); }

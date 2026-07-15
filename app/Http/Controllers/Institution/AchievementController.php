@@ -21,7 +21,7 @@ class AchievementController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
         $this->authorize('update', $institution);
 
         $data = $this->validated($request);
@@ -35,7 +35,7 @@ class AchievementController extends Controller
 
     public function update(Request $request, Achievement $achievement): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
         $this->authorize('update', $institution);
 
         abort_unless($achievement->institution_id === $institution->id, 403);
@@ -54,7 +54,7 @@ class AchievementController extends Controller
 
     public function destroy(Request $request, Achievement $achievement): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
         $this->authorize('update', $institution);
 
         abort_unless($achievement->institution_id === $institution->id, 403);

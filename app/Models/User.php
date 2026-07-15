@@ -75,10 +75,22 @@ class User extends Authenticatable
         return $this->belongsTo(District::class);
     }
 
-    /** Muassasa (agar role=institution bo'lsa) */
+    /** Muassasa (agar role=institution bo'lsa) — hozir "faol" tashkilotni bermaydi,
+     *  ko'p filial bo'lsa qaysi biri kelishi tasodifiy; kabinet kontrollerlari
+     *  buning o'rniga Controller::activeInstitution() orqali ishlaydi (session'dagi
+     *  active_institution_id asosida). Shu relation moddellararo (masalan
+     *  Vacancy::institution()) ishlatiladigan joylarda hali kerak bo'lishi mumkin. */
     public function institution(): HasOne
     {
         return $this->hasOne(Institution::class, 'owner_user_id');
+    }
+
+    /** Foydalanuvchiga tegishli barcha muassasalar (filiallar) — ko'p-filial qo'llab-
+     *  quvvatlash (2026-07-15). owner_user_id bitta userga bir nechta Institution
+     *  yozuvi bilan bog'lanishi mumkin, DB darajasida unique cheklov yo'q edi. */
+    public function institutions(): HasMany
+    {
+        return $this->hasMany(Institution::class, 'owner_user_id')->orderBy('id');
     }
 
     public function favorites(): HasMany

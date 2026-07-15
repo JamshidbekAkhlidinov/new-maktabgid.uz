@@ -1,5 +1,6 @@
 @props(['lessons'])
 
+@if (count($lessons))
 <section class="card-block">
     <h3><x-maktabgid.icon name="camera" :width="19" :height="19" /> Oʻquv jarayonidan lavhalar</h3>
     <div class="lesson-grid">
@@ -8,3 +9,4 @@
         @endforeach
     </div>
 </section>
+@endif

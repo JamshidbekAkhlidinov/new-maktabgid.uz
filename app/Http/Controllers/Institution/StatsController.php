@@ -10,7 +10,7 @@ class StatsController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
-        $institution = $request->user()->institution()->firstOrFail();
+        $institution = $this->activeInstitutionOrFail($request);
         $this->authorize('view', $institution);
 
         return response()->json([

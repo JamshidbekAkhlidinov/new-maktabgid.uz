@@ -1,5 +1,6 @@
 @props(['facilities'])
 
+@if (count($facilities))
 <section class="card-block">
     <h3><x-maktabgid.icon name="grid" :width="19" :height="19" /> Infratuzilma va qulayliklar</h3>
     <div class="fac-grid">
@@ -8,3 +9,4 @@
         @endforeach
     </div>
 </section>
+@endif
