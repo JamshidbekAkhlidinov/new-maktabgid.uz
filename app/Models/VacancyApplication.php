@@ -2,15 +2,27 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 class VacancyApplication extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['vacancy_id', 'teacher_user_id', 'full_name', 'phone', 'note', 'status'];
+    protected $fillable = [
+        'vacancy_id', 'teacher_user_id', 'full_name', 'phone', 'note',
+        'resume_path', 'resume_disk', 'resume_original_name', 'status',
+    ];
+
+    protected function resumeUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->resume_path
+            ? Storage::disk($this->resume_disk ?? config('filesystems.media_disk'))->url($this->resume_path)
+            : null);
+    }
 
     public function vacancy(): BelongsTo
     {

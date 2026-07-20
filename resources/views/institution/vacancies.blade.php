@@ -127,6 +127,11 @@
                                 <div class="idash-cand-main">
                                     <b>{{ $c->full_name }}</b>
                                     <span>{{ $c->phone }} · {{ $c->created_at->diffForHumans() }}@if ($c->note) · {{ \Illuminate\Support\Str::limit($c->note, 60) }} @endif</span>
+                                    @if ($c->resume_path)
+                                        <a href="{{ $c->resume_url }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;margin-top:4px;font-size:12.5px;font-weight:700;color:var(--primary)">
+                                            <x-maktabgid.icon name="paperclip" :width="13" :height="13" /> {{ $c->resume_original_name ?: 'Rezyume' }}
+                                        </a>
+                                    @endif
                                 </div>
                                 @if ($c->status === 'pending')
                                     <div class="idash-cand-actions">

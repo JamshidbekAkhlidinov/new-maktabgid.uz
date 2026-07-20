@@ -18,11 +18,24 @@ class VacancyApplicationController extends Controller
     {
         $data = $request->validated();
 
+        $resumeDisk = config('filesystems.media_disk', 'public');
+        $resumePath = null;
+        $resumeOriginalName = null;
+
+        if ($request->hasFile('resume')) {
+            $file = $request->file('resume');
+            $resumePath = $file->store('vacancy-applications/'.$vacancy->id, $resumeDisk);
+            $resumeOriginalName = $file->getClientOriginalName();
+        }
+
         $application = $vacancy->applications()->create([
             'teacher_user_id' => $request->user()?->id,
             'full_name' => $data['full_name'],
             'phone' => $data['phone'],
             'note' => $data['note'] ?? null,
+            'resume_path' => $resumePath,
+            'resume_disk' => $resumePath ? $resumeDisk : null,
+            'resume_original_name' => $resumeOriginalName,
             'status' => 'pending',
         ]);
 

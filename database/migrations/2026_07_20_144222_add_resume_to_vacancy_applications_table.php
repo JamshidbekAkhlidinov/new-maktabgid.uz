@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('vacancy_applications', function (Blueprint $table) {
+            // Rezyume/CV fayli (ixtiyoriy) — MEDIA_DISK orqali saqlanadi (MediaUploadService
+            // bilan bir xil andoza: disk nomi qatorda saqlanadi, disk almashsa eski fayllar
+            // buzilmasin uchun).
+            $table->string('resume_path')->nullable()->after('note');
+            $table->string('resume_disk')->nullable()->after('resume_path');
+            $table->string('resume_original_name')->nullable()->after('resume_disk');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('vacancy_applications', function (Blueprint $table) {
+            $table->dropColumn(['resume_path', 'resume_disk', 'resume_original_name']);
+        });
+    }
+};

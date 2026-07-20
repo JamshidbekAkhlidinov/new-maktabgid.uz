@@ -18,6 +18,7 @@ class VacancyApplicationStoreRequest extends FormRequest
             'full_name' => ['required', 'string', 'max:255'],
             'phone' => ['required', 'string', 'max:32'],
             'note' => ['nullable', 'string', 'max:2000'],
+            'resume' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
         ];
     }
 }

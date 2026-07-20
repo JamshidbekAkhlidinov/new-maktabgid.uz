@@ -58,7 +58,7 @@
                     </div>
                 </div>
 
-                <form class="form js-vacancy-apply-form" data-vacancy-id="{{ $v->id }}">
+                <form class="form js-vacancy-apply-form" data-vacancy-id="{{ $v->id }}" enctype="multipart/form-data">
                     <div class="form-row2">
                         <x-maktabgid.field label="Ism-familiya" icon="user">
                             <input type="text" name="full_name" required value="{{ $teacher['name'] ?? '' }}" placeholder="Ism Familiya" />
@@ -69,6 +69,9 @@
                     </div>
                     <x-maktabgid.field label="Qisqa xat" hint="ixtiyoriy" icon="edit">
                         <textarea name="note" rows="3" placeholder="Nega aynan siz? 2-3 jumla yozing…"></textarea>
+                    </x-maktabgid.field>
+                    <x-maktabgid.field label="Rezyume / CV" hint="ixtiyoriy, PDF yoki Word" icon="paperclip">
+                        <input type="file" name="resume" accept=".pdf,.doc,.docx" />
                     </x-maktabgid.field>
                     <div style="display:flex;gap:10px;margin-top:4px">
                         <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">

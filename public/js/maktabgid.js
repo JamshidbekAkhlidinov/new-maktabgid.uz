@@ -10,14 +10,14 @@
     }
 
     function jsonFetch(url, method, data) {
+        var isFormData = typeof FormData !== "undefined" && data instanceof FormData;
+        var headers = { "Accept": "application/json", "X-CSRF-TOKEN": csrfToken() };
+        if (!isFormData) headers["Content-Type"] = "application/json";
+
         return fetch(url, {
             method: method,
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "X-CSRF-TOKEN": csrfToken(),
-            },
-            body: data !== undefined ? JSON.stringify(data) : undefined,
+            headers: headers,
+            body: data === undefined ? undefined : (isFormData ? data : JSON.stringify(data)),
         }).then(function (res) {
             return res.json().catch(function () { return {}; }).then(function (body) {
                 return { ok: res.ok, status: res.status, body: body };
@@ -501,7 +501,8 @@
 
     /* real vakansiyaga ariza formasi: POST /ajax/vacancies/{id}/apply (vacancy.blade.php,
        teacher/vacancies.blade.php — mehmon ham yubora oladi, .js-application-form bilan
-       bir xil andoza — ADR-0002, Faza 2). */
+       bir xil andoza — ADR-0002, Faza 2). FormData ishlatiladi — rezyume fayli ham
+       shu forma orqali yuboriladi. */
     document.querySelectorAll(".js-vacancy-apply-form").forEach(function (form) {
         form.addEventListener("submit", function (e) {
             e.preventDefault();
@@ -509,11 +510,7 @@
             var vacancyId = form.dataset.vacancyId;
             if (!vacancyId) return;
 
-            var data = {};
-            var els = form.elements;
-            for (var i = 0; i < els.length; i++) {
-                if (els[i].name) data[els[i].name] = els[i].value;
-            }
+            var data = new FormData(form);
 
             var oldError = form.querySelector(".js-app-error");
             if (oldError) oldError.remove();
