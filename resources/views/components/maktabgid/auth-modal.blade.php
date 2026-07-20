@@ -38,6 +38,14 @@
                 Hisobingiz yo'qmi?
                 <button type="button" class="js-auth-switch" data-target="parent">Ota-ona bo'lib ro'yxatdan o'ting</button>
             </div>
+            <button class="auth-alt js-auth-switch" type="button" data-target="institution">
+                <x-maktabgid.icon name="building" :width="16" :height="16" />
+                Men muassasaman — muassasa qo'shish
+            </button>
+            <button class="auth-alt js-auth-switch" type="button" data-target="teacher">
+                <x-maktabgid.icon name="user" :width="16" :height="16" />
+                Men ustozman — ustoz kabinetini ochish
+            </button>
         </div>
 
         {{-- ===== PARENT REGISTER PANEL ===== --}}
