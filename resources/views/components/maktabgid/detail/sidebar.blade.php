@@ -11,10 +11,9 @@
                 <b>Narx kelishilgan</b>
             @endif
         </div>
-        <button type="button" class="btn btn-primary side-cta" data-modal-open="enroll-modal"><x-maktabgid.icon name="edit" :width="18" :height="18" /> Oʻquvchini joylashtirish</button>
+        <a href="#joylashtirish" class="btn btn-primary side-cta"><x-maktabgid.icon name="edit" :width="18" :height="18" /> Oʻquvchini joylashtirish</a>
         <button type="button" class="btn btn-outline side-cta" data-modal-open="excursion-modal"><x-maktabgid.icon name="ticket" :width="18" :height="18" /> Ekskursiyaga yozilish</button>
         <button type="button" class="btn btn-ghost side-cta"><x-maktabgid.icon name="chat" :width="18" :height="18" /> Suhbat boshlash</button>
-        <a class="btn btn-tg side-cta" href="#"><x-maktabgid.icon name="send" :width="17" :height="17" /> Telegram orqali</a>
         <div class="side-divide"></div>
         <ul class="side-facts">
             <li><x-maktabgid.icon name="users" :width="16" :height="16" /> {{ $school['grades'] }}</li>

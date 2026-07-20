@@ -60,7 +60,6 @@
     </div>
 
     <x-maktabgid.detail.excursion-modal :school="$s" />
-    <x-maktabgid.detail.enroll-modal :school="$s" />
 
     <x-maktabgid.trust-strip />
     <x-maktabgid.cta-band />
