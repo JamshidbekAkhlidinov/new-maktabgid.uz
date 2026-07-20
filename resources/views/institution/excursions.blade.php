@@ -91,7 +91,8 @@
                             <x-maktabgid.icon name="phone" :width="14" :height="14" /> {{ $app->parent_phone }}
                         </div>
                         <div class="idash-datetime">
-                            <x-maktabgid.icon name="cal" :width="14" :height="14" /> {{ $app->created_at->format('j.m, H:i') }}
+                            <x-maktabgid.icon name="cal" :width="14" :height="14" />
+                            {{ $app->scheduled_at?->format('j-M, H:i') ?? $app->created_at->format('j.m, H:i') }}
                         </div>
                         <div>
                             <span class="idash-status-dot {{ $app->status }}">{{ $statusLabels[$app->status] ?? $app->status }}</span>

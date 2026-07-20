@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Institution;
 use App\Support\MaktabgidData;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -47,11 +49,11 @@ class InstitutionCabinetController extends Controller
         // ko'rishlar hisoblagichi hali yo'qligi sababli bitta mock qator sifatida qo'shiladi.
         $activity = $applications->map(fn ($a) => $a->type === 'excursion' ? [
             'type' => 'excursion',
-            // Diqqat: "preferred_start" erkin matn maydoni (masalan "Keyingi chorak"), sana emas —
-            // shuning uchun so'rov qachon tushgani (created_at) ko'rsatiladi. translatedFormat()
-            // o'rniga qo'lda oy nomlari ishlatiladi — APP_LOCALE 'uz' ga sozlanmagan bo'lsa ham
-            // (config/app.php'da default 'en') sana doim o'zbekcha chiqishi uchun.
-            'text' => "Ekskursiya so'rovi: ".self::uzDate($a->created_at),
+            // Ota-ona belgilagan kun/soat (scheduled_at) bo'lsa o'sha ko'rsatiladi;
+            // eski (scheduled_at'siz) yozuvlar uchun so'rov qachon tushgani (created_at).
+            // translatedFormat() o'rniga qo'lda oy nomlari ishlatiladi — APP_LOCALE 'uz'ga
+            // sozlanmagan bo'lsa ham (config/app.php'da default 'en') sana doim o'zbekcha chiqishi uchun.
+            'text' => "Ekskursiya so'rovi: ".self::uzDate($a->scheduled_at ?? $a->created_at),
             'time' => $a->created_at,
         ] : [
             'type' => 'lead',
@@ -120,8 +122,13 @@ class InstitutionCabinetController extends Controller
         // Diqqat: avval bu yerda TYPE bo'yicha filtr yo'q edi — enrollment (Lidlar)
         // arizalari ham shu ro'yxatga aralashib ketardi. Endi faqat excursion turi
         // ko'rsatiladi (ADR-0002, Faza 2 — Lidlar sahifasi enrollment turini oladi).
+        // Jadval (schedule) tartibida — eng yaqin ekskursiya birinchi, scheduled_at
+        // bo'lmagan eski yozuvlar oxirida.
         $applications = $ctx['institution']
-            ? $ctx['institution']->applications()->where('type', 'excursion')->latest()->get()
+            ? $ctx['institution']->applications()->where('type', 'excursion')
+                ->orderByRaw('scheduled_at is null')
+                ->orderBy('scheduled_at')
+                ->get()
             : collect();
 
         return view('institution.excursions', $ctx + [
@@ -130,8 +137,7 @@ class InstitutionCabinetController extends Controller
                 'pending' => 'Kutilmoqda',
                 'confirmed' => 'Tasdiqlangan',
                 // "completed" — muassasa "Yakunlash" tugmasi bilan qo'lda belgilaydi
-                // (tashrif haqiqatda bo'lib o'tganidan keyin); real sana/vaqt maydoni
-                // hali yo'qligi sababli avtomatik hisoblanmaydi.
+                // (tashrif haqiqatda bo'lib o'tganidan keyin).
                 'completed' => "Bo'lib o'tdi",
                 'rejected' => 'Bekor qilindi',
             ],
@@ -426,24 +432,24 @@ class InstitutionCabinetController extends Controller
     }
 
     /** Real: bugungi profil ko'rishlar soni — "So'nggi harakatlar" oqimidagi qator uchun (ADR-0002, Faza 2). */
-    private function todayViews(?\App\Models\Institution $institution): int
+    private function todayViews(?Institution $institution): int
     {
         return $institution ? $institution->views()->whereDate('created_at', now()->toDateString())->count() : 0;
     }
 
     /** "8-iyun, 14:30" ko'rinishidagi sana — APP_LOCALE'dan mustaqil, doim o'zbekcha oy nomi bilan. */
-    private static function uzDate(\Illuminate\Support\Carbon $date): string
+    private static function uzDate(Carbon $date): string
     {
         return $date->day.'-'.self::uzMonth($date).', '.$date->format('H:i');
     }
 
     /** "8-iyun" — vaqtsiz, suhbat sahifasidagi sana bo'linuvchilari uchun. */
-    private static function uzDayLabel(\Illuminate\Support\Carbon $date): string
+    private static function uzDayLabel(Carbon $date): string
     {
         return $date->day.'-'.self::uzMonth($date);
     }
 
-    private static function uzMonth(\Illuminate\Support\Carbon $date): string
+    private static function uzMonth(Carbon $date): string
     {
         $months = [1 => 'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
 

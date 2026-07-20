@@ -14,7 +14,14 @@
                         <span class="appl-ico"><x-maktabgid.icon name="ticket" :width="20" :height="20" /></span>
                         <div class="cab-item-main">
                             <b>{{ $app->institution?->name ?? '—' }}</b>
-                            <span>{{ $app->child_name }} · {{ $app->target_grade ?? $app->current_grade ?? '—' }} · {{ $app->created_at->format('Y-m-d') }}</span>
+                            <span>
+                                {{ $app->child_name }} · {{ $app->target_grade ?? $app->current_grade ?? '—' }}
+                                @if ($app->scheduled_at)
+                                    · Ekskursiya: {{ $app->scheduled_at->format('Y-m-d, H:i') }}
+                                @else
+                                    · {{ $app->created_at->format('Y-m-d') }}
+                                @endif
+                            </span>
                         </div>
                         <span class="appl-status {{ $statusClass[$app->status] ?? 'pending' }}">{{ $statusLabels[$app->status] ?? $app->status }}</span>
                     </div>

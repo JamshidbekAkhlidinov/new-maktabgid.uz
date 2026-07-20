@@ -15,11 +15,15 @@
                 <x-maktabgid.field label="Bola yoshi" icon="user"><input name="child_age" required type="number" min="1" max="18" placeholder="7" /></x-maktabgid.field>
                 <x-maktabgid.field label="Sinf / guruh" icon="school"><input name="target_grade" required placeholder="1-sinf" /></x-maktabgid.field>
             </div>
+            <div class="form-row2">
+                <x-maktabgid.field label="Ekskursiya kuni" icon="cal"><input name="excursion_date" required type="date" min="{{ now()->toDateString() }}" /></x-maktabgid.field>
+                <x-maktabgid.field label="Soati" icon="clock"><input name="excursion_time" required type="time" value="10:00" /></x-maktabgid.field>
+            </div>
             <p class="form-note"><x-maktabgid.icon name="shield" :width="15" :height="15" /> Maʼlumotlaringiz faqat ushbu muassasaga yuboriladi.</p>
             <button class="btn btn-primary form-submit" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> Arizani yuborish</button>
         </form>
         <x-maktabgid.success-note title="Arizangiz yuborildi!" :close-target="true" class="js-fake-success" style="display:none">
-            <b>{{ $school['name'] }}</b> tez orada koʻrsatilgan raqamga qoʻngʻiroq qilib, ekskursiya vaqtini kelishadi. Ariza «Kabinet → Arizalarim» boʻlimida saqlanadi.
+            <b>{{ $school['name'] }}</b> belgilagan kun va soatingizni koʻrib chiqib, tasdiqlaydi yoki koʻrsatilgan raqamga qoʻngʻiroq qilib qayta kelishadi. Ariza «Kabinet → Arizalarim» boʻlimida saqlanadi.
         </x-maktabgid.success-note>
     </div>
 </x-maktabgid.modal-shell>

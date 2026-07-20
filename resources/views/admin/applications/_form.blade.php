@@ -30,6 +30,8 @@
     <x-admin.input name="parent_name" label="Ota-ona ismi" :value="$application?->parent_name" required />
     <x-admin.input name="parent_phone" label="Ota-ona telefoni" :value="$application?->parent_phone" required />
     <x-admin.input name="preferred_start" label="Boshlanish sanasi" :value="$application?->preferred_start" />
+    <x-admin.input name="scheduled_at" label="Ekskursiya kuni/soati" type="datetime-local"
+        :value="$application?->scheduled_at?->format('Y-m-d\TH:i')" />
 </div>
 
 <div class="mt-5">

@@ -27,6 +27,8 @@ class ApplicationStoreRequest extends FormRequest
             'parent_name' => ['required', 'string', 'max:255'],
             'parent_phone' => ['required', 'string', 'max:20'],
             'preferred_start' => ['nullable', 'string', 'max:100'],
+            'excursion_date' => ['required_if:type,excursion', 'nullable', 'date', 'after_or_equal:today'],
+            'excursion_time' => ['nullable', 'date_format:H:i'],
             'note' => ['nullable', 'string', 'max:2000'],
         ];
     }

@@ -13,13 +13,14 @@ class Application extends Model
     protected $fillable = [
         'institution_id', 'parent_user_id', 'type', 'child_name', 'child_birth_date',
         'child_age', 'current_grade', 'target_grade', 'previous_school',
-        'parent_name', 'parent_phone', 'preferred_start', 'note', 'status',
+        'parent_name', 'parent_phone', 'preferred_start', 'scheduled_at', 'note', 'status',
     ];
 
     protected function casts(): array
     {
         return [
             'child_birth_date' => 'date',
+            'scheduled_at' => 'datetime',
         ];
     }
 

@@ -95,6 +95,7 @@ class ApplicationController extends Controller implements HasMiddleware
             'parent_name' => ['required', 'string', 'max:255'],
             'parent_phone' => ['required', 'string', 'max:32'],
             'preferred_start' => ['nullable', 'string', 'max:100'],
+            'scheduled_at' => ['nullable', 'date'],
             'note' => ['nullable', 'string'],
             'status' => ['required', 'string', 'in:pending,confirmed,rejected,completed'],
         ]);
