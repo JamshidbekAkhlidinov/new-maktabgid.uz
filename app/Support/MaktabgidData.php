@@ -283,20 +283,42 @@ class MaktabgidData
      * ENTITY — endi real bazadan (backend.md asosida qurilgan Phase 1-5)
      * ================================================================== */
 
-    /** Haqiqiy 2GIS geolokatsiya hali ulanmagan muassasalar uchun barqaror (id'ga bog'liq) namoyish qiymati. */
-    private static function pseudoGeo(int $id): array
-    {
-        $dist = round((($id * 37) % 68) / 10 + 0.4, 1);
-        $x = 15 + (($id * 53) % 70);
-        $y = 12 + (($id * 29) % 76);
+    /** Toshkent shahar markazi (Yandex Maps xaritasi shu nuqta atrofida markazlashadi). */
+    private const TASHKENT_LAT = 41.311081;
 
-        return [$dist, $x, $y];
+    private const TASHKENT_LNG = 69.240562;
+
+    /** Haqiqiy Yandex geolokatsiya hali ulanmagan muassasalar uchun barqaror (id'ga bog'liq) namoyish koordinatasi. */
+    private static function pseudoLatLng(int $id): array
+    {
+        $lat = self::TASHKENT_LAT + ((($id * 29) % 76) - 38) / 1000;
+        $lng = self::TASHKENT_LNG + ((($id * 53) % 70) - 35) / 1000;
+
+        return [$lat, $lng];
+    }
+
+    /** Ikki koordinata orasidagi masofa (km), Haversine formulasi. */
+    private static function distanceKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadiusKm = 6371;
+
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lngDelta = deg2rad($lng2 - $lng1);
+
+        $a = sin($latDelta / 2) ** 2
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($lngDelta / 2) ** 2;
+
+        return round($earthRadiusKm * 2 * atan2(sqrt($a), sqrt(1 - $a)), 1);
     }
 
     private static function mapInstitution(Institution $institution): array
     {
         $gradients = self::gradients();
-        [$dist, $x, $y] = self::pseudoGeo($institution->id);
+
+        [$pseudoLat, $pseudoLng] = self::pseudoLatLng($institution->id);
+        $lat = $institution->lat !== null ? (float) $institution->lat : $pseudoLat;
+        $lng = $institution->lng !== null ? (float) $institution->lng : $pseudoLng;
+        $dist = self::distanceKm(self::TASHKENT_LAT, self::TASHKENT_LNG, $lat, $lng);
 
         $photos = $institution->relationLoaded('media')
             ? $institution->media->where('type', 'gallery')->pluck('url')->values()->all()
@@ -309,8 +331,8 @@ class MaktabgidData
             'about' => $institution->about,
             'district' => $institution->district?->name ?? '',
             'address' => $institution->address,
-            'lat' => $institution->lat,
-            'lng' => $institution->lng,
+            'lat' => $lat,
+            'lng' => $lng,
             'dist' => $dist,
             'price' => $institution->monthly_price,
             'rating' => (float) $institution->rating,
@@ -318,8 +340,6 @@ class MaktabgidData
             'grades' => $institution->grades,
             'lang' => $institution->lang,
             'sat' => (bool) $institution->works_saturday,
-            'x' => $x,
-            'y' => $y,
             'badge' => $institution->badge,
             'g' => $gradients[$institution->id % count($gradients)],
             'specs' => $institution->specializations->pluck('key')->all(),

@@ -41,8 +41,8 @@ return [
         'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
     ],
 
-    'twogis' => [
-        'key' => env('TWOGIS_API_KEY'),
+    'yandex' => [
+        'key' => env('YANDEX_MAPS_API_KEY'),
     ],
 
     // Admin panelga Google orqali kirish (faqat Super Admin, AuthController@handleGoogleCallback).

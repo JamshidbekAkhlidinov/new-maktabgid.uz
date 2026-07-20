@@ -19,7 +19,7 @@ Loyihada Laravel allaqachon tanlangan va Blade sahifalari shu asosda qurilgan (`
 | **OTP yetkazish** | **Telegram bot** ✅ | SMS gateway emas — OTP kod Telegram bot orqali yuboriladi (§5) |
 | **Real vaqtli chat** | **Laravel Reverb** ✅ | WebSocket, boshidanoq shu bilan quriladi (§7) |
 | **Fayl saqlash** | **local (hozir) → Cloudflare R2 (keyin)** ✅ | `.env`dagi `MEDIA_DISK` bilan almashtiriladi, kod o'zgarmaydi (§8) |
-| **Xarita** | **2GIS** ✅ | Maps widget + Geocoding API (§9) |
+| **Xarita** | **Yandex Maps** ✅ | Maps widget + Geocoding API (§9) |
 | AI konsultant | **Anthropic Claude API**, server-side proxy | kalit hech qachon frontendga chiqmaydi |
 | Admin panel | ❌ hozircha yo'q | keyingi versiyada alohida qaraladi |
 
@@ -65,7 +65,7 @@ backend/
 │   │   │   │   ├── InstitutionCatalogController.php  (index/show — public katalog)
 │   │   │   │   └── LookupController.php              (specializations, districts, price/distance bands)
 │   │   │   ├── Institution/                    (kabinet, role=institution)
-│   │   │   │   ├── ProfileController.php       (show/update — jonli preview shu yerdan, 2GIS geocoding shu yerda chaqiriladi)
+│   │   │   │   ├── ProfileController.php       (show/update — jonli preview shu yerdan, Yandex geocoding shu yerda chaqiriladi)
 │   │   │   │   ├── MediaController.php         (rasm/video upload/delete — MEDIA_DISK ga yozadi)
 │   │   │   │   ├── AcceptingController.php     (qabul holati toggle)
 │   │   │   │   ├── InboxController.php         (kelgan arizalar)
@@ -121,7 +121,7 @@ backend/
 │   │   ├── Otp/TelegramOtpChannel.php            (asosiy va yagona kanal)
 │   │   ├── Telegram/TelegramBotService.php       (sendMessage, contact so'rovi, keyboard)
 │   │   ├── Catalog/InstitutionSearchService.php  (filtr/saralash query builder)
-│   │   ├── Geo/TwoGisGeocodingService.php        (manzil → lat/lng)
+│   │   ├── Geo/YandexGeocodingService.php        (manzil → lat/lng)
 │   │   ├── Media/MediaUploadService.php          (local/R2, MEDIA_DISK orqali)
 │   │   └── Ai/AiConsultantService.php            (Claude API + katalog konteksti)
 │   │
@@ -181,9 +181,9 @@ backend/
 `id`, `name` (unique) — 11 ta tuman seed qilinadi (`MaktabgidData::districts()`dan).
 
 ### `institutions`
-`id`, `owner_user_id` FK→users nullable, `name`, `type` enum(`maktab`,`bogcha`,`markaz`,`mutaxassis`), `about` text nullable, `lang` string, `district_id` FK, `address` string nullable, `lat`/`lng` decimal nullable (**2GIS geocoding orqali to'ldiriladi**), `monthly_price` bigint nullable (null = kelishilgan), `grades` string, `work_hours` string, `works_saturday` bool, `accepting` bool default true, `rating` decimal(2,1) default 0, `review_count` int default 0, `badge` string nullable (masalan "Premium"), timestamps.
+`id`, `owner_user_id` FK→users nullable, `name`, `type` enum(`maktab`,`bogcha`,`markaz`,`mutaxassis`), `about` text nullable, `lang` string, `district_id` FK, `address` string nullable, `lat`/`lng` decimal nullable (**Yandex geocoding orqali to'ldiriladi**), `monthly_price` bigint nullable (null = kelishilgan), `grades` string, `work_hours` string, `works_saturday` bool, `accepting` bool default true, `rating` decimal(2,1) default 0, `review_count` int default 0, `badge` string nullable (masalan "Premium"), timestamps.
 
-> Eslatma: oldingi versiyada bo'lgan `map_x`/`map_y` (placeholder canvas koordinatalari) endi kerak emas — 2GIS'ga o'tilgani sababli haqiqiy `lat`/`lng` ishlatiladi.
+> Eslatma: oldingi versiyada bo'lgan `map_x`/`map_y` (placeholder canvas koordinatalari) endi kerak emas — Yandex'ga o'tilgani sababli haqiqiy `lat`/`lng` ishlatiladi.
 
 ### `specializations`
 `id`, `key` unique, `label`, `icon` — 10 ta seed (`stem, english, it, art, music, sport, science, olympiad, ielts, early`).
@@ -296,7 +296,7 @@ POST   /ajax/auth/otp/verify
 GET    /ajax/institutions              ?type=&q=&district=&spec=&priceMin=&priceMax=&sat=&sort=&page=
 GET    /ajax/institutions/{id}
 
-PUT    /ajax/institution/me                    (role:institution — 2GIS geocoding shu yerda ishga tushadi)
+PUT    /ajax/institution/me                    (role:institution — Yandex geocoding shu yerda ishga tushadi)
 POST   /ajax/institution/me/media
 DELETE /ajax/institution/me/media/{id}
 PATCH  /ajax/institution/me/accepting
@@ -371,11 +371,11 @@ Chat boshidanoq **Reverb** bilan quriladi (polling yo'q):
 
 ---
 
-## 9. Xarita — 2GIS
+## 9. Xarita — Yandex Maps
 
-- `institutions.lat`/`lng` — profil saqlanganda `TwoGisGeocodingService` orqali `address` + `district`dan avtomatik hisoblanadi (2GIS Geocoder API, `TWOGIS_API_KEY` bilan server-side chaqiriladi). Muassasa xohlasa xaritada pinni qo'lda ham surishi mumkin (Phase 2, ixtiyoriy).
-- Katalog sahifasidagi hozirgi placeholder canvas (`MapCanvas`/`_map.png`) **2GIS MapGL JS widget**ga almashtiriladi — natija (`institutions` ro'yxati, `lat`/`lng` bilan) frontendga JSON sifatida beriladi, marker'lar shu koordinatalarga qo'yiladi.
-- 2GIS'ning frontend uchun ochiq kaliti domenga bog'lab cheklanadi (2GIS panelida sozlanadi) — shu sababli `TWOGIS_API_KEY` Blade view orqali xavfsiz frontendga uzatiladi (masalan `<meta>` yoki `config('services.twogis.key')` blade'da chop etiladi), backend esa geocoding uchun alohida server-side so'rov yuboradi (bitta kalit ikkalasida ham ishlatilishi mumkin, 2GIS talabiga qarab).
+- `institutions.lat`/`lng` — profil saqlanganda `YandexGeocodingService` orqali `address` + `district`dan avtomatik hisoblanadi (Yandex Geocoder API, `YANDEX_MAPS_API_KEY` bilan server-side chaqiriladi). Muassasa xohlasa xaritada pinni qo'lda ham surishi mumkin (Phase 2, ixtiyoriy).
+- Katalog sahifasidagi hozirgi placeholder canvas (`MapCanvas`/`_map.png`) **Yandex Maps JS API**ga almashtirildi — natija (`institutions` ro'yxati, `lat`/`lng` bilan) frontendga JSON sifatida beriladi, marker'lar shu koordinatalarga qo'yiladi. Haqiqiy `lat`/`lng` bo'lmagan yozuvlar uchun Toshkent markazi atrofida barqaror pseudo-koordinata ishlatiladi (`MaktabgidData::pseudoLatLng`).
+- Yandex Maps JS API `apikey` parametrisiz (tokensiz, past hajmli/dev foydalanish uchun) ulanadi — `YANDEX_MAPS_API_KEY` bo'sh qoldirilishi mumkin. Kalit qo'shilsa, u faqat server-side geocoding (`YandexGeocodingService`) uchun ishlatiladi.
 
 ---
 
@@ -413,7 +413,7 @@ Hozir `cabinet.blade.php`/`school.blade.php` ichida `aiAnswer()` — brauzerda i
 | `R2_BUCKET` | *(bo'sh)* | |
 | `R2_ENDPOINT` | *(bo'sh)* | `https://<account-id>.r2.cloudflarestorage.com` |
 | `R2_URL` | *(bo'sh)* | ommaviy fayl URL bazasi (custom domen yoki R2.dev) |
-| `TWOGIS_API_KEY` | *(bo'sh)* | Maps widget + Geocoding |
+| `YANDEX_MAPS_API_KEY` | *(bo'sh)* | Maps widget (tokensiz ham ishlaydi) + Geocoding |
 
 ---
 
@@ -438,14 +438,14 @@ Hozir `cabinet.blade.php`/`school.blade.php` ichida `aiAnswer()` — brauzerda i
 
 1. **Sxema** — barcha migratsiyalar + modellar + seederlar (MaktabgidData → real DB, ko'rinish o'zgarmaydi)
 2. **Auth + Telegram OTP** — bot yaratish/webhook, telefon+parol ro'yxatdan o'tish/login/logout, rol middleware, localStorage fake auth olib tashlanadi
-3. **Muassasa kabineti** — profil CRUD, media upload (`MEDIA_DISK=public`), 2GIS geocoding orqali `lat`/`lng`, qabul holati
+3. **Muassasa kabineti** — profil CRUD, media upload (`MEDIA_DISK=public`), Yandex geocoding orqali `lat`/`lng`, qabul holati
 4. **Ota-ona tomoni** — favorites, ariza yuborish (ekskursiya/joylashtirish), kabinet real statistikasi
 5. **Arizalar inbox** — muassasa tomonidan tasdiqlash/rad etish + bildirishnoma
 6. **Chat** — Reverb o'rnatiladi, conversations/messages real-time
 7. **Forum** — mavzu/javob/layk
 8. **Kontent** — yangiliklar/blog (o'qish), vakansiya/rezyume joylash (yozish)
 9. **AI konsultant** — server endpoint + Claude API integratsiyasi
-10. **Xarita** — 2GIS MapGL widget bilan katalogdagi placeholder almashtiriladi
+10. **Xarita** — Yandex Maps JS API bilan katalogdagi placeholder almashtiriladi
 11. **Sayqal** — rate-limit, testlar, prod konfiguratsiya (MySQL, R2ga o'tish, Reverb prod sozlamalari)
 
 > **Kelajakda (hozirgi rejaga kiritilmagan):** admin panel (yangilik/maqola/vakansiya kabi kontentni boshqarish uchun) — alohida so'rov bo'yicha keyinroq loyihalanadi.

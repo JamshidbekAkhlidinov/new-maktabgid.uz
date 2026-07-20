@@ -66,6 +66,7 @@
     <x-maktabgid.cta-band />
     <x-maktabgid.footer />
 
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU{{ config('services.yandex.key') ? '&apikey='.config('services.yandex.key') : '' }}"></script>
     <script src="{{ asset('js/maktabgid.js') }}"></script>
 </body>
 </html>

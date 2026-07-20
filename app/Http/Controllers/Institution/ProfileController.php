@@ -8,7 +8,7 @@ use App\Http\Resources\InstitutionResource;
 use App\Models\District;
 use App\Models\Institution;
 use App\Models\Specialization;
-use App\Services\Geo\TwoGisGeocodingService;
+use App\Services\Geo\YandexGeocodingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -23,7 +23,7 @@ class ProfileController extends Controller
         return response()->json(['institution' => new InstitutionResource($institution)]);
     }
 
-    public function update(UpdateProfileRequest $request, TwoGisGeocodingService $geocoder): JsonResponse
+    public function update(UpdateProfileRequest $request, YandexGeocodingService $geocoder): JsonResponse
     {
         $institution = $this->activeInstitutionOrFail($request);
 
@@ -80,7 +80,7 @@ class ProfileController extends Controller
             }
         }
 
-        // Manzil o'zgargan yoki koordinata hali yo'q bo'lsa — 2GIS orqali avtomatik geocoding
+        // Manzil o'zgargan yoki koordinata hali yo'q bo'lsa — Yandex orqali avtomatik geocoding
         if ($institution->isDirty('address') && filled($institution->address)) {
             $coords = $geocoder->geocode($institution->address, $institution->district?->name);
             if ($coords) {

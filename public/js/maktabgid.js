@@ -51,11 +51,83 @@
         });
     });
 
+    /* ===================== YANDEX MAPS ===================== */
+    var YANDEX_CENTER = [41.311081, 69.240562];
+
+    function initYandexResultsMap(mapEl, onReady, onPinClick) {
+        if (!mapEl || !window.ymaps) return;
+        ymaps.ready(function () {
+            var schools = JSON.parse(mapEl.dataset.schools || "[]");
+            var map = new ymaps.Map(mapEl, { center: YANDEX_CENTER, zoom: 11, controls: [] });
+            var placemarks = {};
+
+            schools.forEach(function (s) {
+                var id = String(s.id);
+                var placemark = new ymaps.Placemark(
+                    [s.lat, s.lng],
+                    { id: id, cat: s.cat, iconContent: s.price },
+                    { preset: "islands#grayStretchyIcon", cursor: "pointer" }
+                );
+                placemark.events.add("click", function () { onPinClick(id); });
+                placemarks[id] = placemark;
+                map.geoObjects.add(placemark);
+            });
+
+            var zoomIn = document.getElementById("js-map-zoom-in");
+            var zoomOut = document.getElementById("js-map-zoom-out");
+            var locate = document.getElementById("js-map-locate");
+            if (zoomIn) zoomIn.addEventListener("click", function () { map.setZoom(map.getZoom() + 1, { checkZoomRange: true }); });
+            if (zoomOut) zoomOut.addEventListener("click", function () { map.setZoom(map.getZoom() - 1, { checkZoomRange: true }); });
+            if (locate) locate.addEventListener("click", function () { map.setCenter(YANDEX_CENTER, 11); });
+
+            onReady(placemarks);
+        });
+    }
+
+    function initYandexSingleMap(mapEl) {
+        if (!mapEl || !window.ymaps) return;
+        var lat = parseFloat(mapEl.dataset.lat);
+        var lng = parseFloat(mapEl.dataset.lng);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        ymaps.ready(function () {
+            var map = new ymaps.Map(mapEl, { center: [lat, lng], zoom: 14, controls: [] });
+            map.behaviors.disable(["drag", "scrollZoom"]);
+            map.geoObjects.add(new ymaps.Placemark(
+                [lat, lng],
+                { iconContent: mapEl.dataset.label || "" },
+                { preset: "islands#blackStretchyIcon" }
+            ));
+        });
+    }
+
+    initYandexSingleMap(document.getElementById("js-yandex-map-single"));
+
     /* ===================== DESKTOP RESULTS ===================== */
     var grid = document.getElementById("js-results-grid");
     if (grid) {
         var cards = Array.prototype.slice.call(document.querySelectorAll(".js-scard"));
-        var pins = Array.prototype.slice.call(document.querySelectorAll(".js-map-pin"));
+        var pins = {};
+        var pinsReady = false;
+        var activePinId = null;
+
+        function setPinPreset(id, preset) {
+            if (pins[id]) pins[id].options.set("preset", preset);
+        }
+
+        initYandexResultsMap(
+            document.getElementById("js-yandex-map"),
+            function (placemarks) {
+                pins = placemarks;
+                pinsReady = true;
+                render();
+            },
+            function (id) {
+                if (activePinId) setPinPreset(activePinId, "islands#grayStretchyIcon");
+                activePinId = id;
+                setPinPreset(id, "islands#blueStretchyIcon");
+            }
+        );
         var cardList = document.getElementById("js-card-list");
         var emptyBox = document.getElementById("js-empty");
         var countEl = document.getElementById("js-results-count");
@@ -131,9 +203,11 @@
             cards.forEach(function (card) { card.style.display = "none"; });
             visible.forEach(function (card) { card.style.display = ""; cardList.appendChild(card); });
 
-            pins.forEach(function (pin) {
-                pin.style.display = visibleIds.indexOf(pin.dataset.id) !== -1 ? "" : "none";
-            });
+            if (pinsReady) {
+                Object.keys(pins).forEach(function (id) {
+                    pins[id].options.set("visible", visibleIds.indexOf(id) !== -1);
+                });
+            }
 
             countEl.textContent = visible.length + " ta " + CAT_LABEL[state.cat];
             if (mapTag) mapTag.lastChild.textContent = " " + visible.length + " ta natija xaritada";
@@ -226,21 +300,12 @@
         if (emptyResetBtn) emptyResetBtn.addEventListener("click", resetFilters);
 
         /* hover/active sync between cards and map pins */
-        function pinFor(id) { return pins.find ? pins.find(function (p) { return p.dataset.id === id; }) : null; }
         cards.forEach(function (card) {
             card.addEventListener("mouseenter", function () {
-                var pin = pinFor(card.dataset.id);
-                if (pin) pin.classList.add("hot");
+                setPinPreset(card.dataset.id, "islands#blackStretchyIcon");
             });
             card.addEventListener("mouseleave", function () {
-                var pin = pinFor(card.dataset.id);
-                if (pin) pin.classList.remove("hot");
-            });
-        });
-        pins.forEach(function (pin) {
-            pin.addEventListener("click", function () {
-                pins.forEach(function (p) { p.classList.remove("active"); });
-                pin.classList.add("active");
+                setPinPreset(card.dataset.id, card.dataset.id === activePinId ? "islands#blueStretchyIcon" : "islands#grayStretchyIcon");
             });
         });
 

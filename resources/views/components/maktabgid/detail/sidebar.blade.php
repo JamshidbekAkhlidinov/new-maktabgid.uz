@@ -27,7 +27,7 @@
         </ul>
     </div>
     <div class="side-map">
-        <x-maktabgid.map-canvas />
-        <div class="side-pin"><div class="bubble">{{ $school['district'] }}</div><div class="stem"></div></div>
+        <div id="js-yandex-map-single" class="map-canvas"
+             data-lat="{{ $school['lat'] }}" data-lng="{{ $school['lng'] }}" data-label="{{ $school['district'] }}"></div>
     </div>
 </aside>

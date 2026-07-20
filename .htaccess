@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Agar so'ralayotgan narsa allaqachon public papka ichida bo'lsa, tegishmang
+    RewriteCond %{REQUEST_URI} ^/public/
+    RewriteRule ^(.*)$ - [L]
+
+    # Qolgan barcha so'rovlarni public papkaga yo'naltirish
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
