@@ -553,62 +553,6 @@
         });
     });
 
-    /* real vakansiya/rezyume joylash formalari: POST /ajax/vacancies, /ajax/resumes
-       (careers.blade.php'dagi ommaviy modallar — ADR-0002, Faza 1. .js-application-form
-       bilan bir xil andoza: xatolik ko'rsatish + muvaffaqiyat holatiga almashish). */
-    function wireCareerForm(selector, url) {
-        document.querySelectorAll(selector).forEach(function (form) {
-            form.addEventListener("submit", function (e) {
-                e.preventDefault();
-
-                var data = {};
-                var els = form.elements;
-                for (var i = 0; i < els.length; i++) {
-                    if (els[i].name) data[els[i].name] = els[i].value;
-                }
-
-                var oldError = form.querySelector(".js-app-error");
-                if (oldError) oldError.remove();
-
-                var submitBtn = form.querySelector('button[type="submit"]');
-                if (submitBtn) submitBtn.disabled = true;
-
-                jsonFetch(url, "POST", data).then(function (res) {
-                    if (submitBtn) submitBtn.disabled = false;
-
-                    if (!res.ok) {
-                        var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
-                        if (res.body) {
-                            if (res.body.errors) {
-                                var firstKey = Object.keys(res.body.errors)[0];
-                                if (firstKey) msg = res.body.errors[firstKey][0];
-                            } else if (res.body.message) {
-                                msg = res.body.message;
-                            }
-                        }
-                        var box = document.createElement("div");
-                        box.className = "js-app-error";
-                        box.style.cssText = "color:#dc2626;font-size:13px;font-weight:600;margin-top:10px";
-                        box.textContent = msg;
-                        form.appendChild(box);
-                        return;
-                    }
-
-                    var wrap = form.closest(".modal-card") || form.parentElement;
-                    if (!wrap) return;
-                    form.style.display = "none";
-                    var head = wrap.querySelector(".js-fake-form-head");
-                    if (head) head.style.display = "none";
-                    var success = wrap.querySelector(".js-fake-success");
-                    if (success) success.style.display = "";
-                });
-            });
-        });
-    }
-
-    wireCareerForm(".js-vacancy-form", "/ajax/vacancies");
-    wireCareerForm(".js-resume-form", "/ajax/resumes");
-
     /* real "yangi mavzu" formasi: POST /ajax/forum/threads, muvaffaqiyatli
        bo'lsa yangi mavzu sahifasiga o'tkaziladi (forum.blade.php — ADR-0002, Faza 2). */
     document.querySelectorAll(".js-thread-form").forEach(function (form) {

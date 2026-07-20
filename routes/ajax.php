@@ -8,9 +8,7 @@ use App\Http\Controllers\Auth\RegisterInstitutionController;
 use App\Http\Controllers\Auth\RegisterParentController;
 use App\Http\Controllers\Auth\RegisterTeacherController;
 use App\Http\Controllers\Cabinet\StatsController as CabinetStatsController;
-use App\Http\Controllers\Career\ResumeController as CareerResumeController;
 use App\Http\Controllers\Career\VacancyApplicationController as CareerVacancyApplicationController;
-use App\Http\Controllers\Career\VacancyController as CareerVacancyController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Forum\LikeController as ForumLikeController;
 use App\Http\Controllers\Forum\ReplyController as ForumReplyController;
@@ -88,12 +86,6 @@ Route::middleware('web')->prefix('ajax')->group(function () {
 
     // Vakansiyaga ariza — mehmon ham yubora oladi, Application bilan bir xil qoida (ADR-0002, Faza 2)
     Route::post('vacancies/{vacancy}/apply', [CareerVacancyApplicationController::class, 'store']);
-
-    // Ommaviy careers sahifasi — vakansiya/rezyume joylash (backend.md §6, ADR-0002 Faza 1)
-    Route::middleware('auth')->group(function () {
-        Route::post('vacancies', [CareerVacancyController::class, 'store']);
-        Route::post('resumes', [CareerResumeController::class, 'store']);
-    });
 
     // Forum — mavzu ochish/javob/layk (backend.md §6, ADR-0002 Faza 2)
     Route::middleware('auth')->prefix('forum')->group(function () {
