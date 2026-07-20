@@ -51,6 +51,32 @@
         });
     });
 
+    /* "Suhbat boshlash" (maktab profili sidebar) — mavjud suhbatni ochadi yoki
+       yangisini yaratib, parent-cabinet Suhbatlar sahifasiga o'tkazadi. */
+    document.addEventListener("click", function (e) {
+        var btn = e.target.closest(".js-start-chat-btn");
+        if (!btn) return;
+
+        var institutionId = btn.dataset.institutionId;
+        if (!institutionId) return;
+
+        btn.disabled = true;
+
+        jsonFetch("/ajax/conversations", "POST", { institution_id: institutionId }).then(function (res) {
+            btn.disabled = false;
+
+            if (res.status === 401 || res.status === 403) {
+                var openBtn = document.getElementById("js-kirish-btn");
+                if (openBtn) openBtn.click();
+                return;
+            }
+
+            if (res.ok && res.body && res.body.conversation) {
+                window.location.href = "/cabinet/conversations?c=" + res.body.conversation.id;
+            }
+        });
+    });
+
     /* ===================== YANDEX MAPS ===================== */
     var YANDEX_CENTER = [41.311081, 69.240562];
 
@@ -1531,7 +1557,9 @@
     if (search) search.addEventListener("input", applyFilter);
 })();
 
-/* ===== Suhbatlar (institution-cabinet): ro'yxatni qidirish + tezkor javob chip'lari + real yuborish ===== */
+/* ===== Suhbatlar (institution-cabinet va parent-cabinet, umumiy): ro'yxatni qidirish +
+   tezkor javob chip'lari + real yuborish. Yuborish manzili har bir sahifada
+   .js-chat-send-form'ning data-send-url atributidan olinadi. ===== */
 (function () {
     "use strict";
 
@@ -1564,10 +1592,11 @@
             if (!text) return;
 
             var convId = form.dataset.conversationId;
+            var sendUrl = form.dataset.sendUrl;
             var sendBtn = form.querySelector(".chat-send");
             if (sendBtn) sendBtn.disabled = true;
 
-            jsonFetch("/ajax/institution/me/conversations/" + convId + "/messages", "POST", { body: text }).then(function (res) {
+            jsonFetch(sendUrl, "POST", { body: text }).then(function (res) {
                 if (sendBtn) sendBtn.disabled = false;
                 if (res.ok) {
                     window.location.href = window.location.pathname + "?c=" + convId;

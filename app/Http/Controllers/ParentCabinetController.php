@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\FormatsUzbekDates;
 use App\Models\District;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,6 +26,8 @@ use Illuminate\View\View;
  */
 class ParentCabinetController extends Controller
 {
+    use FormatsUzbekDates;
+
     public function dashboard(Request $request): View
     {
         $ctx = $this->context();
@@ -99,11 +102,46 @@ class ParentCabinetController extends Controller
         $ctx = $this->context();
         $user = $ctx['user'];
 
+        $unreadFromInstitution = fn ($q) => $q->where('sender_type', 'institution')->whereNull('read_at');
+
         $conversations = $user
-            ? $user->conversations()->with('institution')->latest('last_message_at')->get()
+            ? $user->conversations()
+                ->with(['institution', 'messages' => fn ($q) => $q->latest()->limit(1)])
+                ->withCount(['messages as unread_count' => $unreadFromInstitution])
+                ->latest('last_message_at')
+                ->get()
             : collect();
 
-        return view('parent.conversations', $ctx + ['conversations' => $conversations]);
+        // ?c={id} orqali tanlangan suhbat — bo'lmasa eng so'nggisi ochiladi (institution-cabinet
+        // Suhbatlar sahifasi bilan bir xil andoza).
+        $active = $conversations->firstWhere('id', (int) $request->query('c')) ?? $conversations->first();
+
+        $activeMessages = collect();
+
+        if ($active) {
+            // Ota-ona suhbatni ochganda muassasadan kelgan o'qilmagan xabarlar real belgilanadi.
+            $active->messages()->where('sender_type', 'institution')->whereNull('read_at')->update(['read_at' => now()]);
+            $active->unread_count = 0;
+
+            $prevDay = null;
+            $activeMessages = $active->messages()->with('sender')->oldest()->get()->map(function ($m) use (&$prevDay) {
+                $day = $m->created_at->toDateString();
+                $showDivider = $day !== $prevDay;
+                $prevDay = $day;
+
+                return [
+                    'model' => $m,
+                    'showDivider' => $showDivider,
+                    'dayLabel' => $m->created_at->isToday() ? 'Bugun' : ($m->created_at->isYesterday() ? 'Kecha' : self::uzDayLabel($m->created_at)),
+                ];
+            });
+        }
+
+        return view('parent.conversations', $ctx + [
+            'conversations' => $conversations,
+            'active' => $active,
+            'activeMessages' => $activeMessages,
+        ]);
     }
 
     /** Mock: obuna/billing tizimi hali ulanmagan (InstitutionCabinetController::plans() dagi kabi). */

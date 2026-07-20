@@ -92,7 +92,8 @@
                     <button type="button" class="js-chat-suggest" data-text="Oylik to'lov haqida ma'lumot yuboraman">Oylik to'lov haqida ma'lumot yuboraman</button>
                 </div>
 
-                <form class="chat-input js-chat-send-form" data-conversation-id="{{ $active->id }}">
+                <form class="chat-input js-chat-send-form" data-conversation-id="{{ $active->id }}"
+                      data-send-url="/ajax/institution/me/conversations/{{ $active->id }}/messages">
                     <span class="chat-attach"><x-maktabgid.icon name="paperclip" :width="19" :height="19" /></span>
                     <input type="text" id="js-chat-input" placeholder="Xabar yozing…" autocomplete="off" />
                     <button type="submit" class="chat-send"><x-maktabgid.icon name="send" :width="18" :height="18" /></button>

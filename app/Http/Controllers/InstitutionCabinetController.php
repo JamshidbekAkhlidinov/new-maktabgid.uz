@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\FormatsUzbekDates;
 use App\Models\Institution;
 use App\Support\MaktabgidData;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -28,6 +28,8 @@ use Illuminate\View\View;
  */
 class InstitutionCabinetController extends Controller
 {
+    use FormatsUzbekDates;
+
     public function dashboard(Request $request): View
     {
         $ctx = $this->context($request);
@@ -435,25 +437,6 @@ class InstitutionCabinetController extends Controller
     private function todayViews(?Institution $institution): int
     {
         return $institution ? $institution->views()->whereDate('created_at', now()->toDateString())->count() : 0;
-    }
-
-    /** "8-iyun, 14:30" ko'rinishidagi sana — APP_LOCALE'dan mustaqil, doim o'zbekcha oy nomi bilan. */
-    private static function uzDate(Carbon $date): string
-    {
-        return $date->day.'-'.self::uzMonth($date).', '.$date->format('H:i');
-    }
-
-    /** "8-iyun" — vaqtsiz, suhbat sahifasidagi sana bo'linuvchilari uchun. */
-    private static function uzDayLabel(Carbon $date): string
-    {
-        return $date->day.'-'.self::uzMonth($date);
-    }
-
-    private static function uzMonth(Carbon $date): string
-    {
-        $months = [1 => 'yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
-
-        return $months[$date->month];
     }
 
     /**

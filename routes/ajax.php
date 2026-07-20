@@ -24,6 +24,7 @@ use App\Http\Controllers\Institution\StatsController as InstitutionStatsControll
 use App\Http\Controllers\Institution\VacancyController as InstitutionVacancyController;
 use App\Http\Controllers\ParentCabinetController;
 use App\Http\Controllers\ParentChildController;
+use App\Http\Controllers\ParentMessageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -112,6 +113,10 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::post('children', [ParentChildController::class, 'store']);
         Route::put('children/{child}', [ParentChildController::class, 'update']);
         Route::delete('children/{child}', [ParentChildController::class, 'destroy']);
+
+        // Suhbatlar — muassasa profilidagi "Suhbat boshlash" + parent-cabinet Suhbatlar sahifasida yozish
+        Route::post('conversations', [ParentMessageController::class, 'start']);
+        Route::post('conversations/{conversation}/messages', [ParentMessageController::class, 'store']);
     });
 
 });

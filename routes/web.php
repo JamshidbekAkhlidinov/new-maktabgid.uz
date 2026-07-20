@@ -3,6 +3,8 @@
 use App\Http\Controllers\InstitutionCabinetController;
 use App\Http\Controllers\ParentCabinetController;
 use App\Http\Controllers\TeacherCabinetController;
+use App\Models\ForumThread;
+use App\Models\InstitutionView;
 use App\Support\MaktabgidData;
 use Illuminate\Support\Facades\Route;
 
@@ -17,7 +19,7 @@ Route::get('/maktab/{id}', function (int $id) {
     // Ko'rishlar jurnali — muassasa kabinetidagi "Analitika" sahifasi shu yerdan
     // hisoblanadi (ADR-0002, Faza 2). Forum'dagi view_count bilan bir xil darajada
     // sodda: bir martalik hisoblash (IP/sessiya dedupe) hozircha yo'q.
-    \App\Models\InstitutionView::create([
+    InstitutionView::create([
         'institution_id' => $id,
         'viewer_user_id' => auth()->id(),
         'created_at' => now(),
@@ -38,7 +40,7 @@ Route::get('/forum/{id}', function (int $id) {
     // Ko'rishlar hisoblagichi — har bir sahifa ochilishida oshiriladi (oddiy, IP/sessiyaga
     // qarab bir martalik hisoblash hozircha yo'q — institution_views bilan bir xil darajada
     // sodda, ADR-0002 Faza 2'da kengaytirilishi mumkin).
-    \App\Models\ForumThread::whereKey($id)->increment('view_count');
+    ForumThread::whereKey($id)->increment('view_count');
 
     return view('forum-thread', ['thread' => $thread, 'replies' => MaktabgidData::forumReplies($id)]);
 })->name('forum.show');
@@ -120,7 +122,3 @@ Route::get('/teacher-cabinet/vacancies', [TeacherCabinetController::class, 'vaca
 Route::get('/teacher-cabinet/offers', [TeacherCabinetController::class, 'offers'])->name('teacher.cabinet.offers');
 Route::get('/teacher-cabinet/conversations', [TeacherCabinetController::class, 'conversations'])->name('teacher.cabinet.conversations');
 Route::get('/teacher-cabinet/payment', [TeacherCabinetController::class, 'tariffs'])->name('teacher.cabinet.tariffs');
-
-Route::get('/chat', function () {
-    return view('chat');
-})->name('chat.index');
