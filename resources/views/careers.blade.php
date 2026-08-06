@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>Vakansiyalar — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ __('careers.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,17 +32,17 @@
          joylay olardi — bu xato edi. --}}
     <x-maktabgid.page-head
         icon="bag"
-        kicker="Vakansiya va rezyume"
-        title="Taʼlim sohasidagi ish va nomzodlar"
-        sub="Oʻqituvchilar ish topadi, muassasalar eng yaxshi mutaxassislarni jalb qiladi."
+        kicker="{{ __('careers.kicker') }}"
+        title="{{ __('careers.title') }}"
+        sub="{{ __('careers.sub') }}"
     />
 
     {{-- ===== MAIN CONTENT ===== --}}
     <div class="wrap section">
         <x-maktabgid.segmented
             :tabs="[
-                ['key' => 'vac', 'label' => 'Vakansiyalar (' . (count($vacancies) + count($moreVacancies)) . ')', 'href' => route('careers.index', ['tab' => 'vac'])],
-                ['key' => 'res', 'label' => 'Rezyumelar (' . count($resumes) . ')', 'href' => route('careers.index', ['tab' => 'res'])],
+                ['key' => 'vac', 'label' => __('careers.vacancies_tab', ['count' => count($vacancies) + count($moreVacancies)]), 'href' => route('careers.index', ['tab' => 'vac'])],
+                ['key' => 'res', 'label' => __('careers.resumes_tab', ['count' => count($resumes)]), 'href' => route('careers.index', ['tab' => 'res'])],
             ]"
             :active="$tab"
         />
@@ -64,7 +64,7 @@
                         <div class="res-foot">
                             <div class="vac-salary">{{ $r['salary'] }} <span>UZS</span></div>
                             <button class="btn btn-ghost sm" type="button">
-                                <x-maktabgid.icon name="phone" :width="14" :height="14" /> Bogʻlanish
+                                <x-maktabgid.icon name="phone" :width="14" :height="14" /> {{ __('careers.contact') }}
                             </button>
                         </div>
                     </article>

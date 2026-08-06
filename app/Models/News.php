@@ -11,7 +11,10 @@ class News extends Model
 
     protected $table = 'news';
 
-    protected $fillable = ['tag', 'title', 'excerpt', 'body', 'source', 'published_at', 'hot'];
+    protected $fillable = [
+        'legacy_id', 'tag', 'title', 'excerpt', 'body', 'source', 'published_at', 'hot',
+        'disk', 'image_path', 'image_url',
+    ];
 
     protected function casts(): array
     {

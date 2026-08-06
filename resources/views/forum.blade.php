@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>Forum — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ __('forum.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,10 +23,10 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="forum">
-        <x-maktabgid.page-head icon="forum" kicker="Ota-onalar forumi" title="Savol bering, tajriba ulashing" sub="Roʻyxatdan oʻtgan ota-onalar mavzu ochadi, boshqalar javob va maslahat beradi.">
+        <x-maktabgid.page-head icon="forum" kicker="{{ __('forum.kicker') }}" title="{{ __('forum.title') }}" sub="{{ __('forum.sub') }}">
             <div class="phead-actions">
                 <button class="btn btn-white" type="button" id="js-new-thread-btn">
-                    <x-maktabgid.icon name="plus" :width="17" :height="17" /> Yangi mavzu
+                    <x-maktabgid.icon name="plus" :width="17" :height="17" /> {{ __('forum.new_thread') }}
                 </button>
             </div>
         </x-maktabgid.page-head>
@@ -34,7 +34,7 @@
         <div class="wrap forum-body">
             <div class="forum-filters">
                 @foreach ($cats as $c)
-                    <a href="{{ route('forum.index', $c === 'Hammasi' ? [] : ['cat' => $c]) }}" class="chip{{ $filter === $c ? ' on' : '' }}">{{ $c }}</a>
+                    <a href="{{ route('forum.index', $c === 'Hammasi' ? [] : ['cat' => $c]) }}" class="chip{{ $filter === $c ? ' on' : '' }}">{{ $c === 'Hammasi' ? __('forum.all_categories') : $c }}</a>
                 @endforeach
             </div>
 
@@ -64,18 +64,18 @@
     {{-- ===== MODAL: YANGI MAVZU (real POST /ajax/forum/threads, ADR-0002 Faza 2) ===== --}}
     <div class="modal-scrim js-modal" id="new-thread-modal" hidden>
         <div class="modal-card" style="max-width:560px;width:100%">
-            <button class="modal-x js-modal-close" type="button" aria-label="Yopish">
+            <button class="modal-x js-modal-close" type="button" aria-label="{{ __('forum.close') }}">
                 <x-maktabgid.icon name="close" :width="20" :height="20" />
             </button>
 
             <div class="modal-head">
-                <h3>Yangi mavzu ochish</h3>
-                <p>Savolingizni yozing — boshqa ota-onalar javob beradi</p>
+                <h3>{{ __('forum.new_thread_modal_title') }}</h3>
+                <p>{{ __('forum.new_thread_modal_sub') }}</p>
             </div>
 
             <form class="form js-thread-form" novalidate>
                 <label class="field">
-                    <span class="field-label">Kategoriya</span>
+                    <span class="field-label">{{ __('forum.category_label') }}</span>
                     <span class="field-control">
                         <select name="category">
                             @foreach (array_diff($cats, ['Hammasi']) as $c)
@@ -85,15 +85,15 @@
                     </span>
                 </label>
                 <label class="field">
-                    <span class="field-label">Sarlavha</span>
-                    <span class="field-control"><input name="title" required placeholder="Savolingizni qisqacha yozing" /></span>
+                    <span class="field-label">{{ __('forum.title_label') }}</span>
+                    <span class="field-control"><input name="title" required placeholder="{{ __('forum.title_placeholder') }}" /></span>
                 </label>
                 <label class="field">
-                    <span class="field-label">Matn</span>
-                    <span class="field-control"><textarea name="body" rows="4" required placeholder="Batafsil yozing…"></textarea></span>
+                    <span class="field-label">{{ __('forum.body_label') }}</span>
+                    <span class="field-control"><textarea name="body" rows="4" required placeholder="{{ __('forum.body_placeholder') }}"></textarea></span>
                 </label>
                 <button class="btn btn-primary form-submit" type="submit">
-                    <x-maktabgid.icon name="send" :width="16" :height="16" /> Mavzuni chop etish
+                    <x-maktabgid.icon name="send" :width="16" :height="16" /> {{ __('forum.publish_thread') }}
                 </button>
             </form>
         </div>

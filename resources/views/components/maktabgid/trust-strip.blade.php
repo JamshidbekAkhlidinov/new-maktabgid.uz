@@ -1,9 +1,9 @@
 @php
     $items = [
-        ['i' => 'shield', 'h' => 'Tekshirilgan maʼlumot', 'p' => 'Har bir muassasa narxi va xizmatlari qoʻlda tasdiqlanadi.'],
-        ['i' => 'map', 'h' => 'Xaritada qulay', 'p' => 'Uyga yaqin variantlarni masofaga qarab darhol koʻring.'],
-        ['i' => 'star', 'h' => 'Haqiqiy sharhlar', 'p' => 'Ota-onalarning real baholari va tajribalari.'],
-        ['i' => 'send', 'h' => 'Tez ariza', 'p' => 'Telegram bot orqali bir necha soniyada bogʻlaning.'],
+        ['i' => 'shield', 'h' => __('home.trust_verified_h'), 'p' => __('home.trust_verified_p')],
+        ['i' => 'map', 'h' => __('home.trust_map_h'), 'p' => __('home.trust_map_p')],
+        ['i' => 'star', 'h' => __('home.trust_reviews_h'), 'p' => __('home.trust_reviews_p')],
+        ['i' => 'send', 'h' => __('home.trust_fast_h'), 'p' => __('home.trust_fast_p')],
     ];
 @endphp
 

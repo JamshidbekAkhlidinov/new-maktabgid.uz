@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>{{ $article['title'] }} — Blog — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ $article['title'] }} — {{ __('blog.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,7 +22,7 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="wrap" style="padding-top:20px">
-        <x-maktabgid.back-link href="{{ route('blog.index') }}" label="Blogga qaytish" />
+        <x-maktabgid.back-link href="{{ route('blog.index') }}" label="{{ __('blog.back_to_blog') }}" />
     </div>
 
     <div class="wrap detail-grid">
@@ -43,7 +43,7 @@
                     <x-maktabgid.avatar :name="$article['author']" :size="44" />
                     <div>
                         <b>{{ $article['author'] }}</b>
-                        <span>{{ $article['date'] }} · {{ $article['read'] }} oʻqish</span>
+                        <span>{{ $article['date'] }} · {{ __('blog.read_time', ['read' => $article['read']]) }}</span>
                     </div>
                 </div>
             </article>
@@ -57,7 +57,7 @@
 
             {{-- Related articles --}}
             @if (count($more))
-                <h3 class="reply-head" style="margin:0 0 14px">Oʻxshash maqolalar</h3>
+                <h3 class="reply-head" style="margin:0 0 14px">{{ __('blog.related_articles') }}</h3>
                 <div class="blog-grid">
                     @foreach ($more as $b)
                         <a href="{{ route('blog.show', $b['id']) }}" class="blog-card">
@@ -82,11 +82,11 @@
             <div class="side-card" style="text-align:center">
                 <x-maktabgid.avatar :name="$article['author']" :size="64" />
                 <p style="font-weight:800;font-size:16px;margin-top:12px">{{ $article['author'] }}</p>
-                <p style="font-size:13px;color:var(--ink-3);margin-top:4px">Mutaxassis muallif</p>
+                <p style="font-size:13px;color:var(--ink-3);margin-top:4px">{{ __('blog.expert_author') }}</p>
                 <ul class="side-facts" style="margin-top:16px;text-align:left">
                     <li>
                         <x-maktabgid.icon name="book" :width="17" :height="17" />
-                        {{ $article['read'] }} oʻqish
+                        {{ __('blog.read_time', ['read' => $article['read']]) }}
                     </li>
                     <li>
                         <x-maktabgid.icon name="cal" :width="17" :height="17" />
@@ -102,7 +102,7 @@
             {{-- Other posts --}}
             @if (count($more))
                 <div class="side-card" style="padding:18px 20px">
-                    <p style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:14px">Boshqa maqolalar</p>
+                    <p style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:14px">{{ __('blog.other_articles') }}</p>
                     <div style="display:flex;flex-direction:column;gap:14px">
                         @foreach ($more as $b)
                             <a href="{{ route('blog.show', $b['id']) }}"

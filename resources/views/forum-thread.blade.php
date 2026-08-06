@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>{{ $thread['title'] }} — Forum — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ $thread['title'] }} — {{ __('forum.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,18 +18,18 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="forum">
-        <x-maktabgid.page-head icon="forum" kicker="Ota-onalar forumi" title="Mavzu" />
+        <x-maktabgid.page-head icon="forum" kicker="{{ __('forum.kicker') }}" title="{{ __('forum.thread_page_title') }}" />
 
         <div class="wrap forum-body">
             <div class="forum-thread">
-                <x-maktabgid.back-link href="{{ route('forum.index') }}" label="Forumga qaytish" />
+                <x-maktabgid.back-link href="{{ route('forum.index') }}" label="{{ __('forum.back_to_forum') }}" />
 
                 <article class="thread-post">
                     <span class="thread-cat">{{ $thread['cat'] }}</span>
                     <h2>{{ $thread['title'] }}</h2>
                     <div class="thread-by">
                         <x-maktabgid.avatar :name="$thread['author']" :size="36" />
-                        <div><b>{{ $thread['author'] }}</b><span>{{ $thread['ago'] }} · {{ $thread['views'] }} koʻrildi</span></div>
+                        <div><b>{{ $thread['author'] }}</b><span>{{ $thread['ago'] }} · {{ __('forum.views_count', ['count' => $thread['views']]) }}</span></div>
                     </div>
                     <p>{{ $thread['body'] }}</p>
                     <button type="button" class="reply-like js-forum-like" data-thread-id="{{ $thread['id'] }}">
@@ -37,7 +37,7 @@
                     </button>
                 </article>
 
-                <h3 class="reply-head">{{ count($replies) }} ta javob</h3>
+                <h3 class="reply-head">{{ __('forum.replies_count', ['count' => count($replies)]) }}</h3>
                 <div class="reply-list">
                     @foreach ($replies as $r)
                         <div class="reply">
@@ -54,8 +54,8 @@
                 </div>
 
                 <form class="reply-box js-reply-form" data-thread-id="{{ $thread['id'] }}">
-                    <textarea name="body" rows="3" required placeholder="Javobingizni yozing…"></textarea>
-                    <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> Javob berish</button>
+                    <textarea name="body" rows="3" required placeholder="{{ __('forum.reply_placeholder') }}"></textarea>
+                    <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> {{ __('forum.reply_submit') }}</button>
                 </form>
             </div>
         </div>

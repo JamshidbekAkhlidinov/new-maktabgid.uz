@@ -113,6 +113,12 @@ class User extends Authenticatable
         return $this->hasMany(Conversation::class, 'parent_user_id');
     }
 
+    /** Ustoz sifatidagi suhbatlar — parent_user_id emas, teacher_user_id orqali (ADR-0003). */
+    public function teacherConversations(): HasMany
+    {
+        return $this->hasMany(Conversation::class, 'teacher_user_id');
+    }
+
     public function forumThreads(): HasMany
     {
         return $this->hasMany(ForumThread::class);

@@ -26,7 +26,9 @@ class SpecializationController extends Controller implements HasMiddleware
 
     public function index(): View
     {
-        $specializations = Specialization::orderBy('label')->paginate(20);
+        // 'label' endi JSON (uch tillilik) — DB darajasida saralab bo'lmaydi,
+        // shu sababli joriy tildagi (fallback bilan) matn bo'yicha xotirada saralaymiz.
+        $specializations = Specialization::all()->sortBy(fn (Specialization $s) => $s->label)->values();
 
         return view('admin.specializations.index', compact('specializations'));
     }
@@ -38,7 +40,10 @@ class SpecializationController extends Controller implements HasMiddleware
 
     public function store(Request $request): RedirectResponse
     {
-        Specialization::create($this->validateData($request));
+        [$data, $labels] = $this->validateData($request);
+
+        $specialization = Specialization::create($data);
+        $specialization->setTranslations('label', $labels)->save();
 
         return redirect()->route('admin.specializations.index')->with('status', 'Kategoriya yaratildi.');
     }
@@ -50,7 +55,10 @@ class SpecializationController extends Controller implements HasMiddleware
 
     public function update(Request $request, Specialization $specialization): RedirectResponse
     {
-        $specialization->update($this->validateData($request, $specialization));
+        [$data, $labels] = $this->validateData($request, $specialization);
+
+        $specialization->update($data);
+        $specialization->setTranslations('label', $labels)->save();
 
         return redirect()->route('admin.specializations.index')->with('status', 'Kategoriya yangilandi.');
     }
@@ -62,13 +70,26 @@ class SpecializationController extends Controller implements HasMiddleware
         return redirect()->route('admin.specializations.index')->with('status', 'Kategoriya o\'chirildi.');
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{0: array<string, mixed>, 1: array<string, string>} [DB uchun boshqa maydonlar, label tarjimalari] */
     private function validateData(Request $request, ?Specialization $specialization = null): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'key' => ['required', 'string', 'max:100', Rule::unique('specializations', 'key')->ignore($specialization?->id)],
-            'label' => ['required', 'string', 'max:255'],
+            'label_uz' => ['required', 'string', 'max:255'],
+            'label_ru' => ['nullable', 'string', 'max:255'],
+            'label_en' => ['nullable', 'string', 'max:255'],
             'icon' => ['required', 'string', 'max:100'],
         ]);
+
+        $labels = [
+            'uz' => $validated['label_uz'],
+            'ru' => $validated['label_ru'] ?? null,
+            'en' => $validated['label_en'] ?? null,
+        ];
+
+        return [
+            ['key' => $validated['key'], 'icon' => $validated['icon']],
+            $labels,
+        ];
     }
 }

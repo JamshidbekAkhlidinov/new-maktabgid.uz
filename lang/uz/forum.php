@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title' => 'Forum',
+    'kicker' => 'Ota-onalar forumi',
+    'title' => 'Savol bering, tajriba ulashing',
+    'sub' => 'Roʻyxatdan oʻtgan ota-onalar mavzu ochadi, boshqalar javob va maslahat beradi.',
+    'new_thread' => 'Yangi mavzu',
+    'all_categories' => 'Hammasi',
+    'close' => 'Yopish',
+    'new_thread_modal_title' => 'Yangi mavzu ochish',
+    'new_thread_modal_sub' => 'Savolingizni yozing — boshqa ota-onalar javob beradi',
+    'category_label' => 'Kategoriya',
+    'title_label' => 'Sarlavha',
+    'title_placeholder' => 'Savolingizni qisqacha yozing',
+    'body_label' => 'Matn',
+    'body_placeholder' => 'Batafsil yozing…',
+    'publish_thread' => 'Mavzuni chop etish',
+    'thread_page_title' => 'Mavzu',
+    'back_to_forum' => 'Forumga qaytish',
+    'views_count' => ':count koʻrildi',
+    'replies_count' => ':count ta javob',
+    'reply_placeholder' => 'Javobingizni yozing…',
+    'reply_submit' => 'Javob berish',
+];

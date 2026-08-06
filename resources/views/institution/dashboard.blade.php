@@ -9,7 +9,7 @@
         'cur'  => [48, 62, 40, 70, 58, 88, 96],
         'prev' => [40, 50, 44, 55, 50, 62, 58],
     ];
-    $days = ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'];
+    $days = __('cabinet_institution.week_days');
     $maxVal = max(array_merge($mockChart['cur'], $mockChart['prev']));
     $chartTotal = array_sum($mockChart['cur']) + array_sum($mockChart['prev']);
 
@@ -30,8 +30,8 @@
 
 <x-institution.shell
     active="dashboard"
-    title="Boshqaruv paneli"
-    sub="E'loningiz holati bir qarashda"
+    title="{{ __('cabinet_institution.nav_dashboard') }}"
+    sub="{{ __('cabinet_institution.dashboard_sub') }}"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -40,11 +40,11 @@
 
     <div class="idash-banner">
         <div>
-            <h2>E'loningiz atigi {{ $freeReachMock }} kishiga ko'rsatilmoqda</h2>
-            <p>Bepul rejada kuniga bir nechta ota-onaga ko'rinadi va faqat 4 ta lid kontaktini ochasiz. Paket oling — qamrov bir necha barobar oshadi.</p>
+            <h2>{{ __('cabinet_institution.banner_title', ['count' => $freeReachMock]) }}</h2>
+            <p>{{ __('cabinet_institution.banner_text') }}</p>
         </div>
         <a href="{{ route('institution.cabinet.plans') }}" class="btn btn-white">
-            <x-maktabgid.icon name="sparkle" :width="16" :height="16" /> Paket olish
+            <x-maktabgid.icon name="sparkle" :width="16" :height="16" /> {{ __('cabinet_institution.get_package') }}
         </a>
     </div>
 
@@ -56,7 +56,7 @@
             </div>
             <div>
                 <b>{{ $mockViews7d }}</b>
-                <span>Ko'rishlar (7 kun)</span>
+                <span>{{ __('cabinet_institution.views_7d') }}</span>
             </div>
         </div>
 
@@ -67,7 +67,7 @@
             </div>
             <div>
                 <b>{{ $newLeads7d }}</b>
-                <span>Yangi lidlar (7 kun)</span>
+                <span>{{ __('cabinet_institution.new_leads_7d') }}</span>
             </div>
         </div>
 
@@ -78,7 +78,7 @@
             </div>
             <div>
                 <b>{{ $excursionsTotal }}</b>
-                <span>Ekskursiya arizalari</span>
+                <span>{{ __('cabinet_institution.excursion_applications') }}</span>
             </div>
         </div>
 
@@ -89,7 +89,7 @@
             </div>
             <div>
                 <b>{{ $conversionRate }}%</b>
-                <span>Lid konversiyasi</span>
+                <span>{{ __('cabinet_institution.lead_conversion') }}</span>
             </div>
         </div>
     </div>
@@ -105,11 +105,11 @@
         $funnelConfirmed = $applications->where('status', 'confirmed')->count();
 
         $funnelStages = [
-            ['label' => "Ko'rishlar", 'val' => $funnelViews, 'color' => 'var(--primary)'],
-            ['label' => 'Profilga kirdi', 'val' => $funnelProfile, 'color' => '#2f6fed'],
-            ['label' => 'Lidlar (qiziqdi)', 'val' => $funnelLeads, 'color' => '#6d5cf6'],
-            ['label' => 'Ekskursiya / chat', 'val' => $funnelExcChat, 'color' => 'var(--accent)'],
-            ['label' => 'Joylashdi', 'val' => $funnelConfirmed, 'color' => 'var(--ok)'],
+            ['label' => __('cabinet_institution.funnel_views'), 'val' => $funnelViews, 'color' => 'var(--primary)'],
+            ['label' => __('cabinet_institution.funnel_profile'), 'val' => $funnelProfile, 'color' => '#2f6fed'],
+            ['label' => __('cabinet_institution.funnel_leads'), 'val' => $funnelLeads, 'color' => '#6d5cf6'],
+            ['label' => __('cabinet_institution.funnel_excursion_chat'), 'val' => $funnelExcChat, 'color' => 'var(--accent)'],
+            ['label' => __('cabinet_institution.funnel_enrolled'), 'val' => $funnelConfirmed, 'color' => 'var(--ok)'],
         ];
         $funnelMaxBar = 74; // eng uzun panelning konteynerga nisbatan maksimal eni (%)
     @endphp
@@ -118,12 +118,12 @@
         <div class="idash-col-left">
             <div class="panel">
                 <div class="idash-chart-head">
-                    <h3><x-maktabgid.icon name="eye" :width="17" :height="17" /> Ko'rishlar dinamikasi</h3>
-                    <span class="idash-chart-meta">Oxirgi 7 kun · jami {{ $chartTotal }}</span>
+                    <h3><x-maktabgid.icon name="eye" :width="17" :height="17" /> {{ __('cabinet_institution.views_dynamics') }}</h3>
+                    <span class="idash-chart-meta">{{ __('cabinet_institution.last_7_days_total', ['total' => $chartTotal]) }}</span>
                 </div>
                 <div class="idash-legend">
-                    <span><i style="background:var(--primary)"></i> Bu hafta</span>
-                    <span><i style="background:var(--line)"></i> Oldingi hafta</span>
+                    <span><i style="background:var(--primary)"></i> {{ __('cabinet_institution.this_week') }}</span>
+                    <span><i style="background:var(--line)"></i> {{ __('cabinet_institution.previous_week') }}</span>
                 </div>
                 <div class="idash-bars2">
                     @foreach ($days as $idx => $d)
@@ -139,7 +139,7 @@
             </div>
 
             <div class="panel">
-                <div class="panel-head"><h3 style="font-size:16.5px">Konversiya yo'li</h3><span class="idash-chart-meta">Ko'rishdan joylashtirishgacha</span></div>
+                <div class="panel-head"><h3 style="font-size:16.5px">{{ __('cabinet_institution.conversion_path') }}</h3><span class="idash-chart-meta">{{ __('cabinet_institution.view_to_enroll') }}</span></div>
                 <div class="idash-funnel2">
                     @foreach ($funnelStages as $stage)
                         @php $pct = $funnelViews > 0 ? min(100, round($stage['val'] / $funnelViews * 100)) : 0; @endphp
@@ -149,7 +149,7 @@
                             </div>
                             <div class="idash-funnel2-meta">
                                 <b>{{ $stage['label'] }}</b>
-                                <span>{{ $pct }}% ko'rishlardan</span>
+                                <span>{{ __('cabinet_institution.pct_of_views', ['pct' => $pct]) }}</span>
                             </div>
                         </div>
                     @endforeach
@@ -159,11 +159,11 @@
 
         <div class="idash-col-right">
             <div class="panel">
-                <div class="panel-head"><h3 style="font-size:16.5px">So'nggi harakatlar</h3></div>
+                <div class="panel-head"><h3 style="font-size:16.5px">{{ __('cabinet_institution.recent_activity') }}</h3></div>
                 @if ($activity->isEmpty())
                     <div class="empty" style="padding:20px 10px">
                         <span class="empty-ico"><x-maktabgid.icon name="sparkle" :width="22" :height="22" /></span>
-                        <p>Hali harakatlar yo'q. Profilingizni to'ldiring — arizalar shu yerda chiqadi.</p>
+                        <p>{{ __('cabinet_institution.no_activity_yet') }}</p>
                     </div>
                 @else
                     <div class="idash-activity">
@@ -184,25 +184,25 @@
             </div>
 
             <div class="panel">
-                <div class="panel-head"><h3 style="font-size:16.5px">Tezkor amallar</h3></div>
+                <div class="panel-head"><h3 style="font-size:16.5px">{{ __('cabinet_institution.quick_actions') }}</h3></div>
                 <div class="idash-quick">
                     <a class="idash-quick-link" href="{{ route('institution.cabinet.leads') }}">
                         <span class="idash-quick-ico" style="background:#ece9fc;color:#5145d8"><x-maktabgid.icon name="users" :width="16" :height="16" /></span>
-                        Lidlarni ko'rish
+                        {{ __('cabinet_institution.view_leads') }}
                         <x-maktabgid.icon name="chevronR" :width="16" :height="16" />
                     </a>
                     <a class="idash-quick-link" href="{{ route('institution.cabinet.conversations') }}">
                         <span class="idash-quick-ico" style="background:var(--primary-soft);color:var(--primary)"><x-maktabgid.icon name="chat" :width="16" :height="16" /></span>
-                        Ota-onalarga javob berish
+                        {{ __('cabinet_institution.reply_to_parents') }}
                         <x-maktabgid.icon name="chevronR" :width="16" :height="16" />
                     </a>
                     <a class="idash-quick-link" href="{{ route('institution.cabinet.profile') }}">
                         <span class="idash-quick-ico" style="background:var(--accent-soft);color:#b45309"><x-maktabgid.icon name="image" :width="16" :height="16" /></span>
-                        Rasm va portfolio qo'shish
+                        {{ __('cabinet_institution.add_photos_portfolio') }}
                         <x-maktabgid.icon name="chevronR" :width="16" :height="16" />
                     </a>
                     <a class="idash-quick-link idash-quick-cta" href="{{ route('institution.cabinet.plans') }}">
-                        <x-maktabgid.icon name="sparkle" :width="16" :height="16" /> Paketni faollashtirish
+                        <x-maktabgid.icon name="sparkle" :width="16" :height="16" /> {{ __('cabinet_institution.activate_package') }}
                     </a>
                 </div>
             </div>

@@ -50,6 +50,7 @@ class PermissionSeeder extends Seeder
         'articles',
         'reviews',
         'resumes',
+        'advertisements',
     ];
 
     /** @var array<int, string> */

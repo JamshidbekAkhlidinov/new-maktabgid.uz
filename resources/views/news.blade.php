@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>Yangiliklar — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ __('news.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,9 +38,9 @@
 
     <x-maktabgid.page-head
         icon="news"
-        kicker="Yangiliklar"
-        title="Taʼlim sohasidagi soʻnggi yangiliklar"
-        sub="Qabul, imtihon, grant va siyosat oʻzgarishlari — bir joyda."
+        kicker="{{ __('news.kicker') }}"
+        title="{{ __('news.title') }}"
+        sub="{{ __('news.sub') }}"
     />
 
     <div class="wrap section">
@@ -50,7 +50,7 @@
             @foreach ($allCats as $c)
                 <button type="button"
                         class="chip{{ $loop->first ? ' on' : '' }}"
-                        data-news-cat="{{ $c }}">{{ $c }}</button>
+                        data-news-cat="{{ $c }}">{{ $c === 'Hammasi' ? __('news.all_categories') : $c }}</button>
             @endforeach
         </div>
 

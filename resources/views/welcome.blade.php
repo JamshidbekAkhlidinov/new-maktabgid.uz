@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>{{ config('app.name', 'MaktabGID') }} — Farzandingizga mos maktabni toping</title>
+    <title>{{ config('app.name', 'MaktabGID') }} — {{ __('home.meta_title_suffix') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -30,13 +30,13 @@
         /* Natijalar boʻlimi ustidagi toifa-tab satri (sonlar bilan) — hozircha faqat vizual moslik. */
         $catCounts = collect($schools)->countBy('cat');
         $catTabs = [
-            ['key' => 'maktab', 'label' => 'Maktablar', 'icon' => 'school', 'count' => $catCounts->get('maktab', 0)],
-            ['key' => 'bogcha', 'label' => 'Bogʻchalar', 'icon' => 'teddy', 'count' => $catCounts->get('bogcha', 0)],
-            ['key' => 'markaz', 'label' => 'Oʻquv markazlari', 'icon' => 'book', 'count' => $catCounts->get('markaz', 0)],
-            ['key' => 'mutaxassis', 'label' => 'Mutaxassislar', 'icon' => 'heart', 'count' => $catCounts->get('mutaxassis', 0)],
+            ['key' => 'maktab', 'label' => __('home.cat_maktab'), 'icon' => 'school', 'count' => $catCounts->get('maktab', 0)],
+            ['key' => 'bogcha', 'label' => __('home.cat_bogcha'), 'icon' => 'teddy', 'count' => $catCounts->get('bogcha', 0)],
+            ['key' => 'markaz', 'label' => __('home.cat_markaz'), 'icon' => 'book', 'count' => $catCounts->get('markaz', 0)],
+            ['key' => 'mutaxassis', 'label' => __('home.cat_mutaxassis'), 'icon' => 'heart', 'count' => $catCounts->get('mutaxassis', 0)],
         ];
         /* "Oʻyin maydonchalari" uchun hali alohida toifa/maʼlumot bazasi yoʻq — faqat dizaynga moslash uchun statik. */
-        $catExtraTab = ['label' => 'Oʻyin maydonchalari', 'icon' => 'grid', 'count' => 4];
+        $catExtraTab = ['label' => __('home.cat_playgrounds'), 'icon' => 'grid', 'count' => 4];
     @endphp
 
     {{-- ===================== DESKTOP / TABLET ===================== --}}
@@ -58,32 +58,39 @@
                     <section>
                         <div class="results-head">
                             <div class="results-count">
-                                <b id="js-results-count">{{ count($defaultResults) }} ta {{ MaktabgidData::categoryLabel($defaultCat) }}</b>
-                                <span>Toshkent boʻyicha topildi</span>
+                                <b id="js-results-count">{{ __('home.results_count', ['count' => count($defaultResults), 'cat' => MaktabgidData::categoryLabel($defaultCat)]) }}</b>
+                                <span>{{ __('home.found_in_tashkent') }}</span>
                             </div>
                             <div class="sortbar">
                                 <span class="select-pill">
                                     <x-maktabgid.icon name="sliders" :width="16" :height="16" />
                                     <select id="js-sort">
-                                        <option value="rel">Tavsiya etilgan</option>
-                                        <option value="priceA">Narx: arzondan</option>
-                                        <option value="priceD">Narx: qimmatdan</option>
-                                        <option value="dist">Eng yaqin</option>
-                                        <option value="rating">Eng yuqori reyting</option>
+                                        <option value="rel">{{ __('home.sort_recommended') }}</option>
+                                        <option value="priceA">{{ __('home.sort_price_asc') }}</option>
+                                        <option value="priceD">{{ __('home.sort_price_desc') }}</option>
+                                        <option value="dist">{{ __('home.sort_nearest') }}</option>
+                                        <option value="rating">{{ __('home.sort_rating') }}</option>
                                     </select>
                                 </span>
                             </div>
                         </div>
 
                         <div id="js-empty" style="display:none;padding:60px 20px;text-align:center;color:var(--ink-3);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg)">
-                            <div style="font-weight:700;color:var(--ink);font-family:var(--font-display);font-size:20px;margin-bottom:8px">Hech narsa topilmadi</div>
-                            Filtrlarni kengaytirib koʻring yoki <button type="button" id="js-empty-reset" style="color:var(--primary);font-weight:700">tozalang</button>.
+                            <div style="font-weight:700;color:var(--ink);font-family:var(--font-display);font-size:20px;margin-bottom:8px">{{ __('home.empty_title') }}</div>
+                            {{ __('home.empty_hint_before') }} <button type="button" id="js-empty-reset" style="color:var(--primary);font-weight:700">{{ __('home.empty_reset') }}</button>.
                         </div>
 
                         <div class="card-list" id="js-card-list">
                             @foreach ($schools as $s)
                                 <x-maktabgid.school-card :school="$s" />
                             @endforeach
+                        </div>
+
+                        {{-- Cheksiz skroll — pastga tushilganda navbatdagi 10 ta natija ochiladi
+                             (barcha kartochkalar allaqachon DOM'da, faqat ko'rsatish soni oshadi). --}}
+                        <div id="js-load-more-sentinel" style="height:1px"></div>
+                        <div id="js-load-more-spinner" style="display:none;padding:20px 0;text-align:center;color:var(--ink-3);font-size:14px">
+                            {{ __('home.loading') }}
                         </div>
                     </section>
 

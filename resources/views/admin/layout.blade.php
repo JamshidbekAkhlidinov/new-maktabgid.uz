@@ -44,6 +44,7 @@
                 <x-admin.nav-link route="admin.resumes.index" permission="resumes.view" icon="document">Rezyumelar</x-admin.nav-link>
                 <x-admin.nav-link route="admin.news.index" permission="news.view" icon="newspaper">Yangiliklar</x-admin.nav-link>
                 <x-admin.nav-link route="admin.articles.index" permission="articles.view" icon="book">Blog postlar</x-admin.nav-link>
+                <x-admin.nav-link route="admin.advertisements.index" permission="advertisements.view" icon="megaphone">Reklamalar</x-admin.nav-link>
                 <x-admin.nav-link route="admin.group.index" icon="users">Guruh</x-admin.nav-link>
                 <x-admin.nav-link route="admin.specializations.index" permission="specializations.view" icon="tag">Kategoriyalar</x-admin.nav-link>
                 <x-admin.nav-link route="admin.districts.index" permission="districts.view" icon="map-pin">Tumanlar</x-admin.nav-link>

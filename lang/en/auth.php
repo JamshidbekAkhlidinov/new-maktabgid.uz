@@ -1,0 +1,46 @@
+<?php
+
+return [
+    'close' => 'Close',
+
+    'login_title' => 'Sign in to your account',
+    'login_subtitle' => 'Sign in with your phone number',
+    'phone' => 'Phone number',
+    'phone_placeholder' => '+998 90 123 45 67',
+    'password' => 'Password',
+    'password_placeholder' => '••••••••',
+    'login_submit' => 'Log in',
+    'no_account' => "Don't have an account?",
+    'register_as_parent' => 'Sign up as a parent',
+    'im_institution' => "I'm an institution — add my institution",
+    'im_teacher' => "I'm a teacher — open a teacher account",
+
+    'parent_title' => 'Create a parent account',
+    'parent_subtitle' => 'Sign up in a minute and manage your applications',
+    'full_name' => 'Full name',
+    'name_placeholder_parent' => 'e.g. Dilnoza Murodova',
+    'age' => 'Your age',
+    'district' => 'District of residence',
+    'select_district' => 'Select a district',
+    'register_submit' => 'Sign up',
+    'have_account' => 'Already have an account?',
+    'login_word' => 'Log in',
+
+    'institution_title' => 'Open an institution account',
+    'institution_subtitle' => 'Register your school, kindergarten or learning center',
+    'institution_name' => 'Institution name',
+    'institution_name_placeholder' => 'e.g. Sodiq School',
+    'institution_type' => 'Institution type',
+    'type_school' => 'Private school',
+    'type_kindergarten' => 'Private kindergarten',
+    'type_center' => 'Learning center',
+    'responsible_person' => 'Contact person',
+    'fio_placeholder' => 'Full name',
+    'phone_short' => 'Phone',
+    'phone_placeholder_institution' => '+998 71 200 00 00',
+    'im_parent' => "I'm a parent — open an account",
+
+    'teacher_title' => 'Open a teacher account',
+    'teacher_subtitle' => 'Sign up, apply for vacancies and post your resume',
+    'name_placeholder_teacher' => 'e.g. Aziz Karimov',
+];

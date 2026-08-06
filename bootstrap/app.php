@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -22,6 +23,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Uch tillilik (2026-08-06) — har bir web so'rovda joriy til belgilanadi
+        // (session/cookie asosida), shu sababli barcha sahifalarda __() to'g'ri ishlaydi.
+        $middleware->web(append: [SetLocale::class]);
+
         $middleware->alias([
             // Saytdagi oddiy rol tekshiruvi (parent|institution|admin) — mavjud API'lar uchun.
             'role' => EnsureRole::class,

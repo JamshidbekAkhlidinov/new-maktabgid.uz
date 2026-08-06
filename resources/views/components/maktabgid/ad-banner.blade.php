@@ -62,7 +62,7 @@
                             {{ $ad['ctaLabel'] }}
                             <x-maktabgid.icon name="arrowR" :width="16" :height="16" />
                         </a>
-                        <span class="ad-banner-label">REKLAMA</span>
+                        <span class="ad-banner-label">{{ __('home.ad_label') }}</span>
                     </div>
                 </div>
             @endforeach
@@ -70,7 +70,7 @@
             @if (count($ads) > 1)
                 <div class="ad-banner-dots">
                     @foreach ($ads as $ad)
-                        <button type="button" class="dot js-ad-dot{{ $loop->first ? ' on' : '' }}" aria-label="Reklama {{ $loop->iteration }}"></button>
+                        <button type="button" class="dot js-ad-dot{{ $loop->first ? ' on' : '' }}" aria-label="{{ __('home.ad_aria', ['n' => $loop->iteration]) }}"></button>
                     @endforeach
                 </div>
             @endif

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>{{ $item['title'] }} — Yangiliklar — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ $item['title'] }} — {{ __('news.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -22,7 +22,7 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="wrap" style="padding-top:20px">
-        <x-maktabgid.back-link href="{{ route('news.index') }}" label="Yangiliklarga qaytish" />
+        <x-maktabgid.back-link href="{{ route('news.index') }}" label="{{ __('news.back_to_news') }}" />
     </div>
 
     <div class="wrap detail-grid">
@@ -47,7 +47,7 @@
 
             {{-- Related --}}
             @if (count($more))
-                <h3 class="reply-head" style="margin:0 0 14px">Boshqa yangiliklar</h3>
+                <h3 class="reply-head" style="margin:0 0 14px">{{ __('news.other_news') }}</h3>
                 <div class="news-grid" style="grid-template-columns:repeat(3,1fr)">
                     @foreach ($more as $n)
                         <a href="{{ route('news.show', $n['id']) }}" class="news-card">
@@ -86,7 +86,7 @@
 
                 <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--line-2)">
                     <a href="{{ route('news.index') }}" class="btn btn-ghost" style="width:100%;justify-content:center">
-                        <x-maktabgid.icon name="arrowL" :width="15" :height="15" /> Barcha yangiliklar
+                        <x-maktabgid.icon name="arrowL" :width="15" :height="15" /> {{ __('news.all_news_link') }}
                     </a>
                 </div>
             </div>
@@ -94,7 +94,7 @@
             {{-- More news in sidebar --}}
             @if (count($more))
                 <div class="side-card" style="padding:18px 20px">
-                    <p style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:14px">Boshqa yangiliklar</p>
+                    <p style="font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);margin-bottom:14px">{{ __('news.other_news') }}</p>
                     <div style="display:flex;flex-direction:column;gap:12px">
                         @foreach ($more as $n)
                             <a href="{{ route('news.show', $n['id']) }}"

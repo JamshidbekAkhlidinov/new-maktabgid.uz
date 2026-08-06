@@ -9,6 +9,7 @@ use App\Http\Controllers\Auth\RegisterParentController;
 use App\Http\Controllers\Auth\RegisterTeacherController;
 use App\Http\Controllers\Cabinet\StatsController as CabinetStatsController;
 use App\Http\Controllers\Career\VacancyApplicationController as CareerVacancyApplicationController;
+use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\Forum\LikeController as ForumLikeController;
 use App\Http\Controllers\Forum\ReplyController as ForumReplyController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Institution\VacancyController as InstitutionVacancyCont
 use App\Http\Controllers\ParentCabinetController;
 use App\Http\Controllers\ParentChildController;
 use App\Http\Controllers\ParentMessageController;
+use App\Http\Controllers\TeacherMessageController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -61,8 +63,9 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::get('applications', [InboxController::class, 'index']);
         Route::patch('applications/{application}/status', [InboxController::class, 'updateStatus']);
 
-        // Suhbatlar — muassasa ota-onaga javob yozadi (institution-cabinet Suhbatlar sahifasi)
-        Route::post('conversations/{conversation}/messages', [MessageController::class, 'store']);
+        // Suhbatlar — muassasa ota-ona/ustozga javob yozadi (institution-cabinet Suhbatlar sahifasi)
+        Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])
+            ->middleware('throttle:chat-message');
 
         // O'z vakansiyasini o'chirish (institution-cabinet Vakansiyalar sahifasi, ADR-0002)
         Route::delete('vacancies/{vacancy}', [InstitutionVacancyController::class, 'destroy']);
@@ -87,6 +90,26 @@ Route::middleware('web')->prefix('ajax')->group(function () {
 
     // Vakansiyaga ariza — mehmon ham yubora oladi, Application bilan bir xil qoida (ADR-0002, Faza 2)
     Route::post('vacancies/{vacancy}/apply', [CareerVacancyApplicationController::class, 'store']);
+
+    // Suhbatlar — rol-agnostik qismlar (ADR-0003): maktab profilidagi "Suhbat
+    // boshlash" tugmasi parent va teacher uchun bitta endpointga murojaat qiladi;
+    // xabar tarixini olish (polling, har 3 sekunda) ham ishtirokchi kim bo'lishidan
+    // qat'i nazar bitta endpoint — ConversationPolicy egalikni tekshiradi.
+    Route::middleware('auth')->group(function () {
+        Route::post('conversations', [ConversationController::class, 'start']);
+        Route::get('conversations/{conversation}/messages', [ConversationController::class, 'messages']);
+    });
+
+    // Ustoz tomoni (role=teacher) — muassasaga xabar yozish (ADR-0003, ADR-0002'da
+    // kechiktirilgan bo'shliq). Ro'yxat/tarix yuqoridagi umumiy 'auth' guruhida.
+    // Diqqat: alohida 'teacher/' prefiksi shart — aks holda parent'ning
+    // `POST conversations/{conversation}/messages`i bilan bir xil URI bo'lib
+    // qolib, marshrutlashda bir-birini "soya qilib qo'yardi" (birinchi ro'yxatga
+    // olingani ustunlik qiladi, ikkinchisi hech qachon ishlamay qolardi).
+    Route::middleware(['auth', 'role:teacher'])->prefix('teacher')->group(function () {
+        Route::post('conversations/{conversation}/messages', [TeacherMessageController::class, 'store'])
+            ->middleware('throttle:chat-message');
+    });
 
     // Forum — mavzu ochish/javob/layk (backend.md §6, ADR-0002 Faza 2)
     Route::middleware('auth')->prefix('forum')->group(function () {
@@ -114,9 +137,10 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::put('children/{child}', [ParentChildController::class, 'update']);
         Route::delete('children/{child}', [ParentChildController::class, 'destroy']);
 
-        // Suhbatlar — muassasa profilidagi "Suhbat boshlash" + parent-cabinet Suhbatlar sahifasida yozish
-        Route::post('conversations', [ParentMessageController::class, 'start']);
-        Route::post('conversations/{conversation}/messages', [ParentMessageController::class, 'store']);
+        // Suhbatlar — parent-cabinet Suhbatlar sahifasida yozish ("Suhbat boshlash"
+        // endi yuqoridagi umumiy ConversationController@start'da, ADR-0003)
+        Route::post('conversations/{conversation}/messages', [ParentMessageController::class, 'store'])
+            ->middleware('throttle:chat-message');
     });
 
 });

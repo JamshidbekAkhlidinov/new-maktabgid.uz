@@ -1,10 +1,15 @@
 @props([
     'active' => 'dashboard',
-    'title' => 'Profilim',
-    'sub' => "Shaxsiy ma'lumotlaringiz",
+    'title' => null,
+    'sub' => null,
     'user' => null,
     'stats' => ['favorites' => 0, 'applications' => 0, 'conversations' => 0],
 ])
+
+@php
+    $title = $title ?? __('cabinet_parent.shell_title_default');
+    $sub = $sub ?? __('cabinet_parent.shell_sub_default');
+@endphp
 
 {{--
     Ota-ona kabineti qobig'i — x-institution.shell / x-teacher.shell bilan bir xil
@@ -18,7 +23,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>{{ $title }} — Ota-ona kabineti — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ $title }} — {{ __('cabinet_parent.shell_title_suffix') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -33,10 +38,10 @@
     <div class="wrap" style="padding:80px 0;text-align:center">
         <div class="empty">
             <span class="empty-ico"><x-maktabgid.icon name="user" :width="28" :height="28" /></span>
-            <p style="font-size:16px;font-weight:700;color:var(--ink)">Kabinetga kirish kerak</p>
-            <p>Profilingizni ko'rish uchun tizimga kiring yoki ro'yxatdan o'ting.</p>
+            <p style="font-size:16px;font-weight:700;color:var(--ink)">{{ __('cabinet_parent.shell_login_required_title') }}</p>
+            <p>{{ __('cabinet_parent.shell_login_required_text') }}</p>
             <button class="btn btn-primary" data-modal-open="auth-modal">
-                <x-maktabgid.icon name="user" :width="17" :height="17" /> Kirish
+                <x-maktabgid.icon name="user" :width="17" :height="17" /> {{ __('cabinet_parent.shell_login_btn') }}
             </button>
         </div>
     </div>
@@ -45,11 +50,11 @@
 @else
     @php
         $navItems = [
-            ['key' => 'dashboard', 'route' => 'cabinet.index', 'icon' => 'user', 'label' => 'Profilim'],
-            ['key' => 'children', 'route' => 'cabinet.children', 'icon' => 'teddy', 'label' => 'Farzandlarim'],
-            ['key' => 'favorites', 'route' => 'cabinet.favorites', 'icon' => 'heart', 'label' => 'Saqlanganlar', 'count' => $stats['favorites']],
-            ['key' => 'applications', 'route' => 'cabinet.applications', 'icon' => 'ticket', 'label' => 'Arizalarim', 'count' => $stats['applications']],
-            ['key' => 'conversations', 'route' => 'cabinet.conversations', 'icon' => 'chat', 'label' => 'Suhbatlar', 'count' => $stats['conversations']],
+            ['key' => 'dashboard', 'route' => 'cabinet.index', 'icon' => 'user', 'label' => __('cabinet_parent.nav_profile')],
+            ['key' => 'children', 'route' => 'cabinet.children', 'icon' => 'teddy', 'label' => __('cabinet_parent.nav_children')],
+            ['key' => 'favorites', 'route' => 'cabinet.favorites', 'icon' => 'heart', 'label' => __('cabinet_parent.nav_favorites'), 'count' => $stats['favorites']],
+            ['key' => 'applications', 'route' => 'cabinet.applications', 'icon' => 'ticket', 'label' => __('cabinet_parent.nav_applications'), 'count' => $stats['applications']],
+            ['key' => 'conversations', 'route' => 'cabinet.conversations', 'icon' => 'chat', 'label' => __('cabinet_parent.nav_conversations'), 'count' => $stats['conversations']],
         ];
     @endphp
 
@@ -72,7 +77,7 @@
             </div>
 
             <nav class="idash-navgroup">
-                <span class="idash-navlabel">Kabinet</span>
+                <span class="idash-navlabel">{{ __('cabinet_parent.navgroup_cabinet') }}</span>
                 @foreach ($navItems as $item)
                     <a href="{{ route($item['route']) }}" class="idash-navlink{{ $active === $item['key'] ? ' on' : '' }}">
                         <x-maktabgid.icon :name="$item['icon']" :width="18" :height="18" />
@@ -85,22 +90,22 @@
             </nav>
 
             <nav class="idash-navgroup">
-                <span class="idash-navlabel">Hisob</span>
+                <span class="idash-navlabel">{{ __('cabinet_parent.navgroup_account') }}</span>
                 <a href="{{ route('cabinet.subscription') }}" class="idash-navlink{{ $active === 'subscription' ? ' on' : '' }}">
                     <x-maktabgid.icon name="shield" :width="18" :height="18" />
-                    Obuna
+                    {{ __('cabinet_parent.nav_subscription') }}
                 </a>
                 <button type="button" class="idash-navlink danger" id="js-logout-btn">
                     <x-maktabgid.icon name="logout" :width="18" :height="18" />
-                    Chiqish
+                    {{ __('cabinet_parent.logout') }}
                 </button>
             </nav>
 
             <button type="button" class="cab-ai" id="js-cab-ai-btn" style="margin-top:auto">
                 <x-maktabgid.icon name="robot" :width="20" :height="20" />
                 <div>
-                    <b>AI konsultant</b>
-                    <span>Maktab tanlashda yordam</span>
+                    <b>{{ __('cabinet_parent.ai_consultant') }}</b>
+                    <span>{{ __('cabinet_parent.ai_consultant_desc') }}</span>
                 </div>
             </button>
         </aside>
@@ -118,16 +123,16 @@
                         <span class="idash-user-ava">{{ \App\Support\MaktabgidData::monogram($user->name) }}</span>
                         <span style="text-align:left">
                             <b>{{ explode(' ', trim($user->name))[0] }}</b>
-                            <span>Ota-ona</span>
+                            <span>{{ __('cabinet_parent.role_parent') }}</span>
                         </span>
                         <x-maktabgid.icon name="chevron" :width="14" :height="14" />
                     </button>
                     <div class="idash-dd idash-user-menu" id="idash-user-menu" data-dd-menu hidden>
                         <a href="{{ route('cabinet.index') }}" class="idash-org-item">
-                            <x-maktabgid.icon name="user" :width="16" :height="16" /> Profilim
+                            <x-maktabgid.icon name="user" :width="16" :height="16" /> {{ __('cabinet_parent.nav_profile') }}
                         </a>
                         <button type="button" class="idash-org-item js-logout-trigger" style="color:#d4504e">
-                            <x-maktabgid.icon name="logout" :width="16" :height="16" /> Chiqish
+                            <x-maktabgid.icon name="logout" :width="16" :height="16" /> {{ __('cabinet_parent.logout') }}
                         </button>
                     </div>
                 </div>
@@ -146,8 +151,8 @@
                 <x-maktabgid.icon name="robot" :width="22" :height="22" />
             </span>
             <div class="ai-head-main">
-                <b>AI konsultant</b>
-                <span><span class="ondot"></span> Platforma maʼlumotlari asosida</span>
+                <b>{{ __('cabinet_parent.ai_consultant') }}</b>
+                <span><span class="ondot"></span> {{ __('cabinet_parent.ai_head_sub') }}</span>
             </div>
             <button class="ai-close" type="button" id="js-ai-close">
                 <x-maktabgid.icon name="close" :width="20" :height="20" />
@@ -155,7 +160,7 @@
         </header>
         <div class="ai-msgs" id="js-ai-msgs"></div>
         <form class="ai-input" id="js-ai-form">
-            <input id="js-ai-input" placeholder="Savolingizni yozing…" autocomplete="off" />
+            <input id="js-ai-input" placeholder="{{ __('cabinet_parent.ai_input_placeholder') }}" autocomplete="off" />
             <button class="chat-send" type="submit">
                 <x-maktabgid.icon name="send" :width="18" :height="18" />
             </button>

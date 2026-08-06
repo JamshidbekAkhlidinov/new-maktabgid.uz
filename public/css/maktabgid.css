@@ -675,6 +675,7 @@ svg { display: block; }
 .acc-menu button:hover, .acc-menu a:hover { background: var(--surface-2); color: var(--ink); }
 .acc-menu button.danger { color: #d4504e; }
 .acc-menu button.danger:hover { background: #fdecec; }
+.acc-menu a.on { background: var(--surface-2); color: var(--primary); }
 
 /* ---------- spec strip (home) ---------- */
 .specstrip { padding: 44px 0 8px; }

@@ -11,7 +11,7 @@
 
     <x-admin.card>
         <h3 class="text-base font-semibold text-slate-900 mb-1">Galereya</h3>
-        <p class="text-sm text-slate-500 mb-4">JPG, PNG, WebP — maks 5 MB. /maktab/{{ $institution->id }} sahifasidagi asosiy rasm va galereya shu ro'yxatdan.</p>
+        <p class="text-sm text-slate-500 mb-4">JPG, PNG, WebP — maks 5 MB. /{{ $institution->slug }} sahifasidagi asosiy rasm va galereya shu ro'yxatdan.</p>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-5">
             @foreach ($galleryMedia as $m)

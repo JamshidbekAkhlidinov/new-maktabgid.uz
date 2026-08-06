@@ -4,6 +4,7 @@
     use App\Support\MaktabgidData;
     $s = $school;
     $catLabel = MaktabgidData::categoryLabel($s['cat']);
+    $photoUrl = $s['photos'][0] ?? null;
 @endphp
 
 <article
@@ -18,12 +19,14 @@
     data-sat="{{ $s['sat'] ? '1' : '0' }}"
     data-specs="{{ implode(',', $s['specs'] ?? []) }}"
 >
-    <div class="scard-media" style="background: linear-gradient(140deg, {{ $s['g'][0] }}, {{ $s['g'][1] }})">
-        <span class="scard-mono">{{ MaktabgidData::monogram($s['name']) }}</span>
+    <div class="scard-media" style="background: {{ $photoUrl ? "url('{$photoUrl}') center/cover no-repeat" : "linear-gradient(140deg, {$s['g'][0]}, {$s['g'][1]})" }}">
+        @unless ($photoUrl)
+            <span class="scard-mono">{{ MaktabgidData::monogram($s['name']) }}</span>
+        @endunless
         @if (!empty($s['badge']))
             <span class="media-badge">{{ $s['badge'] }}</span>
         @endif
-        <button type="button" class="fav js-fav" aria-label="Saqlash">
+        <button type="button" class="fav js-fav" aria-label="{{ __('home.save') }}">
             <x-maktabgid.icon name="heart" :width="16" :height="16" />
         </button>
     </div>
@@ -43,12 +46,12 @@
             <span class="tag">{{ $catLabel }}</span>
             <span class="tag lang">{{ $s['lang'] }}</span>
             @if ($s['sat'])
-                <span class="tag sat">Shanba ish</span>
+                <span class="tag sat">{{ __('home.saturday_badge') }}</span>
             @endif
         </div>
         <div class="scard-foot">
-            <div class="price"><b>{{ MaktabgidData::formatPrice($s['price']) }}</b> <span>soʻm / oy</span></div>
-            <a href="{{ route('maktabgid.school', $s['id']) }}" class="btn btn-ghost scard-cta">Batafsil <x-maktabgid.icon name="arrowR" :width="16" :height="16" /></a>
+            <div class="price"><b>{{ MaktabgidData::formatPrice($s['price']) }}</b> <span>{{ __('home.price_per_month') }}</span></div>
+            <a href="{{ route('maktabgid.school', $s['slug']) }}" class="btn btn-ghost scard-cta">{{ __('home.details') }} <x-maktabgid.icon name="arrowR" :width="16" :height="16" /></a>
         </div>
     </div>
 </article>

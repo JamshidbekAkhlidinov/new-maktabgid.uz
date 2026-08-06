@@ -3,8 +3,8 @@
 <section class="specstrip">
     <div class="wrap">
         <div class="specstrip-head">
-            <h2>Ixtisoslik boʻyicha qidiring</h2>
-            <p>Farzandingiz qiziqishi boʻyicha mos muassasani toping</p>
+            <h2>{{ __('home.spec_strip_title') }}</h2>
+            <p>{{ __('home.spec_strip_sub') }}</p>
         </div>
         <div class="spec-tiles">
             @foreach ($specs as $sp)

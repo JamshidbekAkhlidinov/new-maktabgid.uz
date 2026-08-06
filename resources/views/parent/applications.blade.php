@@ -1,11 +1,11 @@
-<x-parent.shell active="applications" title="Arizalarim" sub="Ekskursiya va joylashtirish arizalari" :user="$user" :stats="$stats">
+<x-parent.shell active="applications" title="{{ __('cabinet_parent.nav_applications') }}" sub="{{ __('cabinet_parent.applications_sub') }}" :user="$user" :stats="$stats">
 
     <div class="panel">
-        <div class="panel-head"><h3>Mening arizalarim</h3></div>
+        <div class="panel-head"><h3>{{ __('cabinet_parent.applications_heading') }}</h3></div>
         @if ($applications->isEmpty())
             <div class="empty">
                 <span class="empty-ico"><x-maktabgid.icon name="ticket" :width="26" :height="26" /></span>
-                <p>Hali ariza yubormadingiz.</p>
+                <p>{{ __('cabinet_parent.applications_empty') }}</p>
             </div>
         @else
             <div class="cab-list">
@@ -17,7 +17,7 @@
                             <span>
                                 {{ $app->child_name }} · {{ $app->target_grade ?? $app->current_grade ?? '—' }}
                                 @if ($app->scheduled_at)
-                                    · Ekskursiya: {{ $app->scheduled_at->format('Y-m-d, H:i') }}
+                                    · {{ __('cabinet_parent.excursion_label') }}: {{ $app->scheduled_at->format('Y-m-d, H:i') }}
                                 @else
                                     · {{ $app->created_at->format('Y-m-d') }}
                                 @endif

@@ -3,29 +3,18 @@
 namespace Database\Seeders;
 
 use App\Models\Article;
-use App\Models\News;
 use Illuminate\Database\Seeder;
 
+/**
+ * Diqqat: bu seeder ilgari News'ni ham to'ldirardi — endi News eski `post`
+ * jadvalidan real import qilinadi (LegacyNewsSeeder, 2026-08-06). Article
+ * (blog) uchun eski bazada mos manba yo'q edi, shu sababli demo mazmun
+ * saqlanib qoldi (aks holda blog bo'limi butunlay bo'sh ko'rinardi).
+ */
 class ContentSeeder extends Seeder
 {
     public function run(): void
     {
-        $news = [
-            ['tag' => 'Ta\'lim siyosati', 'title' => '2026–2027 o\'quv yili: xususiy maktablar uchun yangi litsenziya qoidalari', 'excerpt' => 'Vazirlik xususiy ta\'lim muassasalari uchun akkreditatsiya talablarini yangiladi. Asosiy o\'zgarishlar va muddatlar.', 'source' => 'MaktabGID tahririyati', 'hot' => true],
-            ['tag' => 'Qabul', 'title' => 'Toshkentda 12 ta yangi xususiy bog\'cha ochilmoqda', 'excerpt' => 'Shahar bo\'ylab yangi bog\'chalar ro\'yxati va arizalar boshlanish sanalari e\'lon qilindi.', 'source' => 'Toshkent IBBM', 'hot' => false],
-            ['tag' => 'Imtihon', 'title' => 'Milliy sertifikat imtihoni jadvali ma\'lum bo\'ldi', 'excerpt' => 'Ingliz tili va boshqa fanlardan milliy sertifikat imtihonlari sanalari joylandi.', 'source' => 'Davlat test markazi', 'hot' => false],
-            ['tag' => 'Grant', 'title' => 'Iqtidorli o\'quvchilar uchun 500 ta to\'liq grant', 'excerpt' => 'Bir qancha xususiy maktablar ijtimoiy himoyaga muhtoj oilalar farzandlari uchun grant e\'lon qildi.', 'source' => 'MaktabGID tahririyati', 'hot' => false],
-            ['tag' => 'Texnologiya', 'title' => 'Maktablarda AI-yordamchi: pilot loyiha 30 ta maktabda boshlandi', 'excerpt' => 'Sun\'iy intellekt asosidagi o\'quv yordamchilari sinov tariqasida joriy etilmoqda.', 'source' => 'IT Park', 'hot' => false],
-            ['tag' => 'Tadbir', 'title' => '«Ta\'lim EXPO 2026» ko\'rgazmasi 15-iyunda bo\'lib o\'tadi', 'excerpt' => '100 dan ortiq muassasa qatnashadi. Ota-onalar uchun bepul tashrif va konsultatsiyalar.', 'source' => 'Ta\'lim EXPO', 'hot' => false],
-        ];
-
-        foreach ($news as $i => $n) {
-            News::updateOrCreate(['title' => $n['title']], $n + [
-                'body' => $n['excerpt'],
-                'published_at' => now()->subDays($i * 3),
-            ]);
-        }
-
         $articles = [
             ['tag' => 'Tanlov', 'title' => 'Farzandingizga mos maktabni qanday tanlash kerak? 7 ta mezon', 'excerpt' => 'Narx, masofa, ta\'lim tili, dastur va sharhlarni solishtirishda e\'tibor beriladigan asosiy mezonlar.', 'author_name' => 'Dr. Malika Yusupova', 'read_minutes' => 6, 'featured' => true],
             ['tag' => 'Psixologiya', 'title' => 'Maktabga moslashish: birinchi oydagi qiyinchiliklar', 'excerpt' => 'Bola yangi muhitga qanday ko\'nikadi va ota-ona unga qanday yordam berishi mumkin.', 'author_name' => 'Nasiba Qodirova', 'read_minutes' => 5, 'featured' => false],

@@ -20,12 +20,28 @@ class DatabaseSeeder extends Seeder
             PermissionSeeder::class,
             UserSeeder::class,
             AdminUserSeeder::class,
-            InstitutionSeeder::class,
-            ReviewSeeder::class,
-            AchievementSeeder::class,
+
+            // ---- Real ma'lumotlar — eski (Yii2) old_data_maktab.sql importi ----
+            // (2026-08-06, backend/database/seeders/legacy_fixtures/*.json manba).
+            // Mock InstitutionSeeder/ReviewSeeder/AchievementSeeder shu bilan almashtirildi
+            // — Institution/Review endi shu 339 ta real muassasa/sharhga tegishli.
+            LegacyAdminUserSeeder::class,
+            LegacyInstitutionSeeder::class,
+            LegacyReviewSeeder::class,
+
             ForumSeeder::class,
+
+            // ContentSeeder endi faqat Article (blog) — News eski `post`dan real import
+            // qilinadi (LegacyNewsSeeder), Article uchun legacy manba yo'q (demo qoladi).
             ContentSeeder::class,
+            LegacyNewsSeeder::class,
+
+            // CareerSeeder endi faqat Resume (demo) — Vacancy eski `vocations`dan real
+            // import qilinadi (LegacyVacancySeeder), Resume uchun legacy manba yo'q.
             CareerSeeder::class,
+            LegacyVacancySeeder::class,
+
+            LegacyAdvertisementSeeder::class,
         ]);
     }
 }

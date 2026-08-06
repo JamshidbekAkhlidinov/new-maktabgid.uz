@@ -30,10 +30,10 @@
 
     <div class="detail">
         <div class="wrap detail-topbar">
-            <x-maktabgid.back-link href="{{ route('welcome') }}" label="Katalogga qaytish" />
+            <x-maktabgid.back-link href="{{ route('welcome') }}" label="{{ __('school.back_to_catalog') }}" />
             <div class="detail-topact">
-                <button type="button" class="iconbtn js-fav" aria-label="Saqlash"><x-maktabgid.icon name="heart" :width="18" :height="18" /></button>
-                <button type="button" class="iconbtn" aria-label="Ulashish"><x-maktabgid.icon name="send" :width="17" :height="17" /></button>
+                <button type="button" class="iconbtn js-fav" aria-label="{{ __('school.save') }}"><x-maktabgid.icon name="heart" :width="18" :height="18" /></button>
+                <button type="button" class="iconbtn" aria-label="{{ __('school.share') }}"><x-maktabgid.icon name="send" :width="17" :height="17" /></button>
             </div>
         </div>
 

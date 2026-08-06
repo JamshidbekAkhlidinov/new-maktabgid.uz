@@ -1,7 +1,7 @@
 <x-institution.shell
     active="conversations"
-    title="Suhbatlar"
-    sub="Ota-onalar bilan yozishmalar"
+    title="{{ __('cabinet_institution.nav_conversations') }}"
+    sub="{{ __('cabinet_institution.institution_conversations_sub') }}"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -13,10 +13,10 @@
         {{-- ===== Suhbatlar ro'yxati ===== --}}
         <aside class="chat-list">
             <div class="chat-list-head">
-                <h3>Suhbatlar</h3>
+                <h3>{{ __('cabinet_institution.nav_conversations') }}</h3>
                 <label class="chat-search">
                     <x-maktabgid.icon name="search" :width="15" :height="15" />
-                    <input type="text" class="js-chat-search" placeholder="Ota-ona ismi…" />
+                    <input type="text" class="js-chat-search" placeholder="{{ __('cabinet_institution.name_placeholder') }}" />
                 </label>
             </div>
 
@@ -24,11 +24,11 @@
                 @php $lastMsg = $c->messages->first(); @endphp
                 <a href="{{ route('institution.cabinet.conversations') }}?c={{ $c->id }}"
                    class="chat-li js-chat-li{{ $active && $active->id === $c->id ? ' on' : '' }}"
-                   data-search="{{ strtolower($c->parent?->name ?? '') }}">
-                    <x-maktabgid.avatar :name="$c->parent?->name ?? 'Foydalanuvchi'" :size="42" />
+                   data-search="{{ strtolower($c->participant?->name ?? '') }}">
+                    <x-maktabgid.avatar :name="$c->participant?->name ?? 'Foydalanuvchi'" :size="42" />
                     <div class="chat-li-main">
-                        <b>{{ $c->parent?->name ?? "O'chirilgan foydalanuvchi" }}</b>
-                        <span>{{ $lastMsg?->body ? \Illuminate\Support\Str::limit($lastMsg->body, 32) : "Hali xabar yo'q" }}</span>
+                        <b>{{ $c->participant?->name ?? __('cabinet_institution.deleted_user') }} <span class="idash-lead-source" style="padding:2px 9px;font-size:10.5px">{{ $c->participant_role === 'teacher' ? __('cabinet_institution.role_teacher') : __('cabinet_institution.role_parent') }}</span></b>
+                        <span>{{ $lastMsg?->body ? \Illuminate\Support\Str::limit($lastMsg->body, 32) : __('cabinet_institution.no_messages_yet') }}</span>
                     </div>
                     <div class="chat-li-meta">
                         <time>{{ ($c->last_message_at ?? $c->created_at)->diffForHumans() }}</time>
@@ -40,7 +40,7 @@
             @empty
                 <div class="empty" style="padding:34px 18px">
                     <span class="empty-ico"><x-maktabgid.icon name="chat" :width="24" :height="24" /></span>
-                    <p>Hali suhbat yo'q. Ota-onalar profilingizdan yozganda shu yerda chiqadi.</p>
+                    <p>{{ __('cabinet_institution.conversations_empty_institution') }}</p>
                 </div>
             @endforelse
         </aside>
@@ -49,34 +49,36 @@
         <div class="chat-thread">
             @if ($active)
                 <div class="chat-thead">
-                    <x-maktabgid.avatar :name="$active->parent?->name ?? 'Foydalanuvchi'" :size="42" />
+                    <x-maktabgid.avatar :name="$active->participant?->name ?? 'Foydalanuvchi'" :size="42" />
                     <div>
-                        <b>{{ $active->parent?->name ?? "Foydalanuvchi" }}</b>
+                        <b>{{ $active->participant?->name ?? __('cabinet_institution.user_fallback') }}</b>
                         <span>
                             @if ($activeChild)
-                                {{ $activeChild->child_name }}{{ $activeChild->child_age ? ', '.$activeChild->child_age.' yosh' : '' }}
+                                {{ $activeChild->child_name }}{{ $activeChild->child_age ? ', '.__('cabinet_institution.age_years', ['age' => $activeChild->child_age]) : '' }}
                             @else
-                                {{ $active->parent?->phone ?? '' }}
+                                {{ $active->participant?->phone ?? ($active->participant_role === 'teacher' ? __('cabinet_institution.role_teacher') : '') }}
                             @endif
                         </span>
                     </div>
-                    @if ($active->parent?->phone)
-                        <a class="iconbtn" href="tel:{{ $active->parent->phone }}" title="Qo'ng'iroq qilish"><x-maktabgid.icon name="phone" :width="17" :height="17" /></a>
+                    @if ($active->participant?->phone)
+                        <a class="iconbtn" href="tel:{{ $active->participant->phone }}" title="{{ __('cabinet_institution.call') }}"><x-maktabgid.icon name="phone" :width="17" :height="17" /></a>
                     @endif
-                    <a class="iconbtn" href="{{ route('institution.cabinet.excursions') }}" title="Arizalar"><x-maktabgid.icon name="ticket" :width="17" :height="17" /></a>
+                    @if ($active->parent_user_id)
+                        <a class="iconbtn" href="{{ route('institution.cabinet.excursions') }}" title="{{ __('cabinet_institution.nav_excursions') }}"><x-maktabgid.icon name="ticket" :width="17" :height="17" /></a>
+                    @endif
                 </div>
 
-                <div class="chat-msgs">
+                <div class="chat-msgs" id="js-chat-msgs" data-conversation-id="{{ $active->id }}" data-last-id="{{ $activeMessages->last()['model']->id ?? 0 }}" data-my-sender-type="institution">
                     @if ($activeMessages->isEmpty())
                         <div class="chat-empty">
-                            <p style="color:var(--ink-3);font-weight:600;font-size:14px">Hali xabar yo'q. Birinchi bo'lib yozing!</p>
+                            <p style="color:var(--ink-3);font-weight:600;font-size:14px">{{ __('cabinet_institution.chat_be_first') }}</p>
                         </div>
                     @else
                         @foreach ($activeMessages as $row)
                             @if ($row['showDivider'])
                                 <div class="chat-date-divider"><span>{{ $row['dayLabel'] }}</span></div>
                             @endif
-                            <div class="bubble-row {{ $row['model']->sender_type === 'institution' ? 'me' : 'them' }}">
+                            <div class="bubble-row {{ $row['model']->sender_type === 'institution' ? 'me' : 'them' }}" data-message-id="{{ $row['model']->id }}">
                                 <div class="msg-bubble">
                                     {{ $row['model']->body }}
                                     <time>{{ $row['model']->created_at->format('H:i') }}</time>
@@ -87,22 +89,22 @@
                 </div>
 
                 <div class="chat-suggest">
-                    <button type="button" class="js-chat-suggest" data-text="Assalomu alaykum! Qanday yordam bera olamiz?">Assalomu alaykum! Qanday yordam bera olamiz?</button>
-                    <button type="button" class="js-chat-suggest" data-text="Ekskursiyaga taklif qilamiz 🙂">Ekskursiyaga taklif qilamiz 🙂</button>
-                    <button type="button" class="js-chat-suggest" data-text="Oylik to'lov haqida ma'lumot yuboraman">Oylik to'lov haqida ma'lumot yuboraman</button>
+                    <button type="button" class="js-chat-suggest" data-text="{{ __('cabinet_institution.suggest_greeting') }}">{{ __('cabinet_institution.suggest_greeting') }}</button>
+                    <button type="button" class="js-chat-suggest" data-text="{{ __('cabinet_institution.suggest_excursion') }}">{{ __('cabinet_institution.suggest_excursion') }}</button>
+                    <button type="button" class="js-chat-suggest" data-text="{{ __('cabinet_institution.suggest_payment_info') }}">{{ __('cabinet_institution.suggest_payment_info') }}</button>
                 </div>
 
                 <form class="chat-input js-chat-send-form" data-conversation-id="{{ $active->id }}"
                       data-send-url="/ajax/institution/me/conversations/{{ $active->id }}/messages">
                     <span class="chat-attach"><x-maktabgid.icon name="paperclip" :width="19" :height="19" /></span>
-                    <input type="text" id="js-chat-input" placeholder="Xabar yozing…" autocomplete="off" />
+                    <input type="text" id="js-chat-input" placeholder="{{ __('cabinet_institution.chat_input_placeholder') }}" autocomplete="off" />
                     <button type="submit" class="chat-send"><x-maktabgid.icon name="send" :width="18" :height="18" /></button>
                 </form>
             @else
                 <div class="chat-empty">
                     <div class="empty">
                         <span class="empty-ico"><x-maktabgid.icon name="chat" :width="24" :height="24" /></span>
-                        <p>Hali suhbat yo'q.</p>
+                        <p>{{ __('cabinet_institution.no_conversations_short') }}</p>
                     </div>
                 </div>
             @endif

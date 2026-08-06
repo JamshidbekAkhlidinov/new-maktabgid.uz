@@ -3,27 +3,26 @@
 <section class="hero" id="top">
     <div class="hero-bg"></div>
     <div class="wrap hero-inner">
-        <span class="eyebrow"><x-maktabgid.icon name="sparkle" :width="15" :height="15" /> Oʻzbekistondagi №1 taʼlim katalogi</span>
-        <h1>Farzandingizga <span class="hl">mos maktabni</span> bir joyda toping</h1>
+        <span class="eyebrow"><x-maktabgid.icon name="sparkle" :width="15" :height="15" /> {{ __('home.hero_eyebrow') }}</span>
+        <h1>{{ __('home.hero_title_before') }} <span class="hl">{{ __('home.hero_title_highlight') }}</span> {{ __('home.hero_title_after') }}</h1>
         <p class="sub">
-            Xususiy maktablar, bogʻchalar va oʻquv markazlari — narxi, joylashuvi, dars vaqti va sharhlari bilan.
-            Solishtiring, xaritada koʻring va toʻgʻri tanlov qiling.
+            {{ __('home.hero_sub') }}
         </p>
 
         <div class="hero-mode-toggle">
             <button type="button" class="mode-btn on js-mode-btn" data-mode="manual">
-                <x-maktabgid.icon name="search" :width="16" :height="16" /> Oʻzim qidiraman
+                <x-maktabgid.icon name="search" :width="16" :height="16" /> {{ __('home.mode_manual') }}
             </button>
             <button type="button" class="mode-btn js-mode-btn" data-mode="ai">
-                <x-maktabgid.icon name="sparkle" :width="16" :height="16" /> AI tanlab bersin
-                <span class="tag-new">Yangi</span>
+                <x-maktabgid.icon name="sparkle" :width="16" :height="16" /> {{ __('home.mode_ai') }}
+                <span class="tag-new">{{ __('home.new_badge') }}</span>
             </button>
         </div>
 
         <div class="js-mode-panel" data-mode="manual">
             <div class="searchbar">
                 <label class="sb-field">
-                    <span class="sb-label">Muassasa turi</span>
+                    <span class="sb-label">{{ __('home.institution_type') }}</span>
                     <span class="sb-control">
                         <x-maktabgid.icon name="school" :width="18" :height="18" />
                         <select id="js-cat-select">
@@ -34,38 +33,38 @@
                     </span>
                 </label>
                 <label class="sb-field">
-                    <span class="sb-label">Nomi boʻyicha</span>
+                    <span class="sb-label">{{ __('home.by_name') }}</span>
                     <span class="sb-control">
                         <x-maktabgid.icon name="search" :width="18" :height="18" />
-                        <input type="text" id="js-query" placeholder="Maktab nomi, masalan «Cambridge»" />
+                        <input type="text" id="js-query" placeholder="{{ __('home.name_search_placeholder') }}" />
                     </span>
                 </label>
                 <label class="sb-field">
-                    <span class="sb-label">Hudud</span>
+                    <span class="sb-label">{{ __('home.region') }}</span>
                     <span class="sb-control">
                         <x-maktabgid.icon name="pin" :width="18" :height="18" />
                         <select id="js-district">
-                            <option value="">Butun Toshkent</option>
+                            <option value="">{{ __('home.all_tashkent') }}</option>
                             @foreach ($districts as $d)
-                                <option value="{{ $d }}">{{ $d }} tumani</option>
+                                <option value="{{ $d }}">{{ $d }} {{ __('home.district_word') }}</option>
                             @endforeach
                         </select>
                     </span>
                 </label>
                 <label class="sb-field">
-                    <span class="sb-label">Taʼlim tili</span>
+                    <span class="sb-label">{{ __('home.language_of_instruction') }}</span>
                     <span class="sb-control">
                         <x-maktabgid.icon name="globe" :width="18" :height="18" />
                         <select>
-                            <option value="">Farqi yoʻq</option>
-                            <option>Ingliz</option>
-                            <option>Oʻzbek</option>
-                            <option>Rus</option>
+                            <option value="">{{ __('home.no_preference') }}</option>
+                            <option>{{ __('home.lang_english') }}</option>
+                            <option>{{ __('home.lang_uzbek') }}</option>
+                            <option>{{ __('home.lang_russian') }}</option>
                         </select>
                     </span>
                 </label>
                 <button type="button" class="btn btn-primary sb-go" id="js-search-go">
-                    <x-maktabgid.icon name="search" :width="18" :height="18" /> Qidirish
+                    <x-maktabgid.icon name="search" :width="18" :height="18" /> {{ __('home.search') }}
                 </button>
             </div>
         </div>
@@ -74,18 +73,18 @@
             <div class="ai-panel-placeholder">
                 <x-maktabgid.icon name="sparkle" :width="26" :height="26" />
                 <div>
-                    <b>AI tez orada sizga mos taʼlim maskanini oʻzi tanlab beradi</b>
-                    <p>Bu funksiya ustida ishlayapmiz — hozircha oʻzingiz qidirib koʻring.</p>
+                    <b>{{ __('home.ai_coming_title') }}</b>
+                    <p>{{ __('home.ai_coming_sub') }}</p>
                 </div>
-                <button type="button" class="btn btn-ghost js-mode-back" data-mode="manual">Oʻzim qidiraman</button>
+                <button type="button" class="btn btn-ghost js-mode-back" data-mode="manual">{{ __('home.mode_manual') }}</button>
             </div>
         </div>
 
         <div class="hero-stats">
-            <div class="hstat"><b>{{ $total }}+</b><span>taʼlim muassasasi</span></div>
-            <div class="hstat"><b>11</b><span>Toshkent tumani</span></div>
-            <div class="hstat"><b>4.7★</b><span>oʻrtacha reyting</span></div>
-            <div class="hstat"><b>24/7</b><span>onlayn ariza</span></div>
+            <div class="hstat"><b>{{ $total }}+</b><span>{{ __('home.stat_institutions') }}</span></div>
+            <div class="hstat"><b>11</b><span>{{ __('home.stat_districts') }}</span></div>
+            <div class="hstat"><b>4.7★</b><span>{{ __('home.stat_rating') }}</span></div>
+            <div class="hstat"><b>24/7</b><span>{{ __('home.stat_online') }}</span></div>
         </div>
     </div>
 </section>

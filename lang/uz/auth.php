@@ -1,0 +1,46 @@
+<?php
+
+return [
+    'close' => 'Yopish',
+
+    'login_title' => 'Kabinetga kirish',
+    'login_subtitle' => 'Telefon raqamingiz orqali tizimga kiring',
+    'phone' => 'Telefon raqami',
+    'phone_placeholder' => '+998 90 123 45 67',
+    'password' => 'Parol',
+    'password_placeholder' => '••••••••',
+    'login_submit' => 'Kirish',
+    'no_account' => "Hisobingiz yo'qmi?",
+    'register_as_parent' => "Ota-ona bo'lib ro'yxatdan o'ting",
+    'im_institution' => "Men muassasaman — muassasa qo'shish",
+    'im_teacher' => "Men ustozman — ustoz kabinetini ochish",
+
+    'parent_title' => "Ota-ona kabinetini yaratish",
+    'parent_subtitle' => "Bir daqiqada ro'yxatdan o'ting va arizalaringizni boshqaring",
+    'full_name' => 'Ism Familiya',
+    'name_placeholder_parent' => 'Masalan, Dilnoza Murodova',
+    'age' => 'Yoshingiz',
+    'district' => 'Yashash tumani',
+    'select_district' => 'Tumanni tanlang',
+    'register_submit' => "Ro'yxatdan o'tish",
+    'have_account' => 'Allaqachon hisobingiz bormi?',
+    'login_word' => 'Kirish',
+
+    'institution_title' => 'Muassasa kabinetini ochish',
+    'institution_subtitle' => "Maktab, bog'cha yoki o'quv markazingizni ro'yxatdan o'tkazing",
+    'institution_name' => 'Muassasa nomi',
+    'institution_name_placeholder' => 'Masalan, Sodiq School',
+    'institution_type' => 'Muassasa turi',
+    'type_school' => "Xususiy maktab",
+    'type_kindergarten' => "Xususiy bog'cha",
+    'type_center' => "O'quv markazi",
+    'responsible_person' => "Mas'ul shaxs",
+    'fio_placeholder' => 'F.I.Sh.',
+    'phone_short' => 'Telefon',
+    'phone_placeholder_institution' => '+998 71 200 00 00',
+    'im_parent' => 'Men ota-onaman — kabinet ochish',
+
+    'teacher_title' => 'Ustoz kabinetini ochish',
+    'teacher_subtitle' => "Ro'yxatdan o'ting va vakansiyalarga ariza yuboring, rezyume joylang",
+    'name_placeholder_teacher' => 'Masalan, Aziz Karimov',
+];

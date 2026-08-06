@@ -6,10 +6,10 @@
     <div class="wrap">
         <div class="section-head">
             <div>
-                <span class="section-kicker"><span class="live-dot"></span> Jonli muhokama</span>
-                <h2>Ota-onalar nimalarni muhokama qilmoqda</h2>
+                <span class="section-kicker"><span class="live-dot"></span> {{ __('home.forum_kicker') }}</span>
+                <h2>{{ __('home.forum_title') }}</h2>
             </div>
-            <a class="btn btn-ghost" href="{{ route('forum.index') }}">Forumga oʻtish <x-maktabgid.icon name="arrowR" :width="16" :height="16" /></a>
+            <a class="btn btn-ghost" href="{{ route('forum.index') }}">{{ __('home.forum_go') }} <x-maktabgid.icon name="arrowR" :width="16" :height="16" /></a>
         </div>
         <div class="fstrip-grid">
             @foreach (array_slice($threads, 0, 4) as $th)

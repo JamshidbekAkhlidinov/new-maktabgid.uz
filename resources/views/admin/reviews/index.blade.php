@@ -20,7 +20,12 @@
                 @forelse ($reviews as $review)
                     <tr>
                         <td class="px-4 py-3 font-medium text-slate-800">{{ $review->institution?->name }}</td>
-                        <td class="px-4 py-3 text-slate-600">{{ $review->author?->name }}</td>
+                        <td class="px-4 py-3 text-slate-600">
+                            {{ $review->author?->name ?? $review->guest_name ?? '—' }}
+                            @unless ($review->author)
+                                <span class="ml-1 text-[10px] uppercase tracking-wide text-slate-400">mehmon</span>
+                            @endunless
+                        </td>
                         <td class="px-4 py-3">
                             <span class="flex items-center gap-0.5 text-amber-500">
                                 @for ($i = 1; $i <= 5; $i++)
@@ -28,7 +33,7 @@
                                 @endfor
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-slate-600 max-w-xs truncate">{{ $review->body }}</td>
+                        <td class="px-4 py-3 text-slate-600 max-w-xs truncate">{{ $review->body ?? '(izohsiz, faqat baho)' }}</td>
                         <td class="px-4 py-3">
                             <x-admin.row-actions
                                 :editRoute="route('admin.reviews.edit', $review)" editPermission="reviews.update"

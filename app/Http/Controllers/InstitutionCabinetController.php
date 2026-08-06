@@ -39,7 +39,7 @@ class InstitutionCabinetController extends Controller
             : collect();
 
         $conversations = $ctx['institution']
-            ? $ctx['institution']->conversations()->with('parent')->latest('last_message_at')->take(10)->get()
+            ? $ctx['institution']->conversations()->with(['parent', 'teacher'])->latest('last_message_at')->take(10)->get()
             : collect();
 
         $reviews = $ctx['institution']
@@ -63,7 +63,7 @@ class InstitutionCabinetController extends Controller
             'time' => $a->created_at,
         ])->concat($conversations->map(fn ($c) => [
             'type' => 'conversation',
-            'text' => ($c->parent?->name ?? 'Foydalanuvchi').' chatda yozdi',
+            'text' => ($c->participant?->name ?? 'Foydalanuvchi').' chatda yozdi',
             'time' => $c->last_message_at ?? $c->created_at,
         ]))->concat($reviews->map(fn ($r) => [
             'type' => 'review',
@@ -157,12 +157,15 @@ class InstitutionCabinetController extends Controller
         $ctx = $this->context($request);
         $institution = $ctx['institution'];
 
-        $unreadFromParent = fn ($q) => $q->where('sender_type', 'parent')->whereNull('read_at');
+        // Diqqat: 'parent' bilan qattiq bog'lanmagan — endi ustoz ham xabar yozishi
+        // mumkin (ADR-0003), shuning uchun "institution emas" bo'lgan har qanday
+        // yuboruvchi o'qilmagan hisoblanadi (sender_type parent yoki teacher bo'lishi mumkin).
+        $unreadFromParticipant = fn ($q) => $q->where('sender_type', '!=', 'institution')->whereNull('read_at');
 
         $conversations = $institution
             ? $institution->conversations()
-                ->with(['parent', 'messages' => fn ($q) => $q->latest()->limit(1)])
-                ->withCount(['messages as unread_count' => $unreadFromParent])
+                ->with(['parent', 'teacher', 'messages' => fn ($q) => $q->latest()->limit(1)])
+                ->withCount(['messages as unread_count' => $unreadFromParticipant])
                 ->latest('last_message_at')
                 ->get()
             : collect();
@@ -175,15 +178,20 @@ class InstitutionCabinetController extends Controller
         $activeChild = null;
 
         if ($active) {
-            // Muassasa suhbatni ochganda ota-onadan kelgan o'qilmagan xabarlar real
+            // Muassasa suhbatni ochganda ota-ona/ustozdan kelgan o'qilmagan xabarlar real
             // belgilanadi (Message.read_at) — badge son shunga qarab kamayadi.
-            $active->messages()->where('sender_type', 'parent')->whereNull('read_at')->update(['read_at' => now()]);
+            $active->messages()->where('sender_type', '!=', 'institution')->whereNull('read_at')->update(['read_at' => now()]);
             $active->unread_count = 0;
 
-            $activeChild = $institution?->applications()
-                ->where('parent_user_id', $active->parent_user_id)
-                ->latest()
-                ->first();
+            // Faqat ota-ona suhbatlarida mazmunli (bola bo'yicha ariza) — ustoz
+            // suhbatida $activeChild har doim null qoladi, UI shunga qarab
+            // participant telefonini ko'rsatadi (quyida).
+            $activeChild = ($institution && $active->parent_user_id)
+                ? $institution->applications()
+                    ->where('parent_user_id', $active->parent_user_id)
+                    ->latest()
+                    ->first()
+                : null;
 
             // Har bir xabar qaysi kun ostida va o'sha kun bo'linuvchisi ("Bugun"/"Kecha"/sana)
             // ko'rsatilishi kerakligini oldindan hisoblab beramiz — blade faqat chizadi.
@@ -483,11 +491,12 @@ class InstitutionCabinetController extends Controller
                 'excursions' => $institution
                     ? $institution->applications()->where('type', 'excursion')->where('status', 'pending')->count()
                     : 0,
-                // Sidebar badge — jami suhbatlar emas, ota-onadan o'qilmagan xabari bor
-                // suhbatlar soni (Message.read_at asosida, real).
+                // Sidebar badge — jami suhbatlar emas, ota-ona/ustozdan o'qilmagan xabari
+                // bor suhbatlar soni (Message.read_at asosida, real; ADR-0003 — ustoz ham
+                // hisobga olinadi).
                 'conversations' => $institution
                     ? $institution->conversations()
-                        ->whereHas('messages', fn ($q) => $q->where('sender_type', 'parent')->whereNull('read_at'))
+                        ->whereHas('messages', fn ($q) => $q->where('sender_type', '!=', 'institution')->whereNull('read_at'))
                         ->count()
                     : 0,
                 // Real e'lonlar soni (Vacancy) — nomzodlar/holat boshqaruvi hali ulanmagan

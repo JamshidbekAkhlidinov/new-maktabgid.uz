@@ -12,7 +12,7 @@ class Vacancy extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'institution_id', 'org_name', 'salary_range', 'employment_type',
+        'legacy_id', 'title', 'institution_id', 'org_name', 'salary_range', 'employment_type',
         'specialization_key', 'posted_by_user_id', 'expires_at',
     ];
 

@@ -1,8 +1,18 @@
 @php($institution = $institution ?? null)
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-    <x-admin.input name="name" label="Nomi" :value="$institution?->name" required />
+{{-- Uch tillilik (2026-08-06) — quyidagi maydonlar har bir til uchun alohida
+     saqlanadi ({"uz":..,"ru":..,"en":..}); saytda foydalanuvchi tanlagan tilga
+     mos matn avtomatik ko'rsatiladi (bo'sh bo'lsa o'zbekchaga tushadi). --}}
+<div class="rounded-lg border border-slate-200 p-4 mb-5">
+    <p class="text-sm font-medium text-slate-700 mb-3">Nomi <span class="text-slate-400 font-normal">(uch tilda)</span></p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <x-admin.input name="name_uz" label="O'zbekcha" :value="old('name_uz', $institution?->getTranslation('name', 'uz'))" required />
+        <x-admin.input name="name_ru" label="Ruscha" :value="old('name_ru', $institution?->getTranslation('name', 'ru'))" />
+        <x-admin.input name="name_en" label="Inglizcha" :value="old('name_en', $institution?->getTranslation('name', 'en'))" />
+    </div>
+</div>
 
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
     <x-admin.select name="type" label="Turi" :value="$institution?->type" required :options="[
         'maktab' => 'Maktab',
         'bogcha' => 'Bog\'cha',
@@ -16,29 +26,115 @@
     <x-admin.select name="district_id" label="Tuman" placeholder="— Tanlanmagan —"
         :value="$institution?->district_id" :options="$districts->pluck('name', 'id')" />
 
-    <x-admin.input name="address" label="Manzil" :value="$institution?->address" />
     <x-admin.input name="lang" label="Ta'lim tili" :value="$institution?->lang" />
 
     <x-admin.input name="lat" label="Kenglik (lat)" type="number" :value="$institution?->lat" step="0.0000001" />
     <x-admin.input name="lng" label="Uzunlik (lng)" type="number" :value="$institution?->lng" step="0.0000001" />
 
     <x-admin.input name="monthly_price" label="Oylik narx (so'm)" type="number" :value="$institution?->monthly_price" />
-    <x-admin.input name="grades" label="Sinflar / yosh guruhlari" :value="$institution?->grades" />
-
-    <x-admin.input name="work_hours" label="Ish vaqti" :value="$institution?->work_hours" placeholder="08:00–18:00" />
-    <x-admin.input name="badge" label="Belgi (badge)" :value="$institution?->badge" />
 
     <x-admin.input name="rating" label="Reyting (0–5)" type="number" step="0.1" :value="$institution?->rating" />
     <x-admin.input name="review_count" label="Sharhlar soni" type="number" :value="$institution?->review_count" />
+
+    <x-admin.input name="location_url" label="Xarita havolasi" :value="$institution?->location_url" placeholder="https://yandex.uz/maps/..." />
+
+    <x-admin.input name="slug" label="Slug (URL manzili)" :value="$institution?->slug" placeholder="masalan-maktab-nomi" />
 </div>
 
-<div class="mt-5">
-    <x-admin.textarea name="about" label="Tavsif" :value="$institution?->about" rows="4" />
+<div class="rounded-lg border border-slate-200 p-4 mt-5">
+    <p class="text-sm font-medium text-slate-700 mb-3">Manzil <span class="text-slate-400 font-normal">(uch tilda)</span></p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <x-admin.input name="address_uz" label="O'zbekcha" :value="old('address_uz', $institution?->getTranslation('address', 'uz'))" />
+        <x-admin.input name="address_ru" label="Ruscha" :value="old('address_ru', $institution?->getTranslation('address', 'ru'))" />
+        <x-admin.input name="address_en" label="Inglizcha" :value="old('address_en', $institution?->getTranslation('address', 'en'))" />
+    </div>
+</div>
+
+<div class="rounded-lg border border-slate-200 p-4 mt-5">
+    <p class="text-sm font-medium text-slate-700 mb-3">Mo'ljal <span class="text-slate-400 font-normal">(uch tilda, masalan "Farxod bozori yonida")</span></p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <x-admin.input name="refer_point_uz" label="O'zbekcha" :value="old('refer_point_uz', $institution?->getTranslation('refer_point', 'uz'))" />
+        <x-admin.input name="refer_point_ru" label="Ruscha" :value="old('refer_point_ru', $institution?->getTranslation('refer_point', 'ru'))" />
+        <x-admin.input name="refer_point_en" label="Inglizcha" :value="old('refer_point_en', $institution?->getTranslation('refer_point', 'en'))" />
+    </div>
+</div>
+
+<div class="rounded-lg border border-slate-200 p-4 mt-5">
+    <p class="text-sm font-medium text-slate-700 mb-3">Sinflar / yosh guruhlari <span class="text-slate-400 font-normal">(uch tilda)</span></p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <x-admin.input name="grades_uz" label="O'zbekcha" :value="old('grades_uz', $institution?->getTranslation('grades', 'uz'))" />
+        <x-admin.input name="grades_ru" label="Ruscha" :value="old('grades_ru', $institution?->getTranslation('grades', 'ru'))" />
+        <x-admin.input name="grades_en" label="Inglizcha" :value="old('grades_en', $institution?->getTranslation('grades', 'en'))" />
+    </div>
+</div>
+
+<div class="rounded-lg border border-slate-200 p-4 mt-5">
+    <p class="text-sm font-medium text-slate-700 mb-3">Ish vaqti <span class="text-slate-400 font-normal">(uch tilda)</span></p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <x-admin.input name="work_hours_uz" label="O'zbekcha" :value="old('work_hours_uz', $institution?->getTranslation('work_hours', 'uz'))" placeholder="08:00–18:00" />
+        <x-admin.input name="work_hours_ru" label="Ruscha" :value="old('work_hours_ru', $institution?->getTranslation('work_hours', 'ru'))" />
+        <x-admin.input name="work_hours_en" label="Inglizcha" :value="old('work_hours_en', $institution?->getTranslation('work_hours', 'en'))" />
+    </div>
+</div>
+
+<div class="rounded-lg border border-slate-200 p-4 mt-5">
+    <p class="text-sm font-medium text-slate-700 mb-3">Belgi (badge) <span class="text-slate-400 font-normal">(uch tilda, ixtiyoriy)</span></p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <x-admin.input name="badge_uz" label="O'zbekcha" :value="old('badge_uz', $institution?->getTranslation('badge', 'uz'))" />
+        <x-admin.input name="badge_ru" label="Ruscha" :value="old('badge_ru', $institution?->getTranslation('badge', 'ru'))" />
+        <x-admin.input name="badge_en" label="Inglizcha" :value="old('badge_en', $institution?->getTranslation('badge', 'en'))" />
+    </div>
+</div>
+
+<div class="rounded-lg border border-slate-200 p-4 mt-5">
+    <p class="text-sm font-medium text-slate-700 mb-3">Tavsif <span class="text-slate-400 font-normal">(uch tilda)</span></p>
+    <div class="grid grid-cols-1 gap-4">
+        <x-admin.textarea name="about_uz" label="O'zbekcha" :value="old('about_uz', $institution?->getTranslation('about', 'uz'))" rows="4" />
+        <x-admin.textarea name="about_ru" label="Ruscha" :value="old('about_ru', $institution?->getTranslation('about', 'ru'))" rows="4" />
+        <x-admin.textarea name="about_en" label="Inglizcha" :value="old('about_en', $institution?->getTranslation('about', 'en'))" rows="4" />
+    </div>
+</div>
+
+<div class="mt-6">
+    <p class="block text-sm font-medium text-slate-700 mb-2">Telefon raqamlari</p>
+    @php($myPhones = old('phone_numbers', $institution?->phone_numbers ?? []))
+    <div data-repeater="phone_numbers">
+        <div data-repeater-rows class="space-y-2">
+            @forelse ($myPhones as $p)
+                <div class="flex gap-2 items-center" data-repeater-row>
+                    <input type="text" name="phone_numbers[]" value="{{ $p }}" placeholder="+998 90 123-45-67" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                    <button type="button" data-repeater-remove title="O'chirish"><x-admin.icon name="trash" class="w-4 h-4 text-rose-500" /></button>
+                </div>
+            @empty
+            @endforelse
+        </div>
+        <template data-repeater-template>
+            <div class="flex gap-2 items-center" data-repeater-row>
+                <input type="text" name="phone_numbers[]" placeholder="+998 90 123-45-67" class="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                <button type="button" data-repeater-remove title="O'chirish"><x-admin.icon name="trash" class="w-4 h-4 text-rose-500" /></button>
+            </div>
+        </template>
+        <button type="button" data-repeater-add class="mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+            <x-admin.icon name="plus" class="w-4 h-4" /> Telefon qo'shish
+        </button>
+    </div>
+</div>
+
+<div class="mt-6">
+    <p class="block text-sm font-medium text-slate-700 mb-2">Ijtimoiy tarmoqlar</p>
+    @php($mySocial = $institution?->social_links ?? [])
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <x-admin.input name="social_links[instagram]" label="Instagram" :value="$mySocial['instagram'] ?? null" placeholder="https://instagram.com/..." />
+        <x-admin.input name="social_links[facebook]" label="Facebook" :value="$mySocial['facebook'] ?? null" placeholder="https://facebook.com/..." />
+        <x-admin.input name="social_links[telegram]" label="Telegram" :value="$mySocial['telegram'] ?? null" placeholder="https://t.me/..." />
+        <x-admin.input name="social_links[website]" label="Veb-sayt" :value="$mySocial['website'] ?? null" placeholder="https://..." />
+    </div>
 </div>
 
 <div class="mt-5 flex flex-wrap gap-6">
     <x-admin.checkbox name="works_saturday" label="Shanba kuni ishlaydi" :checked="(bool) $institution?->works_saturday" />
     <x-admin.checkbox name="accepting" label="Hozir qabul qilmoqda" :checked="$institution ? (bool) $institution->accepting : true" />
+    <x-admin.checkbox name="is_active" label="Sahifa faol (saytda ko'rinadi)" :checked="$institution ? (bool) $institution->is_active : true" />
 </div>
 
 <div class="mt-5">
@@ -59,7 +155,7 @@
 
 {{-- ==================================================================
      2026-07-15: Muassasa kabinetidagi "Muassasa profili" sahifasi bilan
-     bir xil imkoniyat — /maktab/{id} ommaviy sahifasida ko'rinadigan
+     bir xil imkoniyat — /{slug} ommaviy sahifasida ko'rinadigan
      barcha bo'lim shu yerdan (admin tomonidan ham) to'ldiriladi:
      qulayliklar, o'qituvchilar, yo'nalish/dastur, darslar, qabul
      bosqichlari, ko'rsatkichlar, narxlar. Gallereya/video va yutuqlar

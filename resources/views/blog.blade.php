@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>Blog — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ __('blog.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,16 +21,16 @@
 
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
-    <x-maktabgid.page-head icon="book" kicker="Ota-onalar uchun blog" title="Foydali maqolalar va maslahatlar" sub="Taʼlim, tarbiya, psixologiya va sogʻliq boʻyicha mutaxassis maqolalari." />
+    <x-maktabgid.page-head icon="book" kicker="{{ __('blog.kicker') }}" title="{{ __('blog.title') }}" sub="{{ __('blog.sub') }}" />
 
     <div class="wrap section">
         <a href="{{ route('blog.show', $feat['id']) }}" class="feat-article">
             <div class="feat-media" style="{{ MaktabgidData::mediaStyle($feat, 135) }}"><span class="blog-tag">{{ $feat['tag'] }}</span></div>
             <div class="feat-body">
-                <span class="feat-kicker">Tavsiya etilgan maqola</span>
+                <span class="feat-kicker">{{ __('blog.featured_label') }}</span>
                 <h2>{{ $feat['title'] }}</h2>
                 <p>{{ $feat['excerpt'] }}</p>
-                <div class="article-by"><x-maktabgid.avatar :name="$feat['author']" :size="36" /><div><b>{{ $feat['author'] }}</b><span>{{ $feat['date'] }} · {{ $feat['read'] }} oʻqish</span></div></div>
+                <div class="article-by"><x-maktabgid.avatar :name="$feat['author']" :size="36" /><div><b>{{ $feat['author'] }}</b><span>{{ $feat['date'] }} · {{ __('blog.read_time', ['read' => $feat['read']]) }}</span></div></div>
             </div>
         </a>
 

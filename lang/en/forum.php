@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title' => 'Forum',
+    'kicker' => 'Parents forum',
+    'title' => 'Ask questions, share experience',
+    'sub' => 'Registered parents start topics, and others reply with answers and advice.',
+    'new_thread' => 'New topic',
+    'all_categories' => 'All',
+    'close' => 'Close',
+    'new_thread_modal_title' => 'Start a new topic',
+    'new_thread_modal_sub' => 'Write your question — other parents will reply',
+    'category_label' => 'Category',
+    'title_label' => 'Title',
+    'title_placeholder' => 'Briefly describe your question',
+    'body_label' => 'Message',
+    'body_placeholder' => 'Write the details…',
+    'publish_thread' => 'Publish topic',
+    'thread_page_title' => 'Topic',
+    'back_to_forum' => 'Back to forum',
+    'views_count' => ':count views',
+    'replies_count' => ':count replies',
+    'reply_placeholder' => 'Write your reply…',
+    'reply_submit' => 'Reply',
+];

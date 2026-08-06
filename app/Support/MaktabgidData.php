@@ -326,6 +326,7 @@ class MaktabgidData
 
         return [
             'id' => $institution->id,
+            'slug' => $institution->slug,
             'name' => $institution->name,
             'cat' => $institution->type,
             'about' => $institution->about,
@@ -518,7 +519,16 @@ class MaktabgidData
 
     public static function schools(): array
     {
-        return Institution::with(['district', 'specializations', 'achievements', 'prices'])
+        // is_active=false — eski (yoki admin tomonidan) yopilgan yozuv, ommaviy katalogda
+        // ko'rsatilmaydi (2026-08-06, LegacyInstitutionSeeder). Admin panel buni hisobga
+        // olmaydi — Admin\InstitutionController barcha yozuvlarni ko'rsatadi/boshqaradi.
+        //
+        // 'media' ham shu yerda eager-load qilinadi (2026-08-06) — kataloq kartochkalarida
+        // (school-card) haqiqiy birinchi galereya rasmi ko'rsatilishi uchun (avval faqat
+        // bitta muassasa sahifasida yuklanardi, kataloq har doim monogram/gradient
+        // ko'rsatardi — real rasm bo'lsa ham). Bitta eager-load so'rovi, N+1 emas.
+        return Institution::with(['district', 'specializations', 'achievements', 'prices', 'media'])
+            ->where('is_active', true)
             ->orderBy('id')
             ->get()
             ->map(fn (Institution $institution) => self::mapInstitution($institution))
@@ -527,7 +537,20 @@ class MaktabgidData
 
     public static function school(int $id): ?array
     {
-        $institution = Institution::with(['district', 'specializations', 'media', 'achievements', 'prices'])->find($id);
+        $institution = Institution::with(['district', 'specializations', 'media', 'achievements', 'prices'])
+            ->where('is_active', true)
+            ->find($id);
+
+        return $institution ? self::mapInstitution($institution) : null;
+    }
+
+    /** Ommaviy profil sahifasi endi /{slug} orqali ochiladi (2026-08-06) — /maktab/{id} emas. */
+    public static function schoolBySlug(string $slug): ?array
+    {
+        $institution = Institution::with(['district', 'specializations', 'media', 'achievements', 'prices'])
+            ->where('is_active', true)
+            ->where('slug', $slug)
+            ->first();
 
         return $institution ? self::mapInstitution($institution) : null;
     }
@@ -564,10 +587,10 @@ class MaktabgidData
         }
 
         return $query->get()->map(fn ($r) => [
-            'n' => self::shortName($r->author?->name ?? 'Foydalanuvchi'),
+            'n' => self::shortName($r->author?->name ?? $r->guest_name ?? 'Mehmon'),
             'r' => $r->rating,
             'ago' => $r->created_at?->diffForHumans() ?? '',
-            't' => $r->body,
+            't' => $r->body ?? '',
         ])->all();
     }
 

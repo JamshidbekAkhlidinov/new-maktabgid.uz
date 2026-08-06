@@ -14,8 +14,8 @@
 
 <x-institution.shell
     active="teachers"
-    title="O'qituvchilar"
-    sub="Muassasangiz ustozlari — profil sahifasida ko'rinadi"
+    title="{{ __('cabinet_institution.nav_teachers') }}"
+    sub="{{ __('cabinet_institution.teachers_sub') }}"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -24,9 +24,9 @@
     @if ($institution)
 
     <div class="idash-toolbar">
-        <span class="idash-chart-meta">{{ count($mockTeachers) }} ta o'qituvchi · profil sahifasida ko'rinadi</span>
+        <span class="idash-chart-meta">{{ __('cabinet_institution.teachers_toolbar_meta', ['count' => count($mockTeachers)]) }}</span>
         <button type="button" class="btn btn-primary sm" data-modal-open="add-teacher-modal">
-            <x-maktabgid.icon name="plus" :width="15" :height="15" /> O'qituvchi qo'shish
+            <x-maktabgid.icon name="plus" :width="15" :height="15" /> {{ __('cabinet_institution.add_teacher') }}
         </button>
     </div>
 
@@ -41,8 +41,8 @@
                             <span>{{ $t['subject'] }} · {{ $t['exp'] }}</span>
                         </div>
                         <div class="idash-card-actions">
-                            <button type="button" class="idash-lead-iconbtn" title="Tahrirlash" data-modal-open="edit-teacher-{{ $loop->index }}"><x-maktabgid.icon name="edit" :width="14" :height="14" /></button>
-                            <button type="button" class="idash-lead-iconbtn danger" title="O'chirish"><x-maktabgid.icon name="close" :width="14" :height="14" /></button>
+                            <button type="button" class="idash-lead-iconbtn" title="{{ __('cabinet_institution.edit') }}" data-modal-open="edit-teacher-{{ $loop->index }}"><x-maktabgid.icon name="edit" :width="14" :height="14" /></button>
+                            <button type="button" class="idash-lead-iconbtn danger" title="{{ __('cabinet_institution.delete') }}"><x-maktabgid.icon name="close" :width="14" :height="14" /></button>
                         </div>
                     </div>
                     <span class="idash-tcard-edu">{{ $t['edu'] }}</span>
@@ -57,7 +57,7 @@
     </div>
 
     <div class="idash-badge-soft">
-        <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Bu bo'lim demo ma'lumot bilan ko'rsatilmoqda — tez orada muassasa profilidagi real o'qituvchilar ro'yxati bilan sinxronlashadi
+        <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> {{ __('cabinet_institution.teachers_demo_notice') }}
     </div>
 
     {{-- ===== "O'qituvchi qo'shish" modali — real Teacher/Institution bog'lanishi hali yo'q
@@ -66,42 +66,42 @@
     <x-maktabgid.modal-shell id="add-teacher-modal" :width="480">
         <div class="js-modal-body">
             <div class="modal-head js-fake-form-head">
-                <h3>O'qituvchi qo'shish</h3>
+                <h3>{{ __('cabinet_institution.add_teacher') }}</h3>
             </div>
 
             <form class="form js-fake-form">
-                <x-maktabgid.field label="Ism-familiya" icon="user">
+                <x-maktabgid.field label="{{ __('cabinet_institution.field_fullname') }}" icon="user">
                     <input type="text" required placeholder="Masalan, Alisher Normatov" />
                 </x-maktabgid.field>
                 <div class="form-row2">
-                    <x-maktabgid.field label="Lavozimi / fani" icon="bag">
+                    <x-maktabgid.field label="{{ __('cabinet_institution.field_position_subject') }}" icon="bag">
                         <input type="text" required placeholder="Matematika" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="Tajriba (yil)" icon="clock">
+                    <x-maktabgid.field label="{{ __('cabinet_institution.field_experience_years') }}" icon="clock">
                         <input type="text" required placeholder="10 yil" />
                     </x-maktabgid.field>
                 </div>
-                <x-maktabgid.field label="Ma'lumoti" hint="OTM, bitirgan yil" icon="book">
+                <x-maktabgid.field label="{{ __('cabinet_institution.field_education') }}" hint="{{ __('cabinet_institution.hint_edu') }}" icon="book">
                     <input type="text" placeholder="TDPU — 2009-yil" />
                 </x-maktabgid.field>
-                <x-maktabgid.field label="Yutuqlari" hint="vergul bilan ajrating" icon="award">
+                <x-maktabgid.field label="{{ __('cabinet_institution.field_achievements') }}" hint="{{ __('cabinet_institution.hint_comma_separated') }}" icon="award">
                     <textarea rows="3" placeholder="Yil o'qituvchisi — 2023, Respublika murabbiyi"></textarea>
                 </x-maktabgid.field>
 
                 <label class="upload-slot js-fake-photo" style="flex-direction:row;justify-content:center;padding:16px">
                     <input type="file" accept="image/*" hidden />
                     <x-maktabgid.icon name="camera" :width="18" :height="18" />
-                    <span>Foto yuklash (ixtiyoriy)</span>
+                    <span>{{ __('cabinet_institution.upload_photo_optional') }}</span>
                 </label>
 
                 <div style="display:flex;gap:10px;margin-top:4px">
-                    <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">Saqlash</button>
-                    <button class="btn btn-ghost js-modal-close" type="button">Bekor qilish</button>
+                    <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">{{ __('cabinet_institution.save') }}</button>
+                    <button class="btn btn-ghost js-modal-close" type="button">{{ __('cabinet_institution.cancel') }}</button>
                 </div>
             </form>
 
-            <x-maktabgid.success-note title="O'qituvchi qo'shildi!" :close-target="true" class="js-fake-success" style="display:none">
-                Profil sahifasidagi "O'qituvchilar" bo'limida ko'rinadi.
+            <x-maktabgid.success-note title="{{ __('cabinet_institution.teacher_added_title') }}" :close-target="true" class="js-fake-success" style="display:none">
+                {{ __('cabinet_institution.teacher_added_body') }}
             </x-maktabgid.success-note>
         </div>
     </x-maktabgid.modal-shell>
@@ -111,42 +111,42 @@
         <x-maktabgid.modal-shell id="edit-teacher-{{ $loop->index }}" :width="480">
             <div class="js-modal-body">
                 <div class="modal-head js-fake-form-head">
-                    <h3>O'qituvchini tahrirlash</h3>
+                    <h3>{{ __('cabinet_institution.edit_teacher') }}</h3>
                 </div>
 
                 <form class="form js-fake-form">
-                    <x-maktabgid.field label="Ism-familiya" icon="user">
+                    <x-maktabgid.field label="{{ __('cabinet_institution.field_fullname') }}" icon="user">
                         <input type="text" value="{{ $t['name'] }}" required />
                     </x-maktabgid.field>
                     <div class="form-row2">
-                        <x-maktabgid.field label="Lavozimi / fani" icon="bag">
+                        <x-maktabgid.field label="{{ __('cabinet_institution.field_position_subject') }}" icon="bag">
                             <input type="text" value="{{ $t['subject'] }}" required />
                         </x-maktabgid.field>
-                        <x-maktabgid.field label="Tajriba (yil)" icon="clock">
+                        <x-maktabgid.field label="{{ __('cabinet_institution.field_experience_years') }}" icon="clock">
                             <input type="text" value="{{ $t['exp'] }}" required />
                         </x-maktabgid.field>
                     </div>
-                    <x-maktabgid.field label="Ma'lumoti" hint="OTM, bitirgan yil" icon="book">
+                    <x-maktabgid.field label="{{ __('cabinet_institution.field_education') }}" hint="{{ __('cabinet_institution.hint_edu') }}" icon="book">
                         <input type="text" value="{{ $t['edu'] }}" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="Yutuqlari" hint="vergul bilan ajrating" icon="award">
+                    <x-maktabgid.field label="{{ __('cabinet_institution.field_achievements') }}" hint="{{ __('cabinet_institution.hint_comma_separated') }}" icon="award">
                         <textarea rows="3">{{ implode(', ', $t['ach']) }}</textarea>
                     </x-maktabgid.field>
 
                     <label class="upload-slot js-fake-photo" style="flex-direction:row;justify-content:center;padding:16px">
                         <input type="file" accept="image/*" hidden />
                         <x-maktabgid.icon name="camera" :width="18" :height="18" />
-                        <span>Foto yuklash (ixtiyoriy)</span>
+                        <span>{{ __('cabinet_institution.upload_photo_optional') }}</span>
                     </label>
 
                     <div style="display:flex;gap:10px;margin-top:4px">
-                        <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">Saqlash</button>
-                        <button class="btn btn-ghost js-modal-close" type="button">Bekor qilish</button>
+                        <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">{{ __('cabinet_institution.save') }}</button>
+                        <button class="btn btn-ghost js-modal-close" type="button">{{ __('cabinet_institution.cancel') }}</button>
                     </div>
                 </form>
 
-                <x-maktabgid.success-note title="Ma'lumotlar yangilandi!" :close-target="true" class="js-fake-success" style="display:none">
-                    O'zgarishlar profil sahifasida ham aks etadi.
+                <x-maktabgid.success-note title="{{ __('cabinet_institution.data_updated_title') }}" :close-target="true" class="js-fake-success" style="display:none">
+                    {{ __('cabinet_institution.data_updated_body') }}
                 </x-maktabgid.success-note>
             </div>
         </x-maktabgid.modal-shell>

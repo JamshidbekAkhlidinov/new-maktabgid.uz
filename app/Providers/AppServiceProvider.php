@@ -8,7 +8,10 @@ use App\Observers\ForumLikeObserver;
 use App\Observers\ReviewObserver;
 use App\Services\Otp\OtpChannel;
 use App\Services\Otp\TelegramOtpChannel;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -41,5 +44,10 @@ class AppServiceProvider extends ServiceProvider
         // Forum mavzu/javob like_count'i har bir ForumLike CRUD amalidan so'ng
         // avtomatik qayta hisoblanadi (ADR-0002, Faza 2).
         ForumLike::observe(ForumLikeObserver::class);
+
+        // Chat xabar yuborish — spamga qarshi cheklov (ADR-0003, Faza D).
+        RateLimiter::for('chat-message', function (Request $request) {
+            return Limit::perMinute(20)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

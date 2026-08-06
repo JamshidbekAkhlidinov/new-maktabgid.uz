@@ -1,0 +1,46 @@
+<?php
+
+return [
+    'close' => 'Закрыть',
+
+    'login_title' => 'Вход в личный кабинет',
+    'login_subtitle' => 'Войдите в систему по номеру телефона',
+    'phone' => 'Номер телефона',
+    'phone_placeholder' => '+998 90 123 45 67',
+    'password' => 'Пароль',
+    'password_placeholder' => '••••••••',
+    'login_submit' => 'Войти',
+    'no_account' => 'Нет аккаунта?',
+    'register_as_parent' => 'Зарегистрируйтесь как родитель',
+    'im_institution' => 'Я представляю учреждение — добавить учреждение',
+    'im_teacher' => 'Я преподаватель — открыть кабинет преподавателя',
+
+    'parent_title' => 'Создание кабинета родителя',
+    'parent_subtitle' => 'Зарегистрируйтесь за минуту и управляйте своими заявками',
+    'full_name' => 'Имя и фамилия',
+    'name_placeholder_parent' => 'Например, Дилноза Муродова',
+    'age' => 'Ваш возраст',
+    'district' => 'Район проживания',
+    'select_district' => 'Выберите район',
+    'register_submit' => 'Зарегистрироваться',
+    'have_account' => 'Уже есть аккаунт?',
+    'login_word' => 'Войти',
+
+    'institution_title' => 'Открытие кабинета учреждения',
+    'institution_subtitle' => 'Зарегистрируйте свою школу, детский сад или учебный центр',
+    'institution_name' => 'Название учреждения',
+    'institution_name_placeholder' => 'Например, Sodiq School',
+    'institution_type' => 'Тип учреждения',
+    'type_school' => 'Частная школа',
+    'type_kindergarten' => 'Частный детский сад',
+    'type_center' => 'Учебный центр',
+    'responsible_person' => 'Ответственное лицо',
+    'fio_placeholder' => 'Ф.И.О.',
+    'phone_short' => 'Телефон',
+    'phone_placeholder_institution' => '+998 71 200 00 00',
+    'im_parent' => 'Я родитель — открыть кабинет',
+
+    'teacher_title' => 'Открытие кабинета преподавателя',
+    'teacher_subtitle' => 'Зарегистрируйтесь, откликайтесь на вакансии и размещайте резюме',
+    'name_placeholder_teacher' => 'Например, Азиз Каримов',
+];

@@ -80,11 +80,15 @@ class ReviewController extends Controller implements HasMiddleware
     /** @return array<string, mixed> */
     private function validateData(Request $request): array
     {
+        // Muallif: ro'yxatdan o'tgan user_id YOKI mehmon ismi (guest_name) — ikkalasi ham
+        // bo'sh bo'lishi mumkin emas (eski telegram-bot izohlari faqat ism bilan import
+        // qilingan, LegacyReviewSeeder — reviews migration'da user_id/body nullable qilindi).
         return $request->validate([
             'institution_id' => ['required', 'exists:institutions,id'],
-            'user_id' => ['required', 'exists:users,id'],
+            'user_id' => ['nullable', 'exists:users,id', 'required_without:guest_name'],
+            'guest_name' => ['nullable', 'string', 'max:255', 'required_without:user_id'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
-            'body' => ['required', 'string'],
+            'body' => ['nullable', 'string'],
         ]);
     }
 }

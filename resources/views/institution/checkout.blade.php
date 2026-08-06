@@ -1,7 +1,7 @@
 <x-institution.shell
     active="plans"
-    title="Tariflar va obuna"
-    sub="E'loningizni yuqoriga chiqaring"
+    title="{{ __('cabinet_institution.nav_plans') }}"
+    sub="{{ __('cabinet_institution.plans_sub') }}"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -10,7 +10,7 @@
     @if ($institution)
 
     <a href="{{ route('institution.cabinet.plans') }}" class="idash-back-link">
-        <x-maktabgid.icon name="arrowL" :width="16" :height="16" /> Tariflarga qaytish
+        <x-maktabgid.icon name="arrowL" :width="16" :height="16" /> {{ __('cabinet_institution.back_to_plans') }}
     </a>
 
     <div class="js-checkout-wrap">
@@ -18,8 +18,8 @@
             <div class="idash-checkout-row">
                 <div class="panel">
                     <div class="panel-head js-fake-form-head" style="display:block">
-                        <h3>To'lovni rasmiylashtirish</h3>
-                        <p>To'lov usulini tanlang</p>
+                        <h3>{{ __('cabinet_institution.complete_payment') }}</h3>
+                        <p>{{ __('cabinet_institution.choose_payment_method') }}</p>
                     </div>
 
                     <div class="idash-pay-list">
@@ -34,38 +34,38 @@
                     </div>
 
                     <button type="button" class="idash-pay-add">
-                        <x-maktabgid.icon name="plus" :width="16" :height="16" /> Yangi karta qo'shish
+                        <x-maktabgid.icon name="plus" :width="16" :height="16" /> {{ __('cabinet_institution.add_new_card') }}
                     </button>
 
                     <p class="form-note" style="margin-top:18px">
                         <x-maktabgid.icon name="shield" :width="15" :height="15" />
-                        To'lov xavfsiz amalga oshiriladi. Istalgan vaqtda bekor qilishingiz mumkin.
+                        {{ __('cabinet_institution.payment_secure_note') }}
                     </p>
                 </div>
 
                 <div class="idash-order-card">
-                    <h3>Buyurtma</h3>
-                    <div class="idash-order-row"><span>Muassasa</span><span>{{ $institution->name }}</span></div>
-                    <div class="idash-order-row"><span>Tarif</span><span>{{ $plan['name'] }} · {{ $plan['dur'] }}</span></div>
-                    <div class="idash-order-row"><span>Amal qilish</span><span>{{ $plan['days'] }} kun</span></div>
-                    <div class="idash-order-row"><span>Lidlar</span><span>{{ $plan['leadsLabel'] }}</span></div>
+                    <h3>{{ __('cabinet_institution.order') }}</h3>
+                    <div class="idash-order-row"><span>{{ __('cabinet_institution.institution_word') }}</span><span>{{ $institution->name }}</span></div>
+                    <div class="idash-order-row"><span>{{ __('cabinet_institution.plan_word') }}</span><span>{{ $plan['name'] }} · {{ $plan['dur'] }}</span></div>
+                    <div class="idash-order-row"><span>{{ __('cabinet_institution.validity') }}</span><span>{{ __('cabinet_institution.days_count', ['count' => $plan['days']]) }}</span></div>
+                    <div class="idash-order-row"><span>{{ __('cabinet_institution.nav_leads') }}</span><span>{{ $plan['leadsLabel'] }}</span></div>
 
                     <div class="idash-order-total">
-                        <b>Jami</b>
-                        <b>{{ $plan['price'] }} <span style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:var(--ink-3)">so'm</span></b>
+                        <b>{{ __('cabinet_institution.total') }}</b>
+                        <b>{{ $plan['price'] }} <span style="font-family:var(--font-sans);font-size:13px;font-weight:600;color:var(--ink-3)">{{ __('cabinet_institution.currency_sum') }}</span></b>
                     </div>
 
                     <button type="submit" class="btn btn-primary idash-order-cta">
-                        <x-maktabgid.icon name="lock" :width="16" :height="16" /> {{ $plan['price'] }} so'm to'lash
+                        <x-maktabgid.icon name="lock" :width="16" :height="16" /> {{ __('cabinet_institution.pay_amount', ['amount' => $plan['price']]) }}
                     </button>
                 </div>
             </div>
         </form>
 
-        <x-maktabgid.success-note title="To'lov muvaffaqiyatli amalga oshirildi!" class="js-fake-success" style="display:none">
-            <b>{{ $plan['name'] }}</b> tarifi faollashtirildi (demo rejim). Real to'lov tizimi ulanganda bu yerda haqiqiy tranzaksiya amalga oshiriladi va e'loningiz darhol yuqoriga chiqadi.
+        <x-maktabgid.success-note title="{{ __('cabinet_institution.payment_success_title') }}" class="js-fake-success" style="display:none">
+            <b>{{ $plan['name'] }}</b> {{ __('cabinet_institution.payment_success_body') }}
             <br /><br />
-            <a href="{{ route('institution.cabinet') }}" class="btn btn-primary">Boshqaruv paneliga qaytish</a>
+            <a href="{{ route('institution.cabinet') }}" class="btn btn-primary">{{ __('cabinet_institution.back_to_dashboard') }}</a>
         </x-maktabgid.success-note>
     </div>
 

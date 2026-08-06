@@ -6,10 +6,10 @@
     <div class="wrap">
         <div class="sec-head">
             <div>
-                <h2>Vakansiyalar</h2>
-                <p>Taʼlim sohasidagi eng soʻnggi ish oʻrinlari</p>
+                <h2>{{ __('home.vacancies_title') }}</h2>
+                <p>{{ __('home.vacancies_sub') }}</p>
             </div>
-            <a class="more-link" href="#">Barchasi <x-maktabgid.icon name="arrowR" :width="17" :height="17" /></a>
+            <a class="more-link" href="#">{{ __('home.view_all') }} <x-maktabgid.icon name="arrowR" :width="17" :height="17" /></a>
         </div>
         <div class="vac-grid">
             @foreach ($vacancies as $v)

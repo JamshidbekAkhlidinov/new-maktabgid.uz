@@ -13,7 +13,7 @@ class VacancyApplication extends Model
     use HasFactory;
 
     protected $fillable = [
-        'vacancy_id', 'teacher_user_id', 'full_name', 'phone', 'note',
+        'legacy_id', 'vacancy_id', 'teacher_user_id', 'full_name', 'phone', 'note',
         'resume_path', 'resume_disk', 'resume_original_name', 'status',
     ];
 

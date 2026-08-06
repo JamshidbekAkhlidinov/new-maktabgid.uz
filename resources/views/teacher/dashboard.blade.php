@@ -2,10 +2,10 @@
     // Mock: ustoz kabineti hali real ma'lumotga ulanmagan (TeacherCabinetController'ga qarang) —
     // shu sahifadagi barcha statistika va ro'yxatlar namunaviy.
     $stats = [
-        ['value' => '340', 'label' => 'Rezyume ko\'rishlar'],
-        ['value' => '18', 'label' => 'Yangi takliflar'],
-        ['value' => '12', 'label' => 'Mos vakansiyalar'],
-        ['value' => '4.9', 'label' => 'Muassasa reytingi'],
+        ['value' => '340', 'label' => __('cabinet_teacher.stat_resume_views')],
+        ['value' => '18', 'label' => __('cabinet_teacher.stat_new_offers')],
+        ['value' => '12', 'label' => __('cabinet_teacher.stat_matching_vacancies')],
+        ['value' => '4.9', 'label' => __('cabinet_teacher.stat_institution_rating')],
     ];
     $offers = [
         ['role' => 'Ingliz tili o\'qituvchisi', 'org' => 'Bilim Ziyo maktabi', 'salary' => '6 000 000', 'status' => 'new', 'stLabel' => 'Yangi', 'ago' => '2 soat oldin', 'grad' => 'linear-gradient(140deg,#0e8a86,#0a625e)'],
@@ -18,9 +18,14 @@
         'seen' => ['bg' => 'var(--accent-soft)', 'color' => '#b45309'],
         'declined' => ['bg' => 'var(--surface-2)', 'color' => 'var(--ink-3)'],
     ];
+    $offerStatusLabel = [
+        'new' => __('cabinet_teacher.offer_status_new'),
+        'seen' => __('cabinet_teacher.offer_status_seen'),
+        'declined' => __('cabinet_teacher.offer_status_declined'),
+    ];
 @endphp
 
-<x-teacher.shell active="dashboard" title="Boshqaruv paneli" sub="Rezyume ko'rsatkichlari va takliflar" :teacher="$teacher" :counts="$counts">
+<x-teacher.shell active="dashboard" title="{{ __('cabinet_teacher.nav_dashboard') }}" sub="{{ __('cabinet_teacher.dashboard_sub') }}" :teacher="$teacher" :counts="$counts">
 
     {{-- Diqqat: $teacher null bo'lishi mumkin (mehmon /teacher-cabinet ga kirsa) — shell
          o'zining @unless($teacher) bilan "kirish kerak" ekranini ko'rsatadi, lekin bu slot
@@ -34,7 +39,7 @@
                 <b>{{ $teacher['name'] }}</b>
                 <p>{{ $teacher['role'] }} · {{ $teacher['exp'] }}</p>
                 <div style="margin-top:14px">
-                    <div class="idash-t-hero-bar-row"><span>Profil to'ldirilgani</span><span>{{ $teacher['completeness'] }}%</span></div>
+                    <div class="idash-t-hero-bar-row"><span>{{ __('cabinet_teacher.profile_completeness') }}</span><span>{{ $teacher['completeness'] }}%</span></div>
                     <div class="idash-t-hero-track"><i style="width:{{ $teacher['completeness'] }}%"></i></div>
                 </div>
             </div>
@@ -48,8 +53,8 @@
 
     <div class="panel">
         <div class="panel-head">
-            <h3 style="font-size:18px">So'nggi takliflar</h3>
-            <a href="{{ route('teacher.cabinet.offers') }}" class="btn btn-ghost sm">Barchasi <x-maktabgid.icon name="arrowR" :width="15" :height="15" /></a>
+            <h3 style="font-size:18px">{{ __('cabinet_teacher.recent_offers') }}</h3>
+            <a href="{{ route('teacher.cabinet.offers') }}" class="btn btn-ghost sm">{{ __('cabinet_teacher.see_all') }} <x-maktabgid.icon name="arrowR" :width="15" :height="15" /></a>
         </div>
         <div style="display:flex;flex-direction:column;gap:10px">
             @foreach ($offers as $o)
@@ -57,9 +62,9 @@
                     <span class="idash-offer-ico" style="background:{{ $o['grad'] }}">{{ \App\Support\MaktabgidData::monogram($o['org']) }}</span>
                     <div class="idash-offer-main">
                         <b>{{ $o['role'] }}</b>
-                        <span>{{ $o['org'] }} · {{ $o['salary'] }} so'm</span>
+                        <span>{{ $o['org'] }} · {{ $o['salary'] }} {{ __('cabinet_teacher.currency_sum') }}</span>
                     </div>
-                    <span class="idash-status-pill" style="background:{{ $offerStatusStyle[$o['status']]['bg'] }};color:{{ $offerStatusStyle[$o['status']]['color'] }}">{{ $o['stLabel'] }}</span>
+                    <span class="idash-status-pill" style="background:{{ $offerStatusStyle[$o['status']]['bg'] }};color:{{ $offerStatusStyle[$o['status']]['color'] }}">{{ $offerStatusLabel[$o['status']] ?? $o['stLabel'] }}</span>
                     <span style="font-size:11.5px;color:var(--ink-3);font-weight:700;white-space:nowrap">{{ $o['ago'] }}</span>
                 </div>
             @endforeach
@@ -67,7 +72,7 @@
     </div>
 
     <div class="idash-badge-soft">
-        <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> Bu kabinet demo ko'rinishda — ro'yxatdan o'tish va real ma'lumotlar keyingi bosqichda ulanadi
+        <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> {{ __('cabinet_teacher.demo_notice') }}
     </div>
     @endif
 

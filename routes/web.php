@@ -12,21 +12,19 @@ Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
 
-Route::get('/maktab/{id}', function (int $id) {
-    $school = MaktabgidData::school($id);
-    abort_if(! $school, 404);
+/* ---------------- Til almashtirish (uch tillilik, 2026-08-06) ----------------
+ * Sessiyaga va cookie'ga ('maktabgid_locale', 1 yil) yozadi — SetLocale
+ * middleware'i shulardan o'qiydi. Foydalanuvchi qaysi sahifada bo'lsa, o'sha
+ * sahifaga qaytariladi (HTTP Referer, aks holda bosh sahifa). */
+Route::get('/til/{locale}', function (string $locale) {
+    $supported = array_keys(config('localization.supported', []));
+    abort_unless(in_array($locale, $supported, true), 404);
 
-    // Ko'rishlar jurnali — muassasa kabinetidagi "Analitika" sahifasi shu yerdan
-    // hisoblanadi (ADR-0002, Faza 2). Forum'dagi view_count bilan bir xil darajada
-    // sodda: bir martalik hisoblash (IP/sessiya dedupe) hozircha yo'q.
-    InstitutionView::create([
-        'institution_id' => $id,
-        'viewer_user_id' => auth()->id(),
-        'created_at' => now(),
-    ]);
+    session(['locale' => $locale]);
 
-    return view('school', ['school' => $school]);
-})->name('maktabgid.school');
+    return redirect()->to(url()->previous('/'))
+        ->withCookie(cookie('maktabgid_locale', $locale, 60 * 24 * 365));
+})->name('locale.switch');
 
 /* ---------------- Forum ---------------- */
 Route::get('/forum', function () {
@@ -122,3 +120,28 @@ Route::get('/teacher-cabinet/vacancies', [TeacherCabinetController::class, 'vaca
 Route::get('/teacher-cabinet/offers', [TeacherCabinetController::class, 'offers'])->name('teacher.cabinet.offers');
 Route::get('/teacher-cabinet/conversations', [TeacherCabinetController::class, 'conversations'])->name('teacher.cabinet.conversations');
 Route::get('/teacher-cabinet/payment', [TeacherCabinetController::class, 'tariffs'])->name('teacher.cabinet.tariffs');
+
+/* ---------------- Muassasa profili (ommaviy) — /{slug}, masalan /katta-tanaffus-uchtepa-filiali-1 ----------------
+ * Diqqat: bu route ATAYLAB fayl OXIRIDA turadi — bitta segmentli "catch-all"
+ * ({slug} har qanday bitta segmentga mos keladi). Laravel routelarni ro'yxatga
+ * olingan tartibda tekshiradi, shu sababli yuqoridagi barcha aniq yo'llar
+ * (/forum, /blog, /yangiliklar, /vakansiyalar, /cabinet/*, /institution-cabinet/*,
+ * /teacher-cabinet/*) BIRINCHI tekshiriladi va ustunlik qiladi — {slug} faqat
+ * shulardan hech biriga mos kelmagan so'rovlarda ishga tushadi. Yangi bitta
+ * segmentli sahifa/route qo'shilsa, u albatta shu qatordan OLDIN joylashtirilishi
+ * kerak (aks holda muassasa slug'i sifatida "yutilib" ketishi mumkin). */
+Route::get('/{slug}', function (string $slug) {
+    $school = MaktabgidData::schoolBySlug($slug);
+    abort_if(! $school, 404);
+
+    // Ko'rishlar jurnali — muassasa kabinetidagi "Analitika" sahifasi shu yerdan
+    // hisoblanadi (ADR-0002, Faza 2). Forum'dagi view_count bilan bir xil darajada
+    // sodda: bir martalik hisoblash (IP/sessiya dedupe) hozircha yo'q.
+    InstitutionView::create([
+        'institution_id' => $school['id'],
+        'viewer_user_id' => auth()->id(),
+        'created_at' => now(),
+    ]);
+
+    return view('school', ['school' => $school]);
+})->name('maktabgid.school');

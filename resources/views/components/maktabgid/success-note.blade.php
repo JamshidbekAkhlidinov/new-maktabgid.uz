@@ -1,4 +1,8 @@
-@props(['title', 'cta' => 'Yopish', 'closeTarget' => null])
+@props(['title', 'cta' => null, 'closeTarget' => null])
+
+@php
+    $cta = $cta ?? __('common.close');
+@endphp
 
 <div {{ $attributes->merge(['class' => 'success-note']) }}>
     <span class="success-ico"><x-maktabgid.icon name="check" :width="26" :height="26" /></span>

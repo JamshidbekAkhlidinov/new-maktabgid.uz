@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdvertisementController as AdminAdvertisementController;
 use App\Http\Controllers\Admin\ApplicationController as AdminApplicationController;
 use App\Http\Controllers\Admin\ArticleController as AdminArticleController;
 use App\Http\Controllers\Admin\AuthController as AdminAuthController;
@@ -72,6 +73,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('articles', AdminArticleController::class)->except(['show']);
         Route::resource('reviews', AdminReviewController::class)->except(['show']);
         Route::resource('resumes', AdminResumeController::class)->except(['show']);
+        Route::resource('advertisements', AdminAdvertisementController::class)->except(['show']);
         Route::resource('roles', AdminRoleController::class)->except(['show']);
         Route::get('permissions', [AdminPermissionController::class, 'index'])->name('permissions.index');
 

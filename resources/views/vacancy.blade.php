@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
-    <title>{{ $vacancy['title'] }} — Vakansiyalar — {{ config('app.name', 'MaktabGID') }}</title>
+    <title>{{ $vacancy['title'] }} — {{ __('careers.page_title') }} — {{ config('app.name', 'MaktabGID') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,7 +18,7 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="wrap" style="padding-top:20px">
-        <x-maktabgid.back-link href="{{ route('careers.index') }}" label="Vakansiyalarga qaytish" />
+        <x-maktabgid.back-link href="{{ route('careers.index') }}" label="{{ __('careers.back_to_vacancies') }}" />
     </div>
 
     <div class="wrap detail-grid">
@@ -35,40 +35,40 @@
             </article>
 
             <article class="card-block" style="padding:28px 30px">
-                <h3 style="margin-bottom:14px">Lavozim haqida</h3>
-                <p style="line-height:1.75;margin-bottom:14px">{{ $vacancy['org'] }} jamoasiga "{{ $vacancy['title'] }}" lavozimi boʻyicha tajribali, mas'uliyatli va bolalar bilan ishlashni yaxshi koʻradigan xodim izlanmoqda. Ish jadvali moslashuvchan, jamoa do'stona muhitda faoliyat yuritadi.</p>
-                <p style="line-height:1.75">Muvaffaqiyatli nomzod oʻz sohasida kamida 2 yil ish tajribasiga ega boʻlishi, zamonaviy oʻqitish uslublarini qoʻllashi va bolalar bilan samarali muloqot qila olishi kerak.</p>
+                <h3 style="margin-bottom:14px">{{ __('careers.about_position') }}</h3>
+                <p style="line-height:1.75;margin-bottom:14px">{{ __('careers.position_intro', ['org' => $vacancy['org'], 'title' => $vacancy['title']]) }}</p>
+                <p style="line-height:1.75">{{ __('careers.position_requirements_intro') }}</p>
             </article>
 
             <article class="card-block" style="padding:28px 30px">
-                <h3 style="margin-bottom:14px">Talablar</h3>
+                <h3 style="margin-bottom:14px">{{ __('careers.requirements') }}</h3>
                 <ul class="side-facts" style="gap:13px">
-                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> Tegishli yoʻnalish boʻyicha oliy maʼlumot</li>
-                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> Kamida 2 yil ish tajribasi</li>
-                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> Bolalar psixologiyasini tushunish</li>
-                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> Jamoada ishlash va doimiy rivojlanish</li>
+                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> {{ __('careers.req_degree') }}</li>
+                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> {{ __('careers.req_experience') }}</li>
+                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> {{ __('careers.req_psychology') }}</li>
+                    <li><x-maktabgid.icon name="check" :width="17" :height="17" /> {{ __('careers.req_teamwork') }}</li>
                 </ul>
             </article>
 
             <article class="card-block" id="ariza" style="padding:28px 30px">
-                <h3 style="margin-bottom:4px">Ariza yuborish</h3>
-                <p style="color:var(--ink-2);margin-bottom:20px;font-size:14px">Maʼlumotlaringizni qoldiring — qabul boʻlimi siz bilan bogʻlanadi.</p>
+                <h3 style="margin-bottom:4px">{{ __('careers.apply') }}</h3>
+                <p style="color:var(--ink-2);margin-bottom:20px;font-size:14px">{{ __('careers.apply_sub') }}</p>
                 <div class="js-inline-enroll">
                     <form class="enroll-form js-vacancy-apply-form" data-vacancy-id="{{ $vacancy['id'] }}" enctype="multipart/form-data" style="gap:14px">
                         <div class="form-row2">
-                            <x-maktabgid.field label="Toʻliq ism" icon="user"><input name="full_name" required placeholder="Ism Familiya" /></x-maktabgid.field>
-                            <x-maktabgid.field label="Telefon raqam" icon="phone"><input name="phone" required placeholder="+998 90 123 45 67" /></x-maktabgid.field>
+                            <x-maktabgid.field label="{{ __('careers.full_name_label') }}" icon="user"><input name="full_name" required placeholder="{{ __('careers.full_name_placeholder') }}" /></x-maktabgid.field>
+                            <x-maktabgid.field label="{{ __('careers.phone_label') }}" icon="phone"><input name="phone" required placeholder="{{ __('careers.phone_placeholder') }}" /></x-maktabgid.field>
                         </div>
-                        <x-maktabgid.field label="Xabar (ixtiyoriy)" icon="edit"><textarea name="note" rows="3" placeholder="Qisqacha oʻzingiz haqingizda…"></textarea></x-maktabgid.field>
-                        <x-maktabgid.field label="Rezyume / CV" icon="paperclip" hint="ixtiyoriy, PDF yoki Word, 5MB gacha">
+                        <x-maktabgid.field label="{{ __('careers.message_label') }}" icon="edit"><textarea name="note" rows="3" placeholder="{{ __('careers.message_placeholder') }}"></textarea></x-maktabgid.field>
+                        <x-maktabgid.field label="{{ __('careers.resume_label') }}" icon="paperclip" hint="{{ __('careers.resume_hint') }}">
                             <input type="file" name="resume" accept=".pdf,.doc,.docx" />
                         </x-maktabgid.field>
                         <div>
-                            <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> Ariza yuborish</button>
+                            <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> {{ __('careers.apply') }}</button>
                         </div>
                     </form>
-                    <x-maktabgid.success-note title="Ariza qabul qilindi!" class="js-fake-success" style="display:none">
-                        Tez orada siz bilan bogʻlanamiz.
+                    <x-maktabgid.success-note title="{{ __('careers.application_accepted_title') }}" class="js-fake-success" style="display:none">
+                        {{ __('careers.application_accepted_body') }}
                     </x-maktabgid.success-note>
                 </div>
             </article>
@@ -79,11 +79,11 @@
             <div class="side-card">
                 <div class="side-price">
                     <b>{{ $vacancy['salary'] }}</b>
-                    <span>soʻm / oy</span>
+                    <span>{{ __('careers.currency_per_month') }}</span>
                 </div>
 
                 <a href="#ariza" class="btn btn-primary side-cta">
-                    <x-maktabgid.icon name="send" :width="16" :height="16" /> Ariza yuborish
+                    <x-maktabgid.icon name="send" :width="16" :height="16" /> {{ __('careers.apply') }}
                 </a>
 
                 <ul class="side-facts">
@@ -97,7 +97,7 @@
                     </li>
                     <li>
                         <x-maktabgid.icon name="clock" :width="17" :height="17" />
-                        Muddat: {{ $vacancy['until'] }}
+                        {{ __('careers.deadline', ['date' => $vacancy['until']]) }}
                     </li>
                 </ul>
             </div>

@@ -4,10 +4,10 @@
     <div class="wrap">
         <div class="sec-head">
             <div>
-                <h2>Blog va yangiliklar</h2>
-                <p>Taʼlim, qabul va ota-onalar uchun foydali maslahatlar</p>
+                <h2>{{ __('home.blog_title') }}</h2>
+                <p>{{ __('home.blog_sub') }}</p>
             </div>
-            <a class="more-link" href="#">Barchasi <x-maktabgid.icon name="arrowR" :width="17" :height="17" /></a>
+            <a class="more-link" href="#">{{ __('home.view_all') }} <x-maktabgid.icon name="arrowR" :width="17" :height="17" /></a>
         </div>
         <div class="blog-grid">
             @foreach ($posts as $b)

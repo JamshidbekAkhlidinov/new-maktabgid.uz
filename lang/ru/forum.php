@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'page_title' => 'Форум',
+    'kicker' => 'Форум для родителей',
+    'title' => 'Задавайте вопросы, делитесь опытом',
+    'sub' => 'Зарегистрированные родители создают темы, а другие отвечают и делятся советами.',
+    'new_thread' => 'Новая тема',
+    'all_categories' => 'Все',
+    'close' => 'Закрыть',
+    'new_thread_modal_title' => 'Создать новую тему',
+    'new_thread_modal_sub' => 'Напишите свой вопрос — другие родители ответят',
+    'category_label' => 'Категория',
+    'title_label' => 'Заголовок',
+    'title_placeholder' => 'Кратко опишите свой вопрос',
+    'body_label' => 'Текст',
+    'body_placeholder' => 'Опишите подробнее…',
+    'publish_thread' => 'Опубликовать тему',
+    'thread_page_title' => 'Тема',
+    'back_to_forum' => 'Вернуться на форум',
+    'views_count' => ':count просмотров',
+    'replies_count' => ':count ответов',
+    'reply_placeholder' => 'Напишите свой ответ…',
+    'reply_submit' => 'Ответить',
+];

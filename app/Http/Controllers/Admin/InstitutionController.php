@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class InstitutionController extends Controller implements HasMiddleware
@@ -30,6 +31,8 @@ class InstitutionController extends Controller implements HasMiddleware
     {
         $institutions = Institution::query()
             ->with(['district', 'owner'])
+            // 'name' endi JSON (uch tillilik) — matn qidiruvi xom JSON qatori ichida
+            // ishlaydi (uz/ru/en, qaysi tilda kiritilgan bo'lsa ham topadi).
             ->when($request->filled('q'), fn ($q) => $q->where('name', 'like', "%{$request->string('q')}%"))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
             ->latest()
@@ -86,7 +89,8 @@ class InstitutionController extends Controller implements HasMiddleware
         return [
             'institution' => $institution,
             'districts' => District::orderBy('name')->get(),
-            'specializations' => Specialization::orderBy('label')->get(),
+            // 'label' JSON (uch tillilik) — DB darajasida saralanmaydi, xotirada saralaymiz.
+            'specializations' => Specialization::all()->sortBy(fn (Specialization $s) => $s->label)->values(),
             'owners' => User::whereIn('role', [User::ROLE_INSTITUTION, User::ROLE_ADMIN])->orderBy('name')->get(),
             'facilityCatalog' => MaktabgidData::facilityCatalog(),
         ];
@@ -96,25 +100,59 @@ class InstitutionController extends Controller implements HasMiddleware
     private function validateData(Request $request, ?Institution $institution = null): array
     {
         return $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+            // Uch tillilik (2026-08-06) — har biri _uz/_ru/_en shaklida keladi,
+            // prepare() ularni {"uz":..,"ru":..,"en":..} massiviga yig'ib beradi.
+            // O'zbekcha har doim majburiy (fallback zanjirining boshlanishi), ru/en ixtiyoriy.
+            'name_uz' => ['required', 'string', 'max:255'],
+            'name_ru' => ['nullable', 'string', 'max:255'],
+            'name_en' => ['nullable', 'string', 'max:255'],
+            'about_uz' => ['nullable', 'string'],
+            'about_ru' => ['nullable', 'string'],
+            'about_en' => ['nullable', 'string'],
+            'address_uz' => ['nullable', 'string', 'max:255'],
+            'address_ru' => ['nullable', 'string', 'max:255'],
+            'address_en' => ['nullable', 'string', 'max:255'],
+            'grades_uz' => ['nullable', 'string', 'max:100'],
+            'grades_ru' => ['nullable', 'string', 'max:100'],
+            'grades_en' => ['nullable', 'string', 'max:100'],
+            'work_hours_uz' => ['nullable', 'string', 'max:100'],
+            'work_hours_ru' => ['nullable', 'string', 'max:100'],
+            'work_hours_en' => ['nullable', 'string', 'max:100'],
+            'badge_uz' => ['nullable', 'string', 'max:100'],
+            'badge_ru' => ['nullable', 'string', 'max:100'],
+            'badge_en' => ['nullable', 'string', 'max:100'],
+            'refer_point_uz' => ['nullable', 'string', 'max:255'],
+            'refer_point_ru' => ['nullable', 'string', 'max:255'],
+            'refer_point_en' => ['nullable', 'string', 'max:255'],
+
             'type' => ['required', 'string', 'in:maktab,bogcha,markaz,mutaxassis'],
             'owner_user_id' => ['nullable', 'exists:users,id'],
             'district_id' => ['nullable', 'exists:districts,id'],
-            'about' => ['nullable', 'string'],
             'lang' => ['nullable', 'string', 'max:100'],
-            'address' => ['nullable', 'string', 'max:255'],
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'monthly_price' => ['nullable', 'integer', 'min:0'],
-            'grades' => ['nullable', 'string', 'max:100'],
-            'work_hours' => ['nullable', 'string', 'max:100'],
             'works_saturday' => ['nullable', 'boolean'],
             'accepting' => ['nullable', 'boolean'],
-            'badge' => ['nullable', 'string', 'max:100'],
             'rating' => ['nullable', 'numeric', 'between:0,5'],
             'review_count' => ['nullable', 'integer', 'min:0'],
             'specializations' => ['nullable', 'array'],
             'specializations.*' => ['exists:specializations,id'],
+
+            // Eski (Yii2) `telegram_object`dan import qilinadigan maydonlar (2026-08-06,
+            // LegacyInstitutionSeeder) — admin panelda ham qo'lda tahrirlanadi.
+            'location_url' => ['nullable', 'string', 'max:1000'],
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('institutions', 'slug')->ignore($institution)],
+            'is_active' => ['nullable', 'boolean'],
+
+            'phone_numbers' => ['nullable', 'array'],
+            'phone_numbers.*' => ['nullable', 'string', 'max:50'],
+
+            'social_links' => ['nullable', 'array'],
+            'social_links.instagram' => ['nullable', 'string', 'max:255'],
+            'social_links.facebook' => ['nullable', 'string', 'max:255'],
+            'social_links.telegram' => ['nullable', 'string', 'max:255'],
+            'social_links.website' => ['nullable', 'string', 'max:255'],
 
             // Institution kabinetidagi "Muassasa profili" bilan bir xil imkoniyat (2026-07-15):
             // qulayliklar, o'qituvchilar, dastur, darslar, qabul bosqichlari, ko'rsatkichlar, narxlar.
@@ -153,8 +191,21 @@ class InstitutionController extends Controller implements HasMiddleware
     /** @return array<string, mixed> */
     private function prepare(array $data): array
     {
+        // Uch tillilik (2026-08-06): forma'dan kelgan name_uz/name_ru/name_en kabi
+        // yassi maydonlarni {"uz":..,"ru":..,"en":..} massiviga yig'amiz (bo'sh
+        // qiymatlar tashlab yuboriladi). Institution modelidagi 'array' cast +
+        // HasTranslatable trait shu formatni to'g'ridan-to'g'ri qabul qiladi.
+        foreach (['name', 'about', 'address', 'grades', 'work_hours', 'badge', 'refer_point'] as $field) {
+            $data[$field] = collect(['uz', 'ru', 'en'])
+                ->mapWithKeys(fn ($locale) => [$locale => trim((string) ($data["{$field}_{$locale}"] ?? ''))])
+                ->filter(fn ($v) => $v !== '')
+                ->all();
+            unset($data["{$field}_uz"], $data["{$field}_ru"], $data["{$field}_en"]);
+        }
+
         $data['works_saturday'] = (bool) ($data['works_saturday'] ?? false);
         $data['accepting'] = (bool) ($data['accepting'] ?? false);
+        $data['is_active'] = (bool) ($data['is_active'] ?? false);
         // 'rating'/'review_count' ustunlari bazada NOT NULL (default 0) — forma bo'sh
         // qoldirilsa, ConvertEmptyStringsToNull "" ni null'ga aylantiradi va shu null
         // to'g'ridan-to'g'ri create()/update()'ga tushib, NOT NULL cheklovini buzadi.
@@ -162,6 +213,18 @@ class InstitutionController extends Controller implements HasMiddleware
         $data['review_count'] = $data['review_count'] ?? 0;
 
         $data['facilities'] = array_values(array_filter($data['facilities'] ?? []));
+
+        $data['slug'] = filled($data['slug'] ?? null) ? $data['slug'] : null;
+
+        $data['phone_numbers'] = collect($data['phone_numbers'] ?? [])
+            ->map(fn ($p) => trim((string) $p))
+            ->filter()
+            ->values()->all() ?: null;
+
+        $data['social_links'] = collect($data['social_links'] ?? [])
+            ->map(fn ($v) => trim((string) $v))
+            ->filter()
+            ->all() ?: null;
 
         $data['teachers'] = collect($data['teachers'] ?? [])
             ->filter(fn ($t) => filled($t['n'] ?? null) || filled($t['role'] ?? null) || filled($t['exp'] ?? null))

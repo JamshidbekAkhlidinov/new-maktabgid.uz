@@ -52,7 +52,10 @@
     });
 
     /* "Suhbat boshlash" (maktab profili sidebar) — mavjud suhbatni ochadi yoki
-       yangisini yaratib, parent-cabinet Suhbatlar sahifasiga o'tkazadi. */
+       yangisini yaratib, parent yoki teacher kabinetining Suhbatlar sahifasiga
+       o'tkazadi. Redirect manzilini backend beradi (ConversationController@start,
+       ADR-0003) — rol (parent/teacher) bilan mos sahifaga tushish uchun, JS
+       o'zi yo'lni taxmin qilmaydi. */
     document.addEventListener("click", function (e) {
         var btn = e.target.closest(".js-start-chat-btn");
         if (!btn) return;
@@ -71,8 +74,8 @@
                 return;
             }
 
-            if (res.ok && res.body && res.body.conversation) {
-                window.location.href = "/cabinet/conversations?c=" + res.body.conversation.id;
+            if (res.ok && res.body && res.body.redirect) {
+                window.location.href = res.body.redirect;
             }
         });
     });
@@ -179,6 +182,12 @@
 
         var state = { cat: "maktab", query: "", district: "", sat: false, distance: "", price: "", districts: [], sort: "rel", spec: "" };
 
+        /* Cheksiz skroll — bir vaqtda 10 tadan koʻrsatiladi, pastga tushilganda yana 10 ta qoʻshiladi. */
+        var PAGE_SIZE = 10;
+        var visibleCount = PAGE_SIZE;
+        var loadMoreSentinel = document.getElementById("js-load-more-sentinel");
+        var loadMoreSpinner = document.getElementById("js-load-more-spinner");
+
         function setActiveCatButtons() {
             document.querySelectorAll(".js-cat").forEach(function (b) {
                 b.classList.toggle("on", b.dataset.cat === state.cat);
@@ -221,24 +230,52 @@
         }
 
         function render() {
+            // Filtr/toifa/saralash oʻzgarganda — yangi qidiruv, birinchi sahifadan boshlanadi.
+            visibleCount = PAGE_SIZE;
+            paint();
+        }
+
+        function loadMore() {
+            visibleCount += PAGE_SIZE;
+            paint();
+        }
+
+        function paint() {
             setActiveCatButtons();
 
-            var visible = sortCards(applyFilters());
-            var visibleIds = visible.map(function (c) { return c.dataset.id; });
+            var matched = sortCards(applyFilters());
+            var matchedIds = matched.map(function (c) { return c.dataset.id; });
+            var shown = matched.slice(0, visibleCount);
 
+            // DOM tartibi butun moslashgan roʻyxat boʻyicha saqlanadi (keyingi sahifa ochilganda
+            // qayta tartiblash shart boʻlmasin uchun) — faqat koʻrinish (display) sahifalanadi.
             cards.forEach(function (card) { card.style.display = "none"; });
-            visible.forEach(function (card) { card.style.display = ""; cardList.appendChild(card); });
+            matched.forEach(function (card) { cardList.appendChild(card); });
+            shown.forEach(function (card) { card.style.display = ""; });
 
             if (pinsReady) {
                 Object.keys(pins).forEach(function (id) {
-                    pins[id].options.set("visible", visibleIds.indexOf(id) !== -1);
+                    pins[id].options.set("visible", matchedIds.indexOf(id) !== -1);
                 });
             }
 
-            countEl.textContent = visible.length + " ta " + CAT_LABEL[state.cat];
-            if (mapTag) mapTag.lastChild.textContent = " " + visible.length + " ta natija xaritada";
-            emptyBox.style.display = visible.length === 0 ? "" : "none";
-            cardList.style.display = visible.length === 0 ? "none" : "";
+            countEl.textContent = matched.length + " ta " + CAT_LABEL[state.cat];
+            if (mapTag) mapTag.lastChild.textContent = " " + matched.length + " ta natija xaritada";
+            emptyBox.style.display = matched.length === 0 ? "" : "none";
+            cardList.style.display = matched.length === 0 ? "none" : "";
+
+            if (loadMoreSentinel) loadMoreSentinel.style.display = shown.length < matched.length ? "" : "none";
+            if (loadMoreSpinner) loadMoreSpinner.style.display = "none";
+        }
+
+        if (loadMoreSentinel && "IntersectionObserver" in window) {
+            var loadMoreObserver = new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting && loadMoreSentinel.style.display !== "none") {
+                    if (loadMoreSpinner) loadMoreSpinner.style.display = "";
+                    loadMore();
+                }
+            }, { rootMargin: "300px" });
+            loadMoreObserver.observe(loadMoreSentinel);
         }
 
         document.querySelectorAll(".js-cat").forEach(function (btn) {
@@ -719,20 +756,15 @@
             });
         }
 
+        /* Til tanlash endi haqiqiy havolalar (/til/{locale}) — sahifa qayta yuklanadi,
+           shu sababli faqat ochish/yopish kerak, JS orqali label almashtirish shart emas. */
         var langBtn = document.getElementById("js-lang-btn");
-        var langLabel = document.getElementById("js-lang-label");
         if (langBtn && _langMenu) {
             langBtn.addEventListener("click", function (e) {
                 e.stopPropagation();
                 var open = _langMenu.style.display !== "none";
                 closeAll();
                 if (!open) _langMenu.style.display = "";
-            });
-            _langMenu.querySelectorAll("button[data-lang]").forEach(function (btn) {
-                btn.addEventListener("click", function () {
-                    if (langLabel) langLabel.textContent = btn.dataset.label || btn.textContent.trim();
-                    _langMenu.style.display = "none";
-                });
             });
         }
 
@@ -1557,9 +1589,13 @@
     if (search) search.addEventListener("input", applyFilter);
 })();
 
-/* ===== Suhbatlar (institution-cabinet va parent-cabinet, umumiy): ro'yxatni qidirish +
-   tezkor javob chip'lari + real yuborish. Yuborish manzili har bir sahifada
-   .js-chat-send-form'ning data-send-url atributidan olinadi. ===== */
+/* ===== Suhbatlar (institution/parent/teacher-cabinet, umumiy): ro'yxatni qidirish +
+   tezkor javob chip'lari + real yuborish + xabarlarni "polling" bilan olish
+   (ADR-0003 — Reverb/WebSocket emas, sof AJAX: har 3 sekunda GET so'raladi,
+   yangi xabar bo'lsa reload'siz chatga qo'shiladi). Yuborish manzili har bir
+   sahifada .js-chat-send-form'ning data-send-url atributidan olinadi; polling
+   manzili esa rol-agnostik — barcha rollar uchun bir xil:
+   GET /ajax/conversations/{id}/messages?after_id=N. ===== */
 (function () {
     "use strict";
 
@@ -1584,27 +1620,108 @@
         });
     });
 
+    var msgsBox = document.getElementById("js-chat-msgs");
     var form = document.querySelector(".js-chat-send-form");
+
+    function escapeHtml(str) {
+        var div = document.createElement("div");
+        div.textContent = str == null ? "" : str;
+        return div.innerHTML;
+    }
+
+    function formatTime(iso) {
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return "";
+        var h = String(d.getHours()).padStart(2, "0");
+        var m = String(d.getMinutes()).padStart(2, "0");
+        return h + ":" + m;
+    }
+
+    /* Har bir xabar (yuborilgandan keyingi javob YOKI polling natijasi) bir xil
+       shaklda keladi (App\Http\Resources\MessageResource): id, sender_type,
+       sender_user_id, body, created_at, mine. "mine" — shu suhbatdagi MEN
+       (joriy foydalanuvchi) yozganmi, shunga qarab bubble chap/o'ngga chiqadi. */
+    function appendMessage(message) {
+        if (!msgsBox) return;
+        if (msgsBox.querySelector('[data-message-id="' + message.id + '"]')) return; // dedupe
+
+        var emptyState = msgsBox.querySelector(".chat-empty");
+        if (emptyState) emptyState.remove();
+
+        var row = document.createElement("div");
+        row.className = "bubble-row " + (message.mine ? "me" : "them");
+        row.dataset.messageId = message.id;
+        row.innerHTML = '<div class="msg-bubble">' + escapeHtml(message.body) +
+            '<time>' + formatTime(message.created_at) + "</time></div>";
+        msgsBox.appendChild(row);
+        msgsBox.scrollTop = msgsBox.scrollHeight;
+
+        var idNum = parseInt(message.id, 10);
+        if (idNum > parseInt(msgsBox.dataset.lastId || "0", 10)) {
+            msgsBox.dataset.lastId = String(idNum);
+        }
+    }
+
     if (form && input) {
         form.addEventListener("submit", function (e) {
             e.preventDefault();
             var text = input.value.trim();
             if (!text) return;
 
-            var convId = form.dataset.conversationId;
             var sendUrl = form.dataset.sendUrl;
             var sendBtn = form.querySelector(".chat-send");
             if (sendBtn) sendBtn.disabled = true;
 
             jsonFetch(sendUrl, "POST", { body: text }).then(function (res) {
                 if (sendBtn) sendBtn.disabled = false;
-                if (res.ok) {
-                    window.location.href = window.location.pathname + "?c=" + convId;
+                if (res.ok && res.body && res.body.message) {
+                    appendMessage(res.body.message);
+                    input.value = "";
+                    input.focus();
                 } else {
                     alert("Xabarni yuborib bo'lmadi. Qayta urining.");
                 }
             });
         });
+    }
+
+    /* Polling — har 3 sekunda yangi xabarlarni so'raydi. Sahifa fon rejimida
+       (boshqa tab ochilganda) to'xtatiladi, qaytib ko'ringanda darhol bir marta
+       so'rab, keyin intervalni qayta ishga tushiradi (server yukini kamaytirish). */
+    if (msgsBox) {
+        var pollUrl = "/ajax/conversations/" + msgsBox.dataset.conversationId + "/messages";
+        var pollTimer = null;
+
+        function poll() {
+            var afterId = msgsBox.dataset.lastId || "0";
+            jsonFetch(pollUrl + "?after_id=" + afterId, "GET").then(function (res) {
+                if (res.ok && res.body && res.body.messages) {
+                    res.body.messages.forEach(appendMessage);
+                }
+            });
+        }
+
+        function startPolling() {
+            if (pollTimer) return;
+            poll();
+            pollTimer = setInterval(poll, 3000);
+        }
+
+        function stopPolling() {
+            if (!pollTimer) return;
+            clearInterval(pollTimer);
+            pollTimer = null;
+        }
+
+        document.addEventListener("visibilitychange", function () {
+            if (document.hidden) {
+                stopPolling();
+            } else {
+                startPolling();
+            }
+        });
+
+        if (!document.hidden) startPolling();
     }
 })();
 

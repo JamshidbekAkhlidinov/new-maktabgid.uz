@@ -3,11 +3,16 @@
 namespace App\Http\Controllers\Institution;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
-/** Muassasa tomonidan ota-onaga suhbatda javob yozish — Suhbatlar sahifasi (institution-cabinet). */
+/**
+ * Muassasa tomonidan ota-ona/ustozga suhbatda javob yozish — Suhbatlar sahifasi
+ * (institution-cabinet). Suhbat kim bilan (parent yoki teacher) ekanidan qat'i
+ * nazar bir xil ishlaydi — faqat institution_id egaligi tekshiriladi (ADR-0003).
+ */
 class MessageController extends Controller
 {
     public function store(Request $request, Conversation $conversation): JsonResponse
@@ -28,6 +33,6 @@ class MessageController extends Controller
 
         $conversation->update(['last_message_at' => $message->created_at]);
 
-        return response()->json(['message' => $message], 201);
+        return response()->json(['message' => new MessageResource($message)], 201);
     }
 }
