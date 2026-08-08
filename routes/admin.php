@@ -61,6 +61,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
             Route::get('media', [AdminInstitutionMediaController::class, 'index'])->name('media.index');
             Route::post('media', [AdminInstitutionMediaController::class, 'store'])->name('media.store');
             Route::delete('media/{media}', [AdminInstitutionMediaController::class, 'destroy'])->name('media.destroy');
+            Route::patch('media/{media}/logo', [AdminInstitutionMediaController::class, 'toggleLogo'])->name('media.logo');
 
             Route::get('achievements', [AdminInstitutionAchievementController::class, 'index'])->name('achievements.index');
             Route::post('achievements', [AdminInstitutionAchievementController::class, 'store'])->name('achievements.store');

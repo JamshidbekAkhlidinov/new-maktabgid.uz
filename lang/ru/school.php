@@ -5,9 +5,6 @@ return [
     'save' => 'Сохранить',
     'share' => 'Поделиться',
 
-    // Gallery
-    'main_photo' => 'Главное фото',
-
     // Title card
     'saturday_work' => 'Работает в субботу',
     'reviews_count' => ':count отзывов',

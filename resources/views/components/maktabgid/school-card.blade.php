@@ -4,7 +4,7 @@
     use App\Support\MaktabgidData;
     $s = $school;
     $catLabel = MaktabgidData::categoryLabel($s['cat']);
-    $photoUrl = $s['photos'][0] ?? null;
+    $photoUrl = $s['thumb'] ?? null;
 @endphp
 
 <article

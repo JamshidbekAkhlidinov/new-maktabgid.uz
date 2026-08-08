@@ -5,9 +5,6 @@ return [
     'save' => 'Save',
     'share' => 'Share',
 
-    // Gallery
-    'main_photo' => 'Main photo',
-
     // Title card
     'saturday_work' => 'Open Saturdays',
     'reviews_count' => ':count reviews',

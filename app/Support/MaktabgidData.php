@@ -323,6 +323,9 @@ class MaktabgidData
         $photos = $institution->relationLoaded('media')
             ? $institution->media->where('type', 'gallery')->pluck('url')->values()->all()
             : [];
+        $thumb = $institution->relationLoaded('media')
+            ? ($institution->logoMedia()?->url ?? ($photos[0] ?? null))
+            : null;
 
         return [
             'id' => $institution->id,
@@ -345,6 +348,7 @@ class MaktabgidData
             'g' => $gradients[$institution->id % count($gradients)],
             'specs' => $institution->specializations->pluck('key')->all(),
             'photos' => $photos,
+            'thumb' => $thumb,
             'social' => $institution->social_links ?? [],
             'facilities' => self::resolveFacilities($institution),
             'teachers' => self::resolveTeachers($institution),

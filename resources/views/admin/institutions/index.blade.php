@@ -44,9 +44,21 @@
                             </span>
                         </td>
                         <td class="px-4 py-3">
-                            <x-admin.row-actions
-                                :editRoute="route('admin.institutions.edit', $inst)" editPermission="institutions.update"
-                                :deleteRoute="route('admin.institutions.destroy', $inst)" deletePermission="institutions.delete" />
+                            <div class="flex items-center justify-end gap-1.5">
+                                @can('institutions.update')
+                                    <a href="{{ route('admin.institutions.media.index', $inst) }}" title="Galereya va videolar"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                                        <x-admin.icon name="upload" class="w-4 h-4" />
+                                    </a>
+                                    <a href="{{ route('admin.institutions.achievements.index', $inst) }}" title="Yutuqlar"
+                                       class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                                        <x-admin.icon name="star" class="w-4 h-4" />
+                                    </a>
+                                @endcan
+                                <x-admin.row-actions
+                                    :editRoute="route('admin.institutions.edit', $inst)" editPermission="institutions.update"
+                                    :deleteRoute="route('admin.institutions.destroy', $inst)" deletePermission="institutions.delete" />
+                            </div>
                         </td>
                     </tr>
                 @empty
