@@ -15,19 +15,19 @@
                 <h3>{{ __('auth.login_title') }}</h3>
                 <p>{{ __('auth.login_subtitle') }}</p>
             </div>
-            <form class="form js-fake-auth" data-mode="login" autocomplete="off">
+            <form class="form js-fake-auth" data-mode="login">
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="phone" :width="14" :height="14" /> {{ __('auth.phone') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="phone" :width="17" :height="17" />
-                        <input type="tel" name="phone" placeholder="{{ __('auth.phone_placeholder') }}" required />
+                        <input type="tel" name="phone" autocomplete="tel" placeholder="{{ __('auth.phone_placeholder') }}" required />
                     </span>
                 </label>
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="lock" :width="14" :height="14" /> {{ __('auth.password') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="lock" :width="17" :height="17" />
-                        <input type="password" name="password" placeholder="{{ __('auth.password_placeholder') }}" required />
+                        <input type="password" name="password" autocomplete="current-password" placeholder="{{ __('auth.password_placeholder') }}" required />
                     </span>
                 </label>
                 <button class="btn btn-primary form-submit" type="submit">
@@ -54,12 +54,12 @@
                 <h3>{{ __('auth.parent_title') }}</h3>
                 <p>{{ __('auth.parent_subtitle') }}</p>
             </div>
-            <form class="form js-fake-auth" data-mode="parent" autocomplete="off">
+            <form class="form js-fake-auth" data-mode="parent">
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> {{ __('auth.full_name') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="user" :width="17" :height="17" />
-                        <input type="text" name="name" placeholder="{{ __('auth.name_placeholder_parent') }}" required />
+                        <input type="text" name="name" autocomplete="name" placeholder="{{ __('auth.name_placeholder_parent') }}" required />
                     </span>
                 </label>
                 <div class="form-row2">
@@ -67,13 +67,13 @@
                         <span class="field-label"><x-maktabgid.icon name="phone" :width="14" :height="14" /> {{ __('auth.phone') }}</span>
                         <span class="field-control">
                             <x-maktabgid.icon name="phone" :width="17" :height="17" />
-                            <input type="tel" name="phone" placeholder="{{ __('auth.phone_placeholder') }}" required />
+                            <input type="tel" name="phone" autocomplete="tel" placeholder="{{ __('auth.phone_placeholder') }}" required />
                         </span>
                     </label>
                     <label class="field">
                         <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> {{ __('auth.age') }}</span>
                         <span class="field-control">
-                            <input type="number" name="age" min="18" max="90" placeholder="34" required />
+                            <input type="number" name="age" autocomplete="off" min="18" max="90" placeholder="34" required />
                         </span>
                     </label>
                 </div>
@@ -81,7 +81,7 @@
                     <span class="field-label"><x-maktabgid.icon name="pin" :width="14" :height="14" /> {{ __('auth.district') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="pin" :width="17" :height="17" />
-                        <select name="district" required>
+                        <select name="district" autocomplete="address-level2" required>
                             <option value="">{{ __('auth.select_district') }}</option>
                             @foreach ($districts as $d)
                                 <option value="{{ $d }}">{{ $d }}</option>
@@ -93,7 +93,7 @@
                     <span class="field-label"><x-maktabgid.icon name="lock" :width="14" :height="14" /> {{ __('auth.password') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="lock" :width="17" :height="17" />
-                        <input type="password" name="password" placeholder="{{ __('auth.password_placeholder') }}" required />
+                        <input type="password" name="password" autocomplete="new-password" placeholder="{{ __('auth.password_placeholder') }}" required />
                     </span>
                 </label>
                 <button class="btn btn-primary form-submit" type="submit">
@@ -120,12 +120,12 @@
                 <h3>{{ __('auth.institution_title') }}</h3>
                 <p>{{ __('auth.institution_subtitle') }}</p>
             </div>
-            <form class="form js-fake-auth" data-mode="institution" autocomplete="off">
+            <form class="form js-fake-auth" data-mode="institution">
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="building" :width="14" :height="14" /> {{ __('auth.institution_name') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="building" :width="17" :height="17" />
-                        <input type="text" name="org" placeholder="{{ __('auth.institution_name_placeholder') }}" required />
+                        <input type="text" name="org" autocomplete="organization" placeholder="{{ __('auth.institution_name_placeholder') }}" required />
                     </span>
                 </label>
                 <label class="field">
@@ -144,14 +144,14 @@
                         <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> {{ __('auth.responsible_person') }}</span>
                         <span class="field-control">
                             <x-maktabgid.icon name="user" :width="17" :height="17" />
-                            <input type="text" name="name" placeholder="{{ __('auth.fio_placeholder') }}" required />
+                            <input type="text" name="name" autocomplete="name" placeholder="{{ __('auth.fio_placeholder') }}" required />
                         </span>
                     </label>
                     <label class="field">
                         <span class="field-label"><x-maktabgid.icon name="phone" :width="14" :height="14" /> {{ __('auth.phone_short') }}</span>
                         <span class="field-control">
                             <x-maktabgid.icon name="phone" :width="17" :height="17" />
-                            <input type="tel" name="phone" placeholder="{{ __('auth.phone_placeholder_institution') }}" required />
+                            <input type="tel" name="phone" autocomplete="tel" placeholder="{{ __('auth.phone_placeholder_institution') }}" required />
                         </span>
                     </label>
                 </div>
@@ -159,7 +159,7 @@
                     <span class="field-label"><x-maktabgid.icon name="lock" :width="14" :height="14" /> {{ __('auth.password') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="lock" :width="17" :height="17" />
-                        <input type="password" name="password" placeholder="{{ __('auth.password_placeholder') }}" required />
+                        <input type="password" name="password" autocomplete="new-password" placeholder="{{ __('auth.password_placeholder') }}" required />
                     </span>
                 </label>
                 <button class="btn btn-primary form-submit" type="submit">
@@ -186,12 +186,12 @@
                 <h3>{{ __('auth.teacher_title') }}</h3>
                 <p>{{ __('auth.teacher_subtitle') }}</p>
             </div>
-            <form class="form js-fake-auth" data-mode="teacher" autocomplete="off">
+            <form class="form js-fake-auth" data-mode="teacher">
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> {{ __('auth.full_name') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="user" :width="17" :height="17" />
-                        <input type="text" name="name" placeholder="{{ __('auth.name_placeholder_teacher') }}" required />
+                        <input type="text" name="name" autocomplete="name" placeholder="{{ __('auth.name_placeholder_teacher') }}" required />
                     </span>
                 </label>
                 <div class="form-row2">
@@ -199,13 +199,13 @@
                         <span class="field-label"><x-maktabgid.icon name="phone" :width="14" :height="14" /> {{ __('auth.phone') }}</span>
                         <span class="field-control">
                             <x-maktabgid.icon name="phone" :width="17" :height="17" />
-                            <input type="tel" name="phone" placeholder="{{ __('auth.phone_placeholder') }}" required />
+                            <input type="tel" name="phone" autocomplete="tel" placeholder="{{ __('auth.phone_placeholder') }}" required />
                         </span>
                     </label>
                     <label class="field">
                         <span class="field-label"><x-maktabgid.icon name="user" :width="14" :height="14" /> {{ __('auth.age') }}</span>
                         <span class="field-control">
-                            <input type="number" name="age" min="18" max="90" placeholder="34" required />
+                            <input type="number" name="age" autocomplete="off" min="18" max="90" placeholder="34" required />
                         </span>
                     </label>
                 </div>
@@ -213,7 +213,7 @@
                     <span class="field-label"><x-maktabgid.icon name="pin" :width="14" :height="14" /> {{ __('auth.district') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="pin" :width="17" :height="17" />
-                        <select name="district" required>
+                        <select name="district" autocomplete="address-level2" required>
                             <option value="">{{ __('auth.select_district') }}</option>
                             @foreach ($districts as $d)
                                 <option value="{{ $d }}">{{ $d }}</option>
@@ -225,7 +225,7 @@
                     <span class="field-label"><x-maktabgid.icon name="lock" :width="14" :height="14" /> {{ __('auth.password') }}</span>
                     <span class="field-control">
                         <x-maktabgid.icon name="lock" :width="17" :height="17" />
-                        <input type="password" name="password" placeholder="{{ __('auth.password_placeholder') }}" required />
+                        <input type="password" name="password" autocomplete="new-password" placeholder="{{ __('auth.password_placeholder') }}" required />
                     </span>
                 </label>
                 <button class="btn btn-primary form-submit" type="submit">

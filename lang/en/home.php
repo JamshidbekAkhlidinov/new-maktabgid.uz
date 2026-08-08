@@ -19,6 +19,7 @@ return [
     'empty_hint_before' => 'Try broadening your filters or',
     'empty_reset' => 'clear them',
     'loading' => 'Loading...',
+    'pagination' => 'Pagination',
 
     // hero.blade.php
     'hero_eyebrow' => "Uzbekistan's #1 education catalog",
@@ -59,7 +60,7 @@ return [
     'trust_map_h' => 'Convenient map view',
     'trust_map_p' => 'Instantly see options near you, sorted by distance.',
     'trust_reviews_h' => 'Genuine reviews',
-    'trust_reviews_p' => "Real ratings and experiences from parents.",
+    'trust_reviews_p' => 'Real ratings and experiences from parents.',
     'trust_fast_h' => 'Quick application',
     'trust_fast_p' => 'Get in touch in seconds via our Telegram bot.',
 
@@ -75,7 +76,7 @@ return [
 
     // forum-strip.blade.php
     'forum_kicker' => 'Live discussion',
-    'forum_title' => "What parents are discussing",
+    'forum_title' => 'What parents are discussing',
     'forum_go' => 'Go to forum',
 
     // blog.blade.php

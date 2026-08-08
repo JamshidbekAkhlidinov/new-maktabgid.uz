@@ -20,7 +20,9 @@
     data-specs="{{ implode(',', $s['specs'] ?? []) }}"
 >
     <a href="{{ route('maktabgid.school', $s['slug']) }}" class="scard-link">
-        <div class="scard-media" style="background: {{ $photoUrl ? "url('{$photoUrl}') center/cover no-repeat" : "linear-gradient(140deg, {$s['g'][0]}, {$s['g'][1]})" }}">
+        {{-- Fotosurat faqat kartochka koʻrinadigan (sahifalangan) boʻlganda JS orqali yuklanadi —
+             barcha kartochkalarni bir vaqtda fon rasm sifatida ochish yuzlab parallel soʻrov yuboradi. --}}
+        <div class="scard-media" style="background: linear-gradient(140deg, {{ $s['g'][0] }}, {{ $s['g'][1] }})" @if ($photoUrl) data-bg="url('{{ $photoUrl }}') center/cover no-repeat" @endif>
             @unless ($photoUrl)
                 <span class="scard-mono">{{ MaktabgidData::monogram($s['name']) }}</span>
             @endunless

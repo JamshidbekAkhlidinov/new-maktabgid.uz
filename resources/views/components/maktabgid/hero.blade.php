@@ -36,7 +36,7 @@
                     <span class="sb-label">{{ __('home.by_name') }}</span>
                     <span class="sb-control">
                         <x-maktabgid.icon name="search" :width="18" :height="18" />
-                        <input type="text" id="js-query" placeholder="{{ __('home.name_search_placeholder') }}" />
+                        <input type="text" id="js-query" name="query" autocomplete="off" placeholder="{{ __('home.name_search_placeholder') }}" />
                     </span>
                 </label>
                 <label class="sb-field">
@@ -55,7 +55,7 @@
                     <span class="sb-label">{{ __('home.language_of_instruction') }}</span>
                     <span class="sb-control">
                         <x-maktabgid.icon name="globe" :width="18" :height="18" />
-                        <select>
+                        <select id="js-lang-select" name="lang" autocomplete="language">
                             <option value="">{{ __('home.no_preference') }}</option>
                             <option>{{ __('home.lang_english') }}</option>
                             <option>{{ __('home.lang_uzbek') }}</option>

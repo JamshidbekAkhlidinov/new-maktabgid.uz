@@ -303,7 +303,7 @@ svg { display: block; }
 .switch.on::after { left: 21px; }
 
 /* results column */
-.results-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 14px; flex-wrap: wrap; }
+.results-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; gap: 14px; flex-wrap: wrap; scroll-margin-top: 140px; }
 .results-count b { font-family: var(--font-display); font-size: 22px; }
 .results-count span { color: var(--ink-3); font-weight: 600; font-size: 14px; }
 .sortbar { display: flex; align-items: center; gap: 8px; }
@@ -311,6 +311,16 @@ svg { display: block; }
 .select-pill select { border: none; background: none; outline: none; font: inherit; color: var(--ink); font-weight: 700; appearance: none; cursor: pointer; }
 
 .card-list { display: flex; flex-direction: column; gap: 10px; }
+
+.pagination { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; margin-top: 22px; }
+.pagination button {
+  min-width: 38px; height: 38px; padding: 0 10px; border-radius: var(--r-pill); border: 1.5px solid var(--line);
+  background: var(--surface); font-weight: 700; font-size: 13.5px; color: var(--ink-2); transition: .14s;
+}
+.pagination button:hover:not(:disabled):not(.on) { border-color: var(--primary); color: var(--ink); }
+.pagination button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+.pagination button:disabled { opacity: .4; cursor: default; }
+.pagination .pg-ellipsis { padding: 0 4px; color: var(--ink-3); font-weight: 700; }
 
 /* school card — compact row */
 .scard {
@@ -523,6 +533,10 @@ svg { display: block; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 @media (max-width: 1080px) {
   .results-grid { grid-template-columns: 1fr; }
+  /* Grid elementlarining zaminiy min-width qiymati "auto" boʻlgani uchun ular oʻz
+     kontenti kengligidan (masalan, filtr chiplari) siqilishdan bosh tortadi va butun
+     panelni bir ustunga tushirilgandan keyin ham gorizontal scrollga majburlaydi. */
+  .results-grid > * { min-width: 0; }
   .filters { position: static; }
   .map-col { display: none; }
   .searchbar { grid-template-columns: 1fr; }

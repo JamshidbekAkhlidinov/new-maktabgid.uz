@@ -57,7 +57,7 @@
                     <x-maktabgid.filters :price-bands="$priceBands" :distance-bands="$distanceBands" :districts="$districts" />
 
                     <section>
-                        <div class="results-head">
+                        <div class="results-head" id="js-results-head">
                             <div class="results-count">
                                 <b id="js-results-count">{{ __('home.results_count', ['count' => count($defaultResults), 'cat' => MaktabgidData::categoryLabel($defaultCat)]) }}</b>
                                 <span>{{ __('home.found_in_tashkent') }}</span>
@@ -87,12 +87,8 @@
                             @endforeach
                         </div>
 
-                        {{-- Cheksiz skroll — pastga tushilganda navbatdagi 10 ta natija ochiladi
-                             (barcha kartochkalar allaqachon DOM'da, faqat ko'rsatish soni oshadi). --}}
-                        <div id="js-load-more-sentinel" style="height:1px"></div>
-                        <div id="js-load-more-spinner" style="display:none;padding:20px 0;text-align:center;color:var(--ink-3);font-size:14px">
-                            {{ __('home.loading') }}
-                        </div>
+                        {{-- Sahifalash — har sahifada 20 tadan natija, istalgan sahifaga toʻgʻridan-toʻgʻri oʻtish mumkin. --}}
+                        <nav id="js-pagination" class="pagination" aria-label="{{ __('home.pagination') }}"></nav>
                     </section>
 
                     <x-maktabgid.map :schools="$schools" />
