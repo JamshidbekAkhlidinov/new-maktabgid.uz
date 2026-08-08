@@ -1,3 +1,7 @@
+@php
+    use App\Enums\SettingKey;
+    use App\Models\Setting;
+@endphp
 <!DOCTYPE html>
 <html lang="{{ app()->getLocale() }}">
 <head>
@@ -5,6 +9,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title>{{ config('app.name', 'MaktabGID') }} — {{ __('home.meta_title_suffix') }}</title>
+    <meta name="description" content="{{ Setting::get(SettingKey::MetaDescription) }}" />
+    <meta property="og:title" content="{{ Setting::get(SettingKey::MetaTitle) ?: (config('app.name', 'MaktabGID').' — '.__('home.meta_title_suffix')) }}" />
+    <meta property="og:description" content="{{ Setting::get(SettingKey::MetaDescription) }}" />
+    <meta property="og:type" content="website" />
+    @if ($ogImage = Setting::get(SettingKey::OgImage))
+        <meta property="og:image" content="{{ $ogImage }}" />
+    @endif
+    @if ($googleVerification = Setting::get(SettingKey::GoogleSiteVerification))
+        <meta name="google-site-verification" content="{{ $googleVerification }}" />
+    @endif
+    @if ($yandexVerification = Setting::get(SettingKey::YandexVerification))
+        <meta name="yandex-verification" content="{{ $yandexVerification }}" />
+    @endif
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -65,7 +82,7 @@
                             <div class="sortbar">
                                 <span class="select-pill">
                                     <x-maktabgid.icon name="sliders" :width="16" :height="16" />
-                                    <select id="js-sort">
+                                    <select id="js-sort" aria-label="{{ __('home.sort_label') }}">
                                         <option value="rel">{{ __('home.sort_recommended') }}</option>
                                         <option value="priceA">{{ __('home.sort_price_asc') }}</option>
                                         <option value="priceD">{{ __('home.sort_price_desc') }}</option>
@@ -108,5 +125,8 @@
 
     <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU{{ config('services.yandex.key') ? '&apikey='.config('services.yandex.key') : '' }}"></script>
     <script src="{{ asset('js/maktabgid.js') }}"></script>
+    {{-- Admin panelda (/admin/settings) kiritilgan xom kod (GA/Metrika) — faqat Super Admin
+         tahrirlay oladi, shuning uchun ataylab escape qilinmagan chiqariladi. --}}
+    {!! Setting::get(SettingKey::CustomJs) !!}
 </body>
 </html>

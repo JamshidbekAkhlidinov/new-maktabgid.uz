@@ -10,6 +10,7 @@ return [
     'cat_playgrounds' => 'Oʻyin maydonchalari',
     'results_count' => ':count ta :cat',
     'found_in_tashkent' => 'Toshkent boʻyicha topildi',
+    'sort_label' => 'Saralash',
     'sort_recommended' => 'Tavsiya etilgan',
     'sort_price_asc' => 'Narx: arzondan',
     'sort_price_desc' => 'Narx: qimmatdan',
@@ -104,6 +105,9 @@ return [
 
     // map.blade.php
     'map_results_count' => ':count ta natija xaritada',
+    'map_zoom_in' => 'Xaritani kattalashtirish',
+    'map_zoom_out' => 'Xaritani kichraytirish',
+    'map_locate' => 'Mening joylashuvim',
 
     // mobile-app.blade.php
     'location' => 'Joylashuv',

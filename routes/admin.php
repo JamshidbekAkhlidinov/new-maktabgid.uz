@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\PermissionController as AdminPermissionController
 use App\Http\Controllers\Admin\ResumeController as AdminResumeController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\Admin\RoleController as AdminRoleController;
+use App\Http\Controllers\Admin\SeoSettingController as AdminSeoSettingController;
 use App\Http\Controllers\Admin\SpecializationController as AdminSpecializationController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\VacancyController as AdminVacancyController;
@@ -85,6 +86,9 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
         Route::get('subscriptions', [AdminComingSoonController::class, 'show'])->name('subscriptions.index')->defaults('page', 'subscriptions');
         Route::get('tariffs', [AdminComingSoonController::class, 'show'])->name('tariffs.index')->defaults('page', 'tariffs');
         Route::get('billing-settings', [AdminComingSoonController::class, 'show'])->name('billing-settings.index')->defaults('page', 'billing-settings');
-        Route::get('settings', [AdminComingSoonController::class, 'show'])->name('settings.index')->defaults('page', 'settings');
+
+        // ---- SEO sozlamalari (meta description, og:image) — bitta qatorli singleton forma ----
+        Route::get('settings', [AdminSeoSettingController::class, 'edit'])->name('settings.index');
+        Route::put('settings', [AdminSeoSettingController::class, 'update'])->name('settings.update');
     });
 });

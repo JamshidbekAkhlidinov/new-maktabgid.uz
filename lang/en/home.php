@@ -10,6 +10,7 @@ return [
     'cat_playgrounds' => 'Playgrounds',
     'results_count' => ':count :cat',
     'found_in_tashkent' => 'found across Tashkent',
+    'sort_label' => 'Sort',
     'sort_recommended' => 'Recommended',
     'sort_price_asc' => 'Price: low to high',
     'sort_price_desc' => 'Price: high to low',
@@ -105,6 +106,9 @@ return [
 
     // map.blade.php
     'map_results_count' => ':count results on the map',
+    'map_zoom_in' => 'Zoom in on map',
+    'map_zoom_out' => 'Zoom out on map',
+    'map_locate' => 'My location',
 
     // mobile-app.blade.php
     'location' => 'Location',
