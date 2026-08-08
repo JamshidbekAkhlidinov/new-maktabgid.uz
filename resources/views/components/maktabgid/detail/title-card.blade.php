@@ -1,6 +1,6 @@
 @props(['school', 'catLabel', 'stats'])
 
-<div class="wrap">
+<div class="wrap detail-title-wrap">
     <div class="title-card">
         <div class="title-main">
             <div class="detail-tags">

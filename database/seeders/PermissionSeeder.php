@@ -45,6 +45,7 @@ class PermissionSeeder extends Seeder
         'vacancies',
         'applications',
         'specializations',
+        'institution-types',
         'districts',
         'news',
         'articles',

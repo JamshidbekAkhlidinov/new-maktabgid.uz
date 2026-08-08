@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\DistrictController as AdminDistrictController;
 use App\Http\Controllers\Admin\InstitutionAchievementController as AdminInstitutionAchievementController;
 use App\Http\Controllers\Admin\InstitutionController as AdminInstitutionController;
 use App\Http\Controllers\Admin\InstitutionMediaController as AdminInstitutionMediaController;
+use App\Http\Controllers\Admin\InstitutionTypeController as AdminInstitutionTypeController;
 use App\Http\Controllers\Admin\NewsController as AdminNewsController;
 use App\Http\Controllers\Admin\PermissionController as AdminPermissionController;
 use App\Http\Controllers\Admin\ResumeController as AdminResumeController;
@@ -68,6 +69,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
         Route::resource('vacancies', AdminVacancyController::class)->except(['show']);
         Route::resource('applications', AdminApplicationController::class)->except(['show']);
         Route::resource('specializations', AdminSpecializationController::class)->except(['show']);
+        Route::resource('institution-types', AdminInstitutionTypeController::class)->except(['show']);
         Route::resource('districts', AdminDistrictController::class)->except(['show']);
         Route::resource('news', AdminNewsController::class)->except(['show']);
         Route::resource('articles', AdminArticleController::class)->except(['show']);

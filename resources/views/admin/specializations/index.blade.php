@@ -3,7 +3,7 @@
 @section('title', 'Kategoriyalar')
 
 @section('content')
-    <x-admin.page-header :total="$specializations->total()" itemLabel="kategoriya" createRoute="admin.specializations.create" createLabel="Kategoriya qo'shish" />
+    <x-admin.page-header :total="$specializations->count()" itemLabel="kategoriya" createRoute="admin.specializations.create" createLabel="Kategoriya qo'shish" />
 
     <x-admin.card class="!p-0 overflow-x-auto">
         <table class="w-full text-sm">
@@ -42,6 +42,4 @@
             </tbody>
         </table>
     </x-admin.card>
-
-    <div class="mt-4">{{ $specializations->links() }}</div>
 @endsection

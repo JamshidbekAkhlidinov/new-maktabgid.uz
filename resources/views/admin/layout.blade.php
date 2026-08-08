@@ -47,6 +47,7 @@
                 <x-admin.nav-link route="admin.advertisements.index" permission="advertisements.view" icon="megaphone">Reklamalar</x-admin.nav-link>
                 <x-admin.nav-link route="admin.group.index" icon="users">Guruh</x-admin.nav-link>
                 <x-admin.nav-link route="admin.specializations.index" permission="specializations.view" icon="tag">Kategoriyalar</x-admin.nav-link>
+                <x-admin.nav-link route="admin.institution-types.index" permission="institution-types.view" icon="building">Muassasa turlari</x-admin.nav-link>
                 <x-admin.nav-link route="admin.districts.index" permission="districts.view" icon="map-pin">Tumanlar</x-admin.nav-link>
                 <x-admin.nav-link route="admin.tags.index" icon="hash">Teglar</x-admin.nav-link>
             </x-admin.nav-group>

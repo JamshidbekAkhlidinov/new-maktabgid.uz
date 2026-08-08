@@ -1,6 +1,10 @@
 @props(['school'])
 
-@php use App\Support\MaktabgidData; @endphp
+@php
+    use App\Support\MaktabgidData;
+
+    $socialIcons = ['instagram' => 'instagram', 'telegram' => 'send', 'facebook' => 'facebook', 'website' => 'globe'];
+@endphp
 
 <aside class="detail-side">
     <div class="side-card">
@@ -24,6 +28,19 @@
                 <li><x-maktabgid.icon name="pin" :width="16" :height="16" /> {{ $school['address'] }}</li>
             @endif
         </ul>
+        @if (!empty($school['social']))
+            <div class="side-divide"></div>
+            <ul class="side-social">
+                @foreach ($school['social'] as $platform => $url)
+                    @continue(blank($url))
+                    <li>
+                        <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="side-social-link" aria-label="{{ ucfirst($platform) }}">
+                            <x-maktabgid.icon :name="$socialIcons[$platform] ?? 'link'" :width="18" :height="18" />
+                        </a>
+                    </li>
+                @endforeach
+            </ul>
+        @endif
     </div>
     <div class="side-map">
         <div id="js-yandex-map-single" class="map-canvas"

@@ -40,12 +40,7 @@
 <x-admin.card class="mt-6">
     <h3 class="text-base font-semibold text-slate-900 mb-4">Asosiy ma'lumotlar</h3>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <x-admin.select name="type" label="Turi" :value="$institution?->type" required :options="[
-            'maktab' => 'Maktab',
-            'bogcha' => 'Bog\'cha',
-            'markaz' => 'Markaz',
-            'mutaxassis' => 'Mutaxassis',
-        ]" />
+        <x-admin.select name="type" label="Turi" :value="$institution?->type" required :options="$institutionTypes->pluck('label', 'key')" />
 
         <x-admin.select name="owner_user_id" label="Egasi (foydalanuvchi)" placeholder="— Tanlanmagan —"
             :value="$institution?->owner_user_id" :options="$owners->pluck('name', 'id')" />

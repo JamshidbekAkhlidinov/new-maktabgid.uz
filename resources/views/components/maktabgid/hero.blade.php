@@ -1,4 +1,4 @@
-@props(['categories' => [], 'districts' => [], 'total' => 103])
+@props(['categories' => [], 'districts' => [], 'catTabs' => [], 'active' => null])
 
 <section class="hero" id="top">
     <div class="hero-bg"></div>
@@ -81,10 +81,8 @@
         </div>
 
         <div class="hero-stats">
-            <div class="hstat"><b>{{ $total }}+</b><span>{{ __('home.stat_institutions') }}</span></div>
-            <div class="hstat"><b>11</b><span>{{ __('home.stat_districts') }}</span></div>
-            <div class="hstat"><b>4.7★</b><span>{{ __('home.stat_rating') }}</span></div>
-            <div class="hstat"><b>24/7</b><span>{{ __('home.stat_online') }}</span></div>
+            <x-maktabgid.cat-tabs-list :tabs="$catTabs" :active="$active" :interactive="false" class="hero-cat-tabs" />
+            <div class="hstat"><b>24/7</b> <span>{{ __('home.stat_online') }}</span></div>
         </div>
     </div>
 </section>
