@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * Eski (Yii2) CMS foydalanuvchilarini (`user` + `user_profile`, 5 ta) admin
@@ -48,12 +50,23 @@ class LegacyAdminUserSeeder extends Seeder
                     'name' => $name,
                     'phone' => $phone,
                     'role' => User::ROLE_ADMIN,
-                    // Eski bcrypt hash to'g'ridan-to'g'ri saqlanadi — Hash::isHashed() buni
-                    // aniqlab qayta hash qilmaydi (Illuminate 'hashed' cast xatti-harakati),
-                    // ya'ni foydalanuvchi eski paroli bilan kira oladi.
-                    'password' => (string) $u['password_hash'],
+                    // `password` NOT NULL — vaqtinchalik joy egallovchi qiymat (plain-text
+                    // bo'lgani uchun 'hashed' cast uni oddiy Hash::make() bilan hash qiladi,
+                    // Hash::verifyConfiguration() chaqirilmaydi). Pastda haqiqiy legacy hash
+                    // bilan almashtiriladi.
+                    'password' => Str::random(32),
                 ]
             );
+
+            // Eski bcrypt hash to'g'ridan-to'g'ri, DB orqali (Eloquent 'hashed' cast'ni
+            // chetlab o'tib) saqlanadi. Cast Hash::verifyConfiguration() chaqiradi, bu esa
+            // hash cost'ini serverning joriy BCRYPT_ROUNDS sozlamasi bilan solishtiradi —
+            // eski hashlar cost=13 bo'lgani uchun BCRYPT_ROUNDS undan past bo'lsa xatolik
+            // berardi. Legacy hash o'zgarmas holda saqlanishi kerak, shuning uchun DB
+            // query builder ishlatiladi.
+            DB::table('users')->where('id', $admin->id)->update([
+                'password' => (string) $u['password_hash'],
+            ]);
 
             // email_verified_at/phone_verified_at User'ning #[Fillable(...)] ro'yxatida yo'q
             // (faqat OTP/email-tasdiqlash oqimi orqali to'ldiriladi) — mass-assignment ularni
