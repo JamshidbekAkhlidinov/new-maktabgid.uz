@@ -16,4 +16,7 @@ return [
     'address' => 'Toshkent, Oʻzbekiston',
     'copyright' => '© 2026 MaktabGID. Barcha huquqlar himoyalangan.',
     'legal_links' => 'Maxfiylik siyosati · Foydalanish shartlari',
+    'social_telegram' => 'Telegram',
+    'social_website' => 'Veb-sayt',
+    'social_phone' => 'Telefon',
 ];

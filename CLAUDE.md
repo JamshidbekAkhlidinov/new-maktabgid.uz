@@ -1,164 +1,402 @@
-<laravel-boost-guidelines>
-=== foundation rules ===
+# CLAUDE.md — Universal loyiha qo'llanmasi (o'z-o'zini rivojlantiruvchi)
 
-# Laravel Boost Guidelines
+> **QOIDA #1:** Har qanday vazifani boshlashdan oldin ushbu faylni to'liq o'qi.
+> Bu faylda loyiha haqida allaqachon to'plangan bilim bor — shuning uchun
+> loyihani qaytadan boshidan skanerlash shart emas. Faqat aniq bir faylning
+> tarkibi kerak bo'lsa, o'sha faylnigina maqsadli o'qi.
+>
+> **QOIDA #2:** Har bir vazifa tugagandan so'ng, shu faylni albatta yangila —
+> yangi o'rgangan narsalarni, qo'shilgan/o'zgartirilgan funksiyalarni,
+> topilgan qoidalarni va muammolarni tegishli bo'limga yoz. Bu faylni
+> "kundalik" emas, balki loyihaning **joriy holatini aks ettiruvchi jonli
+> hujjat** sifatida yurit: eskirgan, endi noto'g'ri yoki keraksiz bo'lgan
+> yozuvlarni o'chir yoki yangila, faylni shishirmasdan qisqa va aniq saqla.
+>
+> **QOIDA #3 (birinchi ishga tushish):** Agar quyidagi bo'limlar bo'sh yoki
+> `_(aniqlanmagan)_` deb belgilangan bo'lsa, loyihani tekshirib (package.json,
+> composer.json, requirements.txt, go.mod, README va h.k.), shu ma'lumotlar
+> bilan bo'limlarni to'ldir. Bu bir martalik "kashfiyot" bosqichi — keyingi
+> safarlarda bu ma'lumot allaqachon shu yerda bo'ladi va qayta izlash
+> shart bo'lmaydi.
 
-The Laravel Boost guidelines are specifically curated by Laravel maintainers for this application. These guidelines should be followed closely to ensure the best experience when building Laravel applications.
+---
 
-## Foundational Context
+## 1. Loyiha haqida umumiy ma'lumot
 
-This application is a Laravel application and its main Laravel ecosystems package & versions are below. You are an expert with them all. Ensure you abide by these specific packages & versions.
+- **Nomi:** MaktabGID (new-maktabgid.uz)
+- **Qisqacha tavsifi / maqsadi:** Bolalar uchun ta'lim muassasalarini (maktab,
+  bog'cha, markaz va h.k.) qidirish/solishtirish/bog'lanish platformasi.
+  Ota-ona, muassasa va ustoz uchun alohida shaxsiy kabinetlar; forum,
+  blog/yangiliklar, karyera (vakansiya/rezyume) bo'limlari va real vaqtli
+  chat mavjud. To'liq arxitektura va biznes-mantiq tarixi `backend.md` va
+  `ADR-0002-*`/`ADR-0003-*` fayllarida hujjatlashtirilgan.
+- **Til(lar) va freymvork(lar):** Backend — PHP / Laravel. Frontend — Blade
+  shablonlari + Vite + Tailwind CSS + vanilla JS (`fetch()`), SPA emas.
+  Avtorizatsiya uchun `spatie/laravel-permission`, ijtimoiy login uchun
+  `laravel/socialite`.
+- **Versiyalar:** PHP ^8.3, Laravel ^13.8, Node/Vite (package.json:
+  vite ^8, tailwindcss ^4).
+- **Ma'lumotlar bazasi:** SQLite — dev (`database/database.sqlite`,
+  `.env: DB_CONNECTION=sqlite`) va testlarda in-memory (`phpunit.xml`).
+  Prod uchun MySQL 8 tavsiya etilgan (`backend.md`), lekin hali sozlanmagan.
+- **Frontend:** Server-rendered Blade sahifalar (SPA emas); interaktiv
+  qismlar (forma yuborish, chat, kabinet amallari) `routes/ajax.php`dagi
+  JSON endpointlarga `fetch()` orqali murojaat qiladi.
+- **Autentifikatsiya/avtorizatsiya usuli:** Laravel session (cookie).
+  Oddiy foydalanuvchilar (parent/institution/teacher) — telefon raqami +
+  OTP orqali kiradi, OTP **SMS emas, Telegram bot** orqali yuboriladi
+  (`App\Services\Otp\TelegramOtpChannel`). Admin panel (`/admin`) — email/
+  parol yoki Google OAuth (Socialite). Avtorizatsiya ikki qatlamli: Spatie
+  `laravel-permission` rollari (`Super Admin`, `Institution Admin`,
+  `Teacher`, `Parent` — `PermissionSeeder`) admin panelni boshqaradi,
+  `users.role` ustuni esa `EnsureRole` middleware orqali oddiy kabinet
+  yo'nalishini (`role:parent`, `role:institution`, `role:teacher`)
+  aniqlaydi. `Super Admin` uchun `Gate::before` orqali barcha huquq
+  avtomatik beriladi (`AppServiceProvider::boot()`).
+- **Deploy muhiti:** _(aniqlanmagan — `.htaccess` mavjud, apache/shared
+  hosting ehtimoli bor, aniq CI/CD yoki server konfiguratsiyasi topilmadi)_
 
-- php - 8.3
-- laravel/framework (LARAVEL) - v13
-- laravel/prompts (PROMPTS) - v0
-- laravel/socialite (SOCIALITE) - v5
-- laravel/boost (BOOST) - v2
-- laravel/mcp (MCP) - v0
-- laravel/pail (PAIL) - v1
-- laravel/pint (PINT) - v1
-- phpunit/phpunit (PHPUNIT) - v12
-- tailwindcss (TAILWINDCSS) - v4
+---
 
-## Skills Activation
+## 2. Loyiha tuzilishi (papkalar xaritasi)
 
-This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
+```
+app/
+├── Console/Commands/          buyruqlar (routes/console.php orqali chaqiriladi)
+├── Http/
+│   ├── Controllers/
+│   │   ├── Admin/             /admin panel (resource controllerlar)
+│   │   ├── Auth/              OTP, ro'yxatdan o'tish, login/logout, Google OAuth
+│   │   ├── Cabinet/            Parent/Institution/Teacher kabinetlari
+│   │   ├── Career/             vakansiya/rezyume (ommaviy va kabinet)
+│   │   ├── Forum/               forum thread/reply/like
+│   │   ├── Institution/         muassasa kabineti ichki amallari (media, profil...)
+│   │   ├── Telegram/            bot webhook
+│   │   └── Concerns/            controllerlar uchun umumiy trait'lar
+│   ├── Requests/                har bir yozuv amali uchun FormRequest
+│   ├── Resources/                fetch() javoblari uchun JSON shakllantirish
+│   └── Middleware/
+│       ├── EnsureAdmin.php       /admin faqat "Super Admin" roliga ochiq
+│       ├── EnsureRole.php        role:parent / role:institution / role:teacher
+│       └── SetLocale.php         /til/{locale} bilan bog'liq ko'p tillilik
+├── Enums/                        SettingKey/SettingInputType kabi "enum-driven" ro'yxatlar
+│                                  (bo'lim 3/4ga qarang — admin sozlamalar shu asosda quriladi)
+├── Models/                      Eloquent modellari (bo'lim 3ga qarang)
+├── Observers/                   ReviewObserver, ForumLikeObserver (avtomatik hisob)
+├── Policies/                    Institution/Application/Conversation/Forum policy
+├── Services/
+│   ├── Geo/YandexGeocodingService.php   manzil -> lat/lng (Yandex Maps API)
+│   ├── Media/MediaUploadService.php     fayl yuklash (MEDIA_DISK orqali)
+│   ├── Otp/                              OtpService + OtpChannel interfeysi
+│   │                                      + TelegramOtpChannel (yagona real kanal)
+│   └── Telegram/TelegramBotService.php   sendMessage va h.k.
+└── Support/
+    ├── MaktabgidData.php          eski mock-data klassi — endi "read-adapter":
+    │                               Eloquent'dan o'qiydi, lekin Blade'lar
+    │                               o'zgarmasin deb eski metod imzolari saqlangan
+    ├── LegacyMedia.php             eski (import qilingan) media yo'llari uchun yordamchi
+    └── Concerns/HasTranslatable.php  tarjima qilinadigan Eloquent maydonlari uchun trait
 
-## Conventions
+routes/
+├── web.php        ommaviy va kabinet sahifalari (GET, Blade render)
+├── ajax.php        fetch() bilan chaqiriladigan JSON endpointlar (web middleware)
+├── admin.php        /admin panel (auth + admin middleware ostida)
+├── telegram.php      bot webhook (CSRF'dan mustasno)
+└── console.php       artisan buyruqlari
 
-- You must follow all existing code conventions used in this application. When creating or editing a file, check sibling files for the correct structure, approach, and naming.
-- Use descriptive names for variables and methods. For example, `isRegisteredForDiscounts`, not `discount()`.
-- Check for existing components to reuse before writing a new one.
+database/
+├── migrations/      xronologik migratsiyalar (legacy_* ustunlar — eski
+│                     `old_data_maktab.sql`/`.json`dan import uchun)
+└── seeders/          PermissionSeeder (rol/permission), SettingSeeder va h.k.
 
-## Verification Scripts
+resources/views/    Blade shablonlari (admin/, cabinet/ va h.k. papkalarga bo'lingan)
+lang/                ko'p tillilik uchun tarjima fayllari
+config/              standart Laravel konfiguratsiyasi
+```
 
-- Do not create verification scripts or tinker when tests cover that functionality and prove they work. Unit and feature tests are more important.
+**Kalit fayllar (tez-tez murojaat qilinadigan):**
+- `backend.md` — loyihaning **to'liq backend arxitektura hujjati**: rollar,
+  servis qatlami, route xaritasi, texnologik qarorlar. Katta backend
+  o'zgarish qilishdan oldin albatta shu faylni o'qish tavsiya etiladi.
+- `ADR-0002-toliq-dinamiklashtirish.md`, `ADR-0003-real-vaqtli-chat.md` —
+  qabul qilingan arxitektura qarorlari, sabablari va oqibatlari (nima
+  "ataylab mock/demo" qilib qoldirilgani shu yerda tushuntirilgan).
+- `app/Providers/AppServiceProvider.php` — Gate::before (Super Admin),
+  observer'larni ro'yxatdan o'tkazish, rate limiter.
+- `database/seeders/PermissionSeeder.php` — rol/permission nomlari uchun
+  markazlashgan konstantalar (`PermissionSeeder::ROLE_*`).
+- `app/Enums/SettingKey.php` — sayt darajasidagi barcha key-value
+  sozlamalarning yagona ro'yxati (bo'lim 3/4ga qarang); yangi sozlama
+  qo'shishda birinchi navbatda shu fayl tahrirlanadi.
+- `boost.json` / `.mcp.json` — Laravel Boost MCP integratsiyasi
+  (`php artisan boost:mcp`), qo'shimcha ma'lumot/schema/doc-search vositalari.
 
-## Application Structure & Architecture
+---
 
-- Stick to existing directory structure; don't create new base folders without approval.
-- Do not change the application's dependencies without approval.
+## 3. Ma'lumotlar modeli / sxema (agar mavjud bo'lsa)
 
-## Frontend Bundling
+> Har safar yangi jadval/model/entity bilan ishlanganda shu bo'limga
+> qisqacha qo'sh: nomi, asosiy maydonlar, bog'lanishlar.
 
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `npm run build`, `npm run dev`, or `composer run dev`. Ask them.
+| Jadval/Model | Tavsif | Bog'lanishlar |
+|---|---|---|
+| `User` | Barcha rol turlari uchun yagona jadval (`role` ustuni: parent/institution/teacher + Spatie rol) | `Institution`ga (agar institution bo'lsa), `Child`, `Conversation`, `Application` va h.k.ga bog'lanadi |
+| `Institution` | Ta'lim muassasasi profili (nomi, tavsifi, manzil, narx, reyting — ba'zi maydonlar `HasTranslatable` orqali tarjima qilinadi) | `District`, `Specialization` (M:M), `InstitutionMedia`, `InstitutionPrice`, `Review`, `Achievement`, `Vacancy` |
+| `District` | Tuman/hudud spravochnigi | `Institution` (1:M) |
+| `Specialization` | Muassasa yo'nalishi/mutaxassisligi | `Institution` (M:M, `institution_specialization`) |
+| `InstitutionType` | Muassasa turi (bog'cha/maktab/markaz va h.k.) | `Institution`ga bog'lanadi |
+| `InstitutionMedia` | Galereya rasm/video (`type`: gallery va h.k.) | `Institution`ga tegishli |
+| `InstitutionPrice` | Muassasa narx bandlari | `Institution`ga tegishli |
+| `Review` | Foydalanuvchi sharhi va bahosi | `ReviewObserver` orqali `Institution.rating`/`review_count` avtomatik qayta hisoblanadi |
+| `Favorite` | Ota-onaning saqlangan muassasalari | `User` <-> `Institution` |
+| `Application` | Ota-ona arizasi (`type`: enrollment/excursion) — "Lidlar" CRM ham shu jadvaldan | `User`(parent) -> `Institution` |
+| `VacancyApplication` | Vakansiyaga ariza/nomzod | `Vacancy` <-> `User`(teacher, nullable — mehmon ham qoldira oladi) |
+| `Child` | Ota-onaning bolasi | `User`(parent)ga tegishli |
+| `Conversation` / `Message` | Real vaqtli chat (Laravel Reverb orqali broadcast, `MessageSent` eventi) | `Conversation` — parent<->institution (teacher tomoni ADR-0002da "kechiktirilgan" deb belgilangan) |
+| `ForumThread` / `ForumReply` / `ForumLike` | Forum mavzu/javob/layk | `ForumLikeObserver` orqali `like_count` avtomatik hisoblanadi |
+| `News` / `Article` | Yangiliklar va blog | Admin CRUD orqali boshqariladi |
+| `Vacancy` / `Resume` | Karyera bo'limi (ish o'rni / rezyume) | `Institution` -> `Vacancy`; `Resume` foydalanuvchiga tegishli |
+| `Achievement` | Muassasa yutuqlari galereyasi | `Institution`ga tegishli |
+| `Advertisement` | Reklama bloklari | Admin CRUD |
+| `InstitutionView` | Muassasa profili ko'rishlar hisoblagichi (analitika uchun) | `Institution` <-> `User`(nullable, mehmon ham) |
+| `OtpCode` / `TelegramLink` | Telefon orqali OTP tasdiqlash va telefon<->Telegram chat_id bog'lanishi | Auth oqimida ishlatiladi |
+| `Setting` | Generik key-value sozlama qatori (`key`, `value`) — `/admin/settings` orqali tahrirlanadi | Kalitlar jadvalda emas, `App\Enums\SettingKey`da qat'iy belgilanadi (label/inputType/group/maxLength/default shu yerda); `Setting::get(SettingKey::X)`/`Setting::set()` orqali o'qiladi/yoziladi. Hozirgi kalitlar: `MetaTitle`, `MetaDescription`, `OgImage`, `GoogleSiteVerification`, `YandexVerification`, `CustomJs`. Yangi sozlama qo'shish uchun jadvalga ustun qo'shish SHART EMAS — faqat enumga `case` qo'shiladi, admin forma (`admin/settings/edit.blade.php`) va `Admin\SeoSettingController` shu ro'yxat bo'yicha avtomatik ishlaydi |
 
-## Documentation Files
+---
 
-- You must only create documentation files if explicitly requested by the user.
+## 4. Kod yozish qoidalari va konventsiyalar
 
-## Replies
+> Loyihada kuzatilgan naqshlarni (pattern) shu yerga yoz: nomlash
+> qoidalari, papka tuzilishi mantiqi, qaysi qatlamda qanday logika
+> yozilishi kerakligi, formatlash/linter sozlamalari va h.k.
 
-- Be concise in your explanations - focus on what's important rather than explaining obvious details.
+- **Servis qatlami:** tashqi integratsiyalar (Yandex geocoding, media
+  yuklash, OTP, Telegram bot) controllerga to'g'ridan-to'g'ri emas,
+  `app/Services/*` klasslar orqali yoziladi; almashtiriladigan qismlar
+  interfeys orqali bind qilinadi (masalan `OtpChannel` -> `TelegramOtpChannel`,
+  bind joyi `AppServiceProvider::register()`).
+- **Observer pattern hisoblangan ustunlar uchun:** `Institution.rating`/
+  `review_count` va Forum `like_count` kabi "hisoblangan" ustunlarni qo'lda
+  yangilamang — `Review`/`ForumLike` Observer'lari (`app/Observers`)
+  CRUD amalidan keyin avtomatik qayta hisoblaydi.
+- **Ikki qatlamli avtorizatsiya:** Spatie `laravel-permission` rollari
+  faqat `/admin` panel uchun (`EnsureAdmin` — faqat "Super Admin"); oddiy
+  kabinet yo'nalishi (`role:parent`/`role:institution`/`role:teacher`)
+  `User.role` ustuni + `EnsureRole` middleware orqali tekshiriladi. Yangi
+  himoyalangan route qo'shganda qaysi tizim kerakligini aniqlab oling.
+- **Ko'p tillilik:** ba'zi Eloquent modellarda (`Institution`,
+  `Specialization`) tarjima qilinadigan maydonlar bor — `HasTranslatable`
+  concern (`app/Support/Concerns`) orqali ishlaydi, migratsiyalarda
+  `make_*_fields_translatable` nomlanishi bilan izlash mumkin.
+- **Route joylashuvi:** oddiy sahifa (Blade render) -> `web.php`; `fetch()`
+  bilan chaqiriladigan JSON amal -> `ajax.php`; admin panel resurslari ->
+  `admin.php` (deyarli barchasi `Route::resource(...)->except(['show'])`
+  naqshida).
+- **`app/Support/MaktabgidData.php` haqida ehtiyot bo'ling:** bu klass eski
+  mock-data davridan qolgan, lekin endi Eloquent'dan o'qiydigan
+  "read-adapter" — eski metod imzolari ataylab saqlangan (Blade shablonlar
+  o'zgarmasin deb). Yangi kod yozganda bevosita Eloquent modeldan
+  foydalaning, bu klassni faqat mavjud chaqiruvlarni tushunish uchun o'qing.
+- **"Pullik demo" formalar (`.js-fake-form`):** muassasa kabinetidagi
+  "Vakansiya ochish" va ustoz kabinetidagi "Yangi rezyume" formalari to'lov
+  tizimi (Payme/Click) hali ulanmagani uchun **ataylab** demo holatda —
+  bu xato emas, "tuzatish" kerak emas (ADR-0002).
+- **Yangi dependency qo'shishdan oldin ogohlantiring:** masalan
+  `doctrine/dbal` loyihada yo'q va ADR-0002 bo'yicha shu sabab bilan bir
+  migratsiya ataylab kechiktirilgan — yangi composer/npm paketi qo'shishdan
+  oldin foydalanuvchi bilan tasdiqlashtiring.
+- **Kod formatlash:** PHP uchun Laravel Pint (`vendor/bin/pint`) o'rnatilgan;
+  commit qilishdan oldin ishga tushirish tavsiya etiladi.
+- **"Enum-driven" admin sozlama naqshi (`App\Enums\SettingKey` misolida):**
+  key-value jadval + backed enum orqali "har safar yangi maydon uchun
+  migratsiya/controller/view yozish shart emas" andozasi. Enum case'i
+  metadata (label, inputType, group, maxLength, default, placeholder,
+  hint) tashiydi; admin Blade view `SettingKey::cases()` bo'yicha `@foreach`
+  bilan formani avtomatik chizadi, controller esa cases() bo'yicha
+  validatsiya qoidalarini dinamik quradi. Kelajakda shunga o'xshash
+  "kengaytiriladigan sozlamalar" kerak bo'lsa (masalan boshqa singleton
+  konfiglar), shu andozani takrorlang — yangi jadval/ustun o'rniga yangi
+  `enum` case'i qo'shing.
 
-=== boost rules ===
+---
 
-# Laravel Boost
+## 5. Ishga tushirish, build va test buyruqlari
 
-## Tools
+```bash
+# Birinchi o'rnatish
+composer install
+npm install
+cp .env.example .env && php artisan key:generate
+php artisan migrate --seed
 
-- Laravel Boost is an MCP server with tools designed specifically for this application. Prefer Boost tools over manual alternatives like shell commands or file reads.
-- Use `database-query` to run read-only queries against the database instead of writing raw SQL in tinker.
-- Use `database-schema` to inspect table structure before writing migrations or models.
-- Use `get-absolute-url` to resolve the correct scheme, domain, and port for project URLs. Always use this before sharing a URL with the user.
-- Use `browser-logs` to read browser logs, errors, and exceptions. Only recent logs are useful, ignore old entries.
+# Dev muhitni to'liq ishga tushirish (server + queue + log tailing + vite parallel)
+composer run dev
 
-## Searching Documentation (IMPORTANT)
+# Yoki alohida-alohida:
+php artisan serve
+npm run dev                                   # Vite dev server (Tailwind 4)
+php artisan queue:listen --tries=1 --timeout=0
+php artisan pail --timeout=0                  # jonli log
 
-- Always use `search-docs` before making code changes. Do not skip this step. It returns version-specific docs based on installed packages automatically.
-- Pass a `packages` array to scope results when you know which packages are relevant.
-- Use multiple broad, topic-based queries: `['rate limiting', 'routing rate limiting', 'routing']`. Expect the most relevant results first.
-- Do not add package names to queries because package info is already shared. Use `test resource table`, not `filament 4 test resource table`.
+# Frontend production build
+npm run build
 
-### Search Syntax
+# Testlar
+composer test                                 # yoki: php artisan test
+php artisan test tests/Feature/ChatTest.php   # bitta test fayli
+php artisan test --filter=ChatTest            # nom bo'yicha filtr
 
-1. Use words for auto-stemmed AND logic: `rate limit` matches both "rate" AND "limit".
-2. Use `"quoted phrases"` for exact position matching: `"infinite scroll"` requires adjacent words in order.
-3. Combine words and phrases for mixed queries: `middleware "rate limit"`.
-4. Use multiple queries for OR logic: `queries=["authentication", "middleware"]`.
+# Kod formatlash (PHP)
+vendor/bin/pint
 
-## Artisan
+# Laravel Boost MCP (schema/log/doc-search vositalari uchun)
+php artisan boost:mcp
+```
 
-- Run Artisan commands directly via the command line (e.g., `php artisan route:list`). Use `php artisan list` to discover available commands and `php artisan [command] --help` to check parameters.
-- Inspect routes with `php artisan route:list`. Filter with: `--method=GET`, `--name=users`, `--path=api`, `--except-vendor`, `--only-vendor`.
-- Read configuration values using dot notation: `php artisan config:show app.name`, `php artisan config:show database.default`. Or read config files directly from the `config/` directory.
+**Eslatma:** dev muhitda DB — SQLite (`database/database.sqlite`);
+testlarda in-memory SQLite (`phpunit.xml`) ishlatiladi, alohida test DB
+sozlash shart emas.
 
-## Tinker
+---
 
-- Execute PHP in app context for debugging and testing code. Do not create models without user approval, prefer tests with factories instead. Prefer existing Artisan commands over custom tinker code.
-- Always use single quotes to prevent shell expansion: `php artisan tinker --execute 'Your::code();'`
-  - Double quotes for PHP strings inside: `php artisan tinker --execute 'User::where("active", true)->count();'`
+## 6. O'rgangan narsalar va qabul qilingan yechimlar (LOG)
 
-=== php rules ===
+> **Eng muhim bo'lim.** Har bir vazifadan keyin shu yerga yoz.
+> Format: sana — vazifa — nima o'rganildi — nima qilindi — eslatma.
+> Bo'lim juda uzayib ketsa, eskirgan/ahamiyatsiz yozuvlarni siqib,
+> muhim xulosalarni yuqoridagi bo'limlarga (2, 3, 4, 7) ko'chirib,
+> shu yerdan o'chir — bu bo'lim "oxirgi holat"ni emas, "jarayon
+> xotirasi"ni saqlaydi, shuning uchun davriy tozalanishi kerak.
 
-# PHP
+### 2026-08-08 — Birinchi kashfiyot bosqichi (CLAUDE.md bo'limlarini to'ldirish)
+- **Vazifa:** Foydalanuvchi "CLAUDE.md ni o'qi va amal qil" dedi; fayl Qoida
+  #3 bo'yicha hali `_(aniqlanmagan)_` bo'limlarga to'la edi — birinchi
+  ishga tushirish sifatida loyiha tekshirilib, bo'lim 1-5 to'ldirildi.
+- **Nima o'rganildi:** Bu — MaktabGID (Laravel 13/PHP 8.3) ta'lim
+  muassasalari katalogi loyihasi. Loyihada juda batafsil o'z hujjatlari
+  bor: `backend.md` (to'liq arxitektura spetsifikatsiyasi) va
+  `ADR-0002-toliq-dinamiklashtirish.md`/`ADR-0003-real-vaqtli-chat.md`
+  (qabul qilingan qarorlar tarixi, nima ataylab mock qoldirilgani). Bular
+  CLAUDE.md'dan ko'ra batafsilroq — katta backend ishida ularni ham o'qish
+  kerak. Loyiha allaqachon ishlab turgan holatda (bo'sh skelet emas):
+  4 rol, real DB, real auth, Telegram OTP, Spatie permission bilan admin
+  panel — hammasi ishlaydi.
+- **Qo'shilgan/o'zgargan funksiya:** Kod o'zgartirilmadi — faqat CLAUDE.md
+  bo'lim 1-5 (umumiy ma'lumot, papka xaritasi, ma'lumotlar modeli, kod
+  konventsiyalari, buyruqlar) real loyiha holati bilan to'ldirildi.
+- **Eslatma:** Ishga tushirish paytida repo holatida commit qilinmagan
+  ishlar bor edi (admin sozlamalar funksiyasi, quyidagi yozuvga qarang) —
+  git holatiga tegilmadi, faqat CLAUDE.md tavsiflandi.
 
-- Always use curly braces for control structures, even for single-line bodies.
-- Use PHP 8 constructor property promotion: `public function __construct(public GitHub $github) { }`. Do not leave empty zero-parameter `__construct()` methods unless the constructor is private.
-- Use explicit return type declarations and type hints for all method parameters: `function isAccessible(User $user, ?string $path = null): bool`
-- Use TitleCase for Enum keys: `FavoritePerson`, `BestLake`, `Monthly`.
-- Prefer PHPDoc blocks over inline comments. Only add inline comments for exceptionally complex logic.
-- Use array shape type definitions in PHPDoc blocks.
+### 2026-08-08 — Lighthouse optimizatsiya + admin sozlamalar (SEO) funksiyasi
+- **Vazifa:** Chrome DevTools orqali saytni tekshirib, Lighthouse
+  ko'rsatkichlarini (Accessibility/SEO/Best Practices/Agentic Browsing)
+  optimallashtirish; keyin foydalanuvchi so'rovi bilan SEO/JS
+  konfiglarini `/admin/settings`dan boshqarish imkoniyati qo'shildi.
+- **Nima o'rganildi:** Bosh sahifadagi maktab kartochkalari CSS
+  `background:url()` orqali chiqarilgani (native `loading="lazy"` ishlamaydi)
+  va serverda cheklovsiz barcha muassasa render qilinishi 300+ rasmni bir
+  vaqtda yuklab, sahifani "osilib qolgan"dek qilib qo'yardi. Mobil rejimda
+  `.results-grid`ning 1-ustunli grid holatida `min-width:auto` (standart
+  CSS Grid xatti-harakati) tufayli gorizontal scroll paydo bo'lardi.
+  Rang kontrastining aksariyati (`--ink-3`/`--primary` oq fonda) yagona
+  bir nechta CSS token orqali tuzatilishi mumkin ekan.
+- **Qo'shilgan/o'zgargan funksiya:**
+  - `welcome.blade.php`/`maktabgid.js`: kartochka fon rasmi `data-bg`
+    orqali faqat sahifada ko'rinadigan bo'lganda yuklanadi; 10 tadan
+    "load more" o'rniga 20 tadan raqamli pagination (`js-pagination`);
+    filtr/pagination scroll manzili `#js-results-head`ga aniqlashtirildi
+    (`scroll-margin-top: 140px` — sticky panellar hisobga olindi).
+  - `maktabgid.css`: `.results-grid > * { min-width: 0 }` (mobil
+    gorizontal scroll tuzatildi); `--ink-3` va bir nechta joyda
+    `--primary` -> `--primary-600` (WCAG AA kontrast); `.tag-new` matn
+    rangi oq -> `--ink`; `.btn-tg` ko'k rangi qorong'iroq qilindi;
+    `.ad-banner-dots .dot` teginish maydoni 24×24px ga kattalashtirildi.
+  - Accessibility: xarita tugmalari/footer ijtimoiy havolalar/`#js-sort`ga
+    `aria-label`; heading tartibi tuzatildi (`ad-banner` h3->h2, footer
+    h5->h3); auth-modal va qidiruv maydonlariga to'g'ri `autocomplete`.
+  - **Admin sozlamalar (`/admin/settings`, `Admin\SeoSettingController`):**
+    generik `settings` (key-value) jadvali + `App\Enums\SettingKey`
+    (bo'lim 3/4ga qarang) — bosh sahifa `<meta description>`, `og:*`,
+    Google Search Console/Yandex Webmaster tasdiqlash kodlari va
+    `</body>` oldidan chiqadigan maxsus JS kodi (Analytics/Metrika)
+    shu orqali boshqariladi. `SettingSeeder` standart qiymatlarni yaratadi.
+    **Diqqat:** bu funksiya birinchi marta oddiy `SeoSetting` modeli
+    (belgilangan ustunlar bilan) sifatida yozilgan, so'ng foydalanuvchi
+    so'rovi bilan key-value+enumga to'liq qayta qurilgan — eski
+    migratsiyalar `down()` qilinib o'chirildi, faqat yangi arxitektura
+    qoldi (yuqoridagi bo'lim 3dagi `Setting` yozuviga qarang).
+- **Eslatma:** Best Practices (77) va Agentic Browsing (50) balli
+  Yandex Maps kutubxonasining o'z kodidan (copyright havolasi, 3rd-party
+  cookie) kelib chiqadi — bizning kodda tuzatib bo'lmaydi.
 
-=== deployments rules ===
+---
 
-# Deployment
+## 7. Ma'lum muammolar, cheklovlar va texnik qarzlar
 
-- Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
+- **`doctrine/dbal` o'rnatilmagan** — shu sabab bilan ustoz<->muassasa
+  suhbati uchun `conversations.parent_user_id`ni nullable qilish
+  (`->change()`) ADR-0002da ataylab kechiktirilgan. Yangi dependency
+  qo'shish alohida tasdiq talab qiladi.
+- **To'lov tizimi (Payme/Click) ulanmagan** — vakansiya ochish (100 000
+  so'm) va yangi rezyume (30 000 so'm) kabinet formalari ataylab
+  `.js-fake-form` bilan demo holatda qoldirilgan; production'ga chiqishdan
+  oldin albatta hal qilinishi kerak (ADR-0002 "Consequences" bo'limi).
+- **Analitikada mock qismlar bor:** trafik-manba (donut) va bola yoshi
+  taqsimoti hali hech qanday hodisadan yozib olinmaydi — real qilish uchun
+  ko'rish hodisasiga `utm_source`/referrer va ariza formasiga bola yoshi
+  maydonini qo'shish kerak bo'ladi.
+- **`.env`da `BROADCAST_CONNECTION=log`** (dev) — Reverb orqali real vaqtli
+  chat productionda ishlashi uchun broadcast connection va Reverb server
+  sozlanishi kerak (`ADR-0003-real-vaqtli-chat.md`ga qarang).
+- **Deploy/CI muhiti hujjatlashtirilmagan** — repo ichida faqat `.htaccess`
+  bor, aniq server/CI konfiguratsiyasi topilmadi.
 
-=== laravel/core rules ===
+---
 
-# Do Things the Laravel Way
+## 8. Keyingi ishlar / TODO
 
-- Use `php artisan make:` commands to create new files (i.e. migrations, controllers, models, etc.). You can list available Artisan commands using `php artisan list` and check their parameters with `php artisan [command] --help`.
-- If you're creating a generic PHP class, use `php artisan make:class`.
-- Pass `--no-interaction` to all Artisan commands to ensure they work without user input. You should also pass the correct `--options` to ensure correct behavior.
+- Admin sozlamalar funksiyasi (`Setting`/`SettingKey`, bo'lim 3/6ga
+  qarang) tugallangan va sinovdan o'tgan, lekin repo holatida hali
+  commit qilinmagan (2026-08-08). Commit qilingach shu bandni o'chirish
+  kerak.
+- To'lov integratsiyasi (Payme/Click) — vakansiya/rezyume pullik
+  formalarini real qilish uchun (ADR-0002, "qarz sifatida qoladi").
+- Ustoz <-> muassasa suhbati (`conversations`ni kengaytirish yoki alohida
+  jadval) — `doctrine/dbal` masalasi hal qilinganidan keyin (bo'lim 7ga
+  qarang).
 
-### Model Creation
+---
 
-- When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `php artisan make:model --help` to check the available options.
+## 9. Ishlash tartibi (har bir vazifa uchun majburiy workflow)
 
-## APIs & Eloquent Resources
+1. **O'qi:** `CLAUDE.md` faylini to'liq o'qi.
+2. **Tekshir:** Agar kerakli bo'lim bo'sh/eskirgan bo'lsa va vazifa uchun
+   zarur bo'lsa — faqat shu qismga tegishli haqiqiy fayllarni maqsadli
+   o'qi (butun loyihani qayta skanerlama).
+3. **Bajar:** Vazifani amalga oshir.
+4. **Yangila (majburiy):**
+   - Bo'lim 6 (LOG)ga qisqa yozuv qo'sh.
+   - Yangi funksiya/fayl/papka qo'shilgan bo'lsa → bo'lim 2ni yangila.
+   - Yangi model/jadval bo'lsa → bo'lim 3ni yangila.
+   - Yangi qoida/naqsh aniqlansa → bo'lim 4ni yangila.
+   - Yangi build/test buyrug'i aniqlansa → bo'lim 5ni yangila.
+   - Muammo/cheklov topilsa → bo'lim 7ni to'ldir.
+   - Bajarilgan TODO bo'lsa → bo'lim 8dan o'chir; yangi aniqlangan
+     ishlar bo'lsa → qo'sh.
+5. **Tozala:** Fayl umumiy hajmini nazorat qil — takrorlanuvchi yoki
+   endi ahamiyatsiz yozuvlarni siqib qisqartir. Maqsad: fayl qanchalik
+   aniq va ixcham bo'lsa, keyingi vazifalarda shunchalik kam token
+   sarflanadi.
 
-- For APIs, default to using Eloquent API Resources and API versioning unless existing API routes do not, then you should follow existing application convention.
+---
 
-## URL Generation
+## 10. Umumiy tamoyillar (barcha loyihalar uchun)
 
-- When generating links to other pages, prefer named routes and the `route()` function.
-
-## Testing
-
-- When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
-- Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
-- When creating tests, make use of `php artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
-
-## Vite Error
-
-- If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `npm run build` or ask the user to run `npm run dev` or `composer run dev`.
-
-=== pint/core rules ===
-
-# Laravel Pint Code Formatter
-
-- If you have modified any PHP files, you must run `vendor/bin/pint --dirty --format agent` before finalizing changes to ensure your code matches the project's expected style.
-- Do not run `vendor/bin/pint --test --format agent`, simply run `vendor/bin/pint --format agent` to fix any formatting issues.
-
-=== phpunit/core rules ===
-
-# PHPUnit
-
-- This application uses PHPUnit for testing. All tests must be written as PHPUnit classes. Use `php artisan make:test --phpunit {name}` to create a new test.
-- If you see a test using "Pest", convert it to PHPUnit.
-- Every time a test has been updated, run that singular test.
-- When the tests relating to your feature are passing, ask the user if they would like to also run the entire test suite to make sure everything is still passing.
-- Tests should cover all happy paths, failure paths, and edge cases.
-- You must not remove any tests or test files from the tests directory without approval. These are not temporary or helper files; these are core to the application.
-
-## Running Tests
-
-- Run the minimal number of tests, using an appropriate filter, before finalizing.
-- To run all tests: `php artisan test --compact`.
-- To run all tests in a file: `php artisan test --compact tests/Feature/ExampleTest.php`.
-- To filter on a particular test name: `php artisan test --compact --filter=testName` (recommended after making a change to a related file).
-
-</laravel-boost-guidelines>
+- Hech qachon taxmin bilan ish yuritma — noaniqlik bo'lsa, avval real
+  faylni tekshir, keyin harakat qil.
+- Mavjud kod stiliga mos yoz (formatlash, nomlash, arxitektura).
+- Har doim eng kichik, aniq o'zgarish kiritishga harakat qil — keraksiz
+  refaktoringdan saqlan, agar aniq so'ralmagan bo'lsa.
+- Maxfiy ma'lumotlar (parollar, API kalitlar, `.env` tarkibi) ushbu
+  faylga hech qachon yozilmasin.

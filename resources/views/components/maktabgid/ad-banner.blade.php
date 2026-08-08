@@ -47,7 +47,7 @@
                             <x-maktabgid.icon name="sparkle" :width="14" :height="14" />
                             {{ $ad['badge'] }}
                         </span>
-                        <h3>{{ $ad['title'] }}</h3>
+                        <h2>{{ $ad['title'] }}</h2>
                         <p>
                             <span class="ad-banner-rating">
                                 <x-maktabgid.icon name="star" :width="13" :height="13" fill="#f5b400" stroke="#f5b400" />

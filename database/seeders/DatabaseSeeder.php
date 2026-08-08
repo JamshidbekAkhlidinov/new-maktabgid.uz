@@ -43,6 +43,11 @@ class DatabaseSeeder extends Seeder
             LegacyVacancySeeder::class,
 
             LegacyAdvertisementSeeder::class,
+
+            // Sayt darajasidagi sozlamalar (meta description, og:image, JS kodlar va h.k.,
+            // ro'yxati App\Enums\SettingKey'da) — admin panelda /admin/settings orqali
+            // keyinchalik tahrirlanadi.
+            SettingSeeder::class,
         ]);
     }
 }

@@ -42,11 +42,7 @@ class ComingSoonController extends Controller
             'icon' => 'cog',
             'description' => 'To\'lov provayderlari va billing sozlamalari tez orada qo\'shiladi.',
         ],
-        'settings' => [
-            'title' => 'Sozlamalar',
-            'icon' => 'cog',
-            'description' => 'Tizim darajasidagi umumiy sozlamalar tez orada qo\'shiladi.',
-        ],
+        // 'settings' — endi Admin\SeoSettingController orqali boshqariladi (2026-08-08).
     ];
 
     public function show(string $page): View

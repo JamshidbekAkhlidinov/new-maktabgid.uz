@@ -10,6 +10,7 @@ return [
     'cat_playgrounds' => 'Детские площадки',
     'results_count' => ':count :cat',
     'found_in_tashkent' => 'найдено по Ташкенту',
+    'sort_label' => 'Сортировка',
     'sort_recommended' => 'Рекомендуемые',
     'sort_price_asc' => 'Цена: по возрастанию',
     'sort_price_desc' => 'Цена: по убыванию',
@@ -105,6 +106,9 @@ return [
 
     // map.blade.php
     'map_results_count' => ':count результатов на карте',
+    'map_zoom_in' => 'Увеличить карту',
+    'map_zoom_out' => 'Уменьшить карту',
+    'map_locate' => 'Моё местоположение',
 
     // mobile-app.blade.php
     'location' => 'Местоположение',
