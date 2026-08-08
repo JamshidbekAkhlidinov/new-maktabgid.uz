@@ -18,11 +18,11 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="forum">
-        <x-maktabgid.page-head icon="forum" kicker="{{ __('forum.kicker') }}" title="{{ __('forum.thread_page_title') }}" />
+        <x-maktabgid.page-head icon="forum" :kicker="__('forum.kicker')" :title="__('forum.thread_page_title')" />
 
         <div class="wrap forum-body">
             <div class="forum-thread">
-                <x-maktabgid.back-link href="{{ route('forum.index') }}" label="{{ __('forum.back_to_forum') }}" />
+                <x-maktabgid.back-link :href="route('forum.index')" :label="__('forum.back_to_forum')" />
 
                 <article class="thread-post">
                     <span class="thread-cat">{{ $thread['cat'] }}</span>

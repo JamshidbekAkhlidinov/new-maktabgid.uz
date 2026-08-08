@@ -12,7 +12,7 @@
     ];
 @endphp
 
-<x-parent.shell active="subscription" title="{{ __('cabinet_parent.nav_subscription') }}" sub="{{ __('cabinet_parent.subscription_sub') }}" :user="$user" :stats="$stats">
+<x-parent.shell active="subscription" :title="__('cabinet_parent.nav_subscription')" :sub="__('cabinet_parent.subscription_sub')" :user="$user" :stats="$stats">
 
     <div class="cab-sub-row">
         <div class="panel">

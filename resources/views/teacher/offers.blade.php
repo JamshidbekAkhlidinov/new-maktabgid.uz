@@ -9,7 +9,7 @@
     ];
 @endphp
 
-<x-teacher.shell active="offers" title="{{ __('cabinet_teacher.nav_offers') }}" sub="{{ __('cabinet_teacher.offers_sub') }}" :teacher="$teacher" :counts="$counts">
+<x-teacher.shell active="offers" :title="__('cabinet_teacher.nav_offers')" :sub="__('cabinet_teacher.offers_sub')" :teacher="$teacher" :counts="$counts">
 
     <div class="panel">
         <h3 style="font-size:18px;margin-bottom:16px">{{ __('cabinet_teacher.offers_heading') }}</h3>

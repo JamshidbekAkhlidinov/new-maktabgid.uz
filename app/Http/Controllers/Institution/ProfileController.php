@@ -41,12 +41,12 @@ class ProfileController extends Controller
             'district_id' => $district?->id,
         ], fn ($v) => $v !== null));
 
-        // Uch tillilik (2026-08-06): name/about/address/grades/work_hours endi JSON
+        // Uch tillilik (2026-08-06): name/about/address/grades endi JSON
         // {"uz":..,"ru":..,"en":..} — kabinet formasi esa bitta (joriy) tilda matn yuboradi.
         // To'g'ridan-to'g'ri fill() qilinsa boshqa tillardagi tarjimalar O'CHIB ketardi,
         // shu sababli faqat joriy til kaliti yangilanadi, qolganlari saqlanadi.
         $locale = app()->getLocale();
-        foreach (['name', 'about', 'address', 'grades', 'work_hours'] as $translatableField) {
+        foreach (['name', 'about', 'address', 'grades'] as $translatableField) {
             if (filled($data[$translatableField] ?? null)) {
                 $institution->setTranslations($translatableField, array_merge(
                     $institution->getTranslations($translatableField),
@@ -55,8 +55,15 @@ class ProfileController extends Controller
             }
         }
 
-        if (array_key_exists('works_saturday', $data)) {
-            $institution->works_saturday = (bool) $data['works_saturday'];
+        // Ish vaqti — har bir hafta kuni uchun alohida {on,hours} (2026-08-08). 'work_hours'
+        // (Dushanba vaqti, uch tilda bir xil — soat matni tarjima qilinmaydi) va
+        // 'works_saturday' shundan avtomatik hisoblanadi, chunki ommaviy sahifalar/filtr
+        // hozircha shu ikkitasini ishlatishda davom etadi (InstitutionResource, MaktabgidData).
+        if (isset($data['work_schedule'])) {
+            $schedule = Institution::normalizeWorkSchedule($data['work_schedule']);
+            $institution->work_schedule = $schedule;
+            $institution->setTranslations('work_hours', array_fill_keys(['uz', 'ru', 'en'], $schedule['mon']['hours']));
+            $institution->works_saturday = $schedule['sat']['on'];
         }
 
         if (isset($data['facilities'])) {

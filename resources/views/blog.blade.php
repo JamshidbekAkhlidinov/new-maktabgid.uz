@@ -21,7 +21,7 @@
 
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
-    <x-maktabgid.page-head icon="book" kicker="{{ __('blog.kicker') }}" title="{{ __('blog.title') }}" sub="{{ __('blog.sub') }}" />
+    <x-maktabgid.page-head icon="book" :kicker="__('blog.kicker')" :title="__('blog.title')" :sub="__('blog.sub')" />
 
     <div class="wrap section">
         <a href="{{ route('blog.show', $feat['id']) }}" class="feat-article">

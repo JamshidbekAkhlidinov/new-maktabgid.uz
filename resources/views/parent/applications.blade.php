@@ -1,4 +1,4 @@
-<x-parent.shell active="applications" title="{{ __('cabinet_parent.nav_applications') }}" sub="{{ __('cabinet_parent.applications_sub') }}" :user="$user" :stats="$stats">
+<x-parent.shell active="applications" :title="__('cabinet_parent.nav_applications')" :sub="__('cabinet_parent.applications_sub')" :user="$user" :stats="$stats">
 
     <div class="panel">
         <div class="panel-head"><h3>{{ __('cabinet_parent.applications_heading') }}</h3></div>

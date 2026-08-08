@@ -10,7 +10,7 @@
     ];
 @endphp
 
-<x-teacher.shell active="resumes" title="{{ __('cabinet_teacher.nav_resumes') }}" sub="{{ __('cabinet_teacher.resumes_sub') }}" :teacher="$teacher" :counts="$counts">
+<x-teacher.shell active="resumes" :title="__('cabinet_teacher.nav_resumes')" :sub="__('cabinet_teacher.resumes_sub')" :teacher="$teacher" :counts="$counts">
 
     <div class="idash-toolbar">
         <span class="idash-chart-meta">{{ __('cabinet_teacher.resumes_toolbar_meta', ['count' => $resumes->count()]) }}</span>
@@ -60,24 +60,24 @@
         </div>
 
         <form class="form js-fake-form" style="margin-top:18px">
-            <x-maktabgid.field label="{{ __('cabinet_teacher.field_position') }}" icon="bag">
+            <x-maktabgid.field :label="__('cabinet_teacher.field_position')" icon="bag">
                 <input type="text" placeholder="{{ __('cabinet_teacher.field_position_placeholder') }}" required />
             </x-maktabgid.field>
             <div class="form-row2">
-                <x-maktabgid.field label="{{ __('cabinet_teacher.field_experience') }}" icon="clock">
+                <x-maktabgid.field :label="__('cabinet_teacher.field_experience')" icon="clock">
                     <input type="text" placeholder="8 yil" required />
                 </x-maktabgid.field>
-                <x-maktabgid.field label="{{ __('cabinet_teacher.field_expected_salary') }}" icon="card">
+                <x-maktabgid.field :label="__('cabinet_teacher.field_expected_salary')" icon="card">
                     <input type="text" placeholder="10 000 000" required />
                 </x-maktabgid.field>
             </div>
-            <x-maktabgid.field label="{{ __('cabinet_teacher.field_education') }}" icon="book">
+            <x-maktabgid.field :label="__('cabinet_teacher.field_education')" icon="book">
                 <input type="text" placeholder="UzSWLU — 2016-yil" required />
             </x-maktabgid.field>
-            <x-maktabgid.field label="{{ __('cabinet_teacher.field_skills') }}" icon="sparkle">
+            <x-maktabgid.field :label="__('cabinet_teacher.field_skills')" icon="sparkle">
                 <textarea rows="2" placeholder="IELTS 8.0, CELTA…"></textarea>
             </x-maktabgid.field>
-            <x-maktabgid.field label="{{ __('cabinet_teacher.field_contact') }}" icon="phone">
+            <x-maktabgid.field :label="__('cabinet_teacher.field_contact')" icon="phone">
                 <input type="text" value="{{ $teacher['phone'] ?? '' }}" placeholder="+998 90 123 45 67" required />
             </x-maktabgid.field>
 
@@ -99,7 +99,7 @@
             </div>
         </form>
 
-        <x-maktabgid.success-note title="{{ __('cabinet_teacher.resume_posted_title') }}" class="js-fake-success" style="display:none">
+        <x-maktabgid.success-note :title="__('cabinet_teacher.resume_posted_title')" class="js-fake-success" style="display:none">
             {{ __('cabinet_teacher.resume_posted_body') }}
         </x-maktabgid.success-note>
     </div>

@@ -10,12 +10,33 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 /**
- * Muassasa kabineti — o'z e'lonini o'chirish (real Vacancy). Yaratish/tahrirlash
- * hali pullik-demo bo'lib qoladi (ADR-0002), lekin o'chirish oddiy va xavfsiz
- * bo'lgani uchun real ulandi.
+ * Muassasa kabineti — o'z e'loni CRUD'i (real Vacancy). To'lov tizimi
+ * (Payme/Click) hali ulanmagani uchun joylashtirish hozircha bepul —
+ * ADR-0002 rejasiga ko'ra keyinchalik to'lov bosqichi qo'shiladi.
  */
 class VacancyController extends Controller
 {
+    public function store(Request $request): JsonResponse
+    {
+        $institution = $this->activeInstitutionOrFail($request);
+        $this->authorize('update', $institution);
+
+        $data = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'employment_type' => ['required', 'string', Rule::in(['full', 'part', 'hourly'])],
+            'salary_range' => ['nullable', 'string', 'max:100'],
+            'requirements' => ['nullable', 'string', 'max:2000'],
+            'expires_at' => ['nullable', 'date'],
+        ]);
+
+        $vacancy = $institution->vacancies()->create($data + [
+            'org_name' => $institution->name,
+            'posted_by_user_id' => $request->user()->id,
+        ]);
+
+        return response()->json(['vacancy' => $vacancy], 201);
+    }
+
     public function destroy(Request $request, Vacancy $vacancy): JsonResponse
     {
         $institution = $this->activeInstitutionOrFail($request);

@@ -7,7 +7,7 @@
     ];
 @endphp
 
-<x-teacher.shell active="tariffs" title="{{ __('cabinet_teacher.nav_tariffs') }}" sub="{{ __('cabinet_teacher.tariffs_sub') }}" :teacher="$teacher" :counts="$counts">
+<x-teacher.shell active="tariffs" :title="__('cabinet_teacher.nav_tariffs')" :sub="__('cabinet_teacher.tariffs_sub')" :teacher="$teacher" :counts="$counts">
 
     <div class="panel" style="max-width:640px">
         <h3 style="font-size:20px">{{ __('cabinet_teacher.complete_payment') }}</h3>

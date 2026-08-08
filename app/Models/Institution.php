@@ -64,7 +64,7 @@ class Institution extends Model
     protected $fillable = [
         'owner_user_id', 'name', 'type', 'about', 'lang', 'district_id',
         'address', 'lat', 'lng', 'monthly_price', 'grades', 'work_hours',
-        'works_saturday', 'accepting', 'rating', 'review_count', 'badge',
+        'works_saturday', 'work_schedule', 'accepting', 'rating', 'review_count', 'badge',
         'facilities', 'teachers', 'programs', 'lessons', 'videos', 'admission_steps',
         'stat_class_size', 'stat_experience_years', 'stat_admission_rate', 'stat_first_grade_seats',
         // Eski (Yii2) `telegram_object`dan import qilingan maydonlar (LegacyInstitutionSeeder).
@@ -72,12 +72,39 @@ class Institution extends Model
         'slug', 'is_active', 'legacy_view_count',
     ];
 
+    /** Haftaning ish vaqti jadvalidagi kun kalitlari, tartib bilan (Dushanbadan boshlab). */
+    public const WORK_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+
+    /**
+     * Admin/kabinet formasidan kelgan xom "work_schedule" massivini har doim
+     * barcha 7 kun uchun to'liq {on,hours} shaklga keltiradi (yo'q/noto'g'ri
+     * kunlar standart qiymat bilan to'ldiriladi).
+     *
+     * @param  array<string, array{on?: bool, hours?: string}>  $raw
+     * @return array<string, array{on: bool, hours: string}>
+     */
+    public static function normalizeWorkSchedule(array $raw): array
+    {
+        $schedule = [];
+
+        foreach (self::WORK_DAYS as $day) {
+            $row = $raw[$day] ?? [];
+            $schedule[$day] = [
+                'on' => (bool) ($row['on'] ?? false),
+                'hours' => trim((string) ($row['hours'] ?? '')) ?: '09:00 – 18:00',
+            ];
+        }
+
+        return $schedule;
+    }
+
     protected function casts(): array
     {
         return [
             'lat' => 'decimal:7',
             'lng' => 'decimal:7',
             'works_saturday' => 'boolean',
+            'work_schedule' => 'array',
             'accepting' => 'boolean',
             'is_active' => 'boolean',
             'rating' => 'decimal:1',

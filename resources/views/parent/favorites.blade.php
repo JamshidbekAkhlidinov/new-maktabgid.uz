@@ -1,6 +1,6 @@
 @php use App\Support\MaktabgidData; @endphp
 
-<x-parent.shell active="favorites" title="{{ __('cabinet_parent.nav_favorites') }}" sub="{{ __('cabinet_parent.favorites_sub') }}" :user="$user" :stats="$stats">
+<x-parent.shell active="favorites" :title="__('cabinet_parent.nav_favorites')" :sub="__('cabinet_parent.favorites_sub')" :user="$user" :stats="$stats">
 
     <div class="panel">
         <div class="panel-head"><h3>{{ __('cabinet_parent.favorites_heading') }}</h3></div>

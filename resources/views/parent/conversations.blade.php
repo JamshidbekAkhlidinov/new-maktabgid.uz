@@ -1,4 +1,4 @@
-<x-parent.shell active="conversations" title="{{ __('cabinet_parent.nav_conversations') }}" sub="{{ __('cabinet_parent.conversations_sub') }}" :user="$user" :stats="$stats">
+<x-parent.shell active="conversations" :title="__('cabinet_parent.nav_conversations')" :sub="__('cabinet_parent.conversations_sub')" :user="$user" :stats="$stats">
 
     <div class="chat-shell">
         {{-- ===== Suhbatlar ro'yxati ===== --}}

@@ -25,7 +25,7 @@
     ];
 @endphp
 
-<x-teacher.shell active="dashboard" title="{{ __('cabinet_teacher.nav_dashboard') }}" sub="{{ __('cabinet_teacher.dashboard_sub') }}" :teacher="$teacher" :counts="$counts">
+<x-teacher.shell active="dashboard" :title="__('cabinet_teacher.nav_dashboard')" :sub="__('cabinet_teacher.dashboard_sub')" :teacher="$teacher" :counts="$counts">
 
     {{-- Diqqat: $teacher null bo'lishi mumkin (mehmon /teacher-cabinet ga kirsa) — shell
          o'zining @unless($teacher) bilan "kirish kerak" ekranini ko'rsatadi, lekin bu slot

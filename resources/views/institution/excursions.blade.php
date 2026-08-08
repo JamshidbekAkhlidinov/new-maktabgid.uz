@@ -9,8 +9,8 @@
 
 <x-institution.shell
     active="excursions"
-    title="{{ __('cabinet_institution.nav_excursions') }}"
-    sub="{{ __('cabinet_institution.excursions_sub') }}"
+    :title="__('cabinet_institution.nav_excursions')"
+    :sub="__('cabinet_institution.excursions_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"

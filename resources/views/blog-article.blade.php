@@ -21,8 +21,8 @@
 
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
-    <div class="wrap" style="padding-top:20px">
-        <x-maktabgid.back-link href="{{ route('blog.index') }}" label="{{ __('blog.back_to_blog') }}" />
+    <div class="wrap" style="padding-top:91px">
+        <x-maktabgid.back-link :href="route('blog.index')" :label="__('blog.back_to_blog')" />
     </div>
 
     <div class="wrap detail-grid">

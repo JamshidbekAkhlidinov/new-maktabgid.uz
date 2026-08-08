@@ -217,17 +217,17 @@
             <form class="form js-org-add-form">
                 <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
 
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_institution_name') }}" icon="building">
+                <x-maktabgid.field :label="__('cabinet_institution.field_institution_name')" icon="building">
                     <input type="text" name="name" required placeholder="Masalan, Yangi Avlod maktabi" />
                 </x-maktabgid.field>
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_type') }}" icon="school">
+                <x-maktabgid.field :label="__('cabinet_institution.field_type')" icon="school">
                     <select name="type">
                         <option value="maktab">{{ __('cabinet_institution.kind_school') }}</option>
                         <option value="bogcha">{{ __('cabinet_institution.kind_kindergarten') }}</option>
                         <option value="markaz">{{ __('cabinet_institution.kind_center') }}</option>
                     </select>
                 </x-maktabgid.field>
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_district') }}" icon="pin">
+                <x-maktabgid.field :label="__('cabinet_institution.field_district')" icon="pin">
                     <select name="district">
                         @foreach (\App\Support\MaktabgidData::districts() as $d)
                             <option value="{{ $d }}">{{ $d }}</option>

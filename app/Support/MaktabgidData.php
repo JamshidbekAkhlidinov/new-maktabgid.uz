@@ -755,7 +755,7 @@ class MaktabgidData
 
     private static function mapVacancy(Vacancy $v): array
     {
-        $typeLabels = ['full' => "Toʻliq stavka", 'part' => 'Yarim stavka', 'hourly' => 'Soatbay'];
+        $typeLabels = ['full' => 'Toʻliq stavka', 'part' => 'Yarim stavka', 'hourly' => 'Soatbay'];
 
         return [
             'id' => $v->id,
@@ -790,7 +790,21 @@ class MaktabgidData
 
     public static function resumes(): array
     {
-        return Resume::with('district')->latest()->get()->map(fn (Resume $r) => [
+        return Resume::with('district')->latest()->get()
+            ->map(fn (Resume $r) => self::mapResume($r))->all();
+    }
+
+    public static function careerResume(int $id): ?array
+    {
+        $r = Resume::with('district')->find($id);
+
+        return $r ? self::mapResume($r) : null;
+    }
+
+    /** @return array<string, mixed> */
+    private static function mapResume(Resume $r): array
+    {
+        return [
             'id' => $r->id,
             'name' => $r->full_name,
             'role' => $r->role_title,
@@ -799,8 +813,12 @@ class MaktabgidData
             'salary' => $r->salary_expectation,
             'district' => $r->district?->name ?? '',
             'langs' => $r->languages,
+            'phone' => $r->phone,
+            'education' => $r->education,
+            'skills' => $r->skills,
+            'description' => $r->description,
             'ago' => $r->created_at?->diffForHumans() ?? '',
-        ])->all();
+        ];
     }
 
     /** Blog/maqola media bloki uchun style: haqiqiy rasm bo'lsa shu, bo'lmasa gradient (eski xatti-harakat). */

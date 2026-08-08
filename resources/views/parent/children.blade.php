@@ -22,7 +22,7 @@
     $genderLabel = ['ogil' => __('cabinet_parent.gender_boy_full'), 'qiz' => __('cabinet_parent.gender_girl_full')];
 @endphp
 
-<x-parent.shell active="children" title="{{ __('cabinet_parent.nav_children') }}" sub="{{ __('cabinet_parent.children_sub') }}" :user="$user" :stats="$stats">
+<x-parent.shell active="children" :title="__('cabinet_parent.nav_children')" :sub="__('cabinet_parent.children_sub')" :user="$user" :stats="$stats">
 
     <div class="panel">
         <div class="panel-head"><h3>{{ __('cabinet_parent.nav_children') }}</h3></div>
@@ -77,10 +77,10 @@
                 <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
 
                 <div class="form-row2">
-                    <x-maktabgid.field label="{{ __('cabinet_parent.field_firstname') }}">
+                    <x-maktabgid.field :label="__('cabinet_parent.field_firstname')">
                         <input type="text" name="name" required placeholder="Ali" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="{{ __('cabinet_parent.field_lastname') }}">
+                    <x-maktabgid.field :label="__('cabinet_parent.field_lastname')">
                         <input type="text" name="last_name" placeholder="Rahimov" />
                     </x-maktabgid.field>
                 </div>
@@ -91,7 +91,7 @@
                     <button type="button" class="choice-btn" data-gender="qiz">{{ __('cabinet_parent.gender_girl_short') }}</button>
                 </div>
 
-                <x-maktabgid.field label="{{ __('cabinet_parent.field_age') }}">
+                <x-maktabgid.field :label="__('cabinet_parent.field_age')">
                     <input type="number" name="age" min="0" max="20" required placeholder="3" />
                 </x-maktabgid.field>
 
@@ -122,10 +122,10 @@
                     <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
 
                     <div class="form-row2">
-                        <x-maktabgid.field label="{{ __('cabinet_parent.field_firstname') }}">
+                        <x-maktabgid.field :label="__('cabinet_parent.field_firstname')">
                             <input type="text" name="name" value="{{ $ch->name }}" required />
                         </x-maktabgid.field>
-                        <x-maktabgid.field label="{{ __('cabinet_parent.field_lastname') }}">
+                        <x-maktabgid.field :label="__('cabinet_parent.field_lastname')">
                             <input type="text" name="last_name" value="{{ $ch->last_name }}" />
                         </x-maktabgid.field>
                     </div>
@@ -136,7 +136,7 @@
                         <button type="button" class="choice-btn{{ $ch->gender === 'qiz' ? ' on' : '' }}" data-gender="qiz">{{ __('cabinet_parent.gender_girl_short') }}</button>
                     </div>
 
-                    <x-maktabgid.field label="{{ __('cabinet_parent.field_age') }}">
+                    <x-maktabgid.field :label="__('cabinet_parent.field_age')">
                         <input type="number" name="age" min="0" max="20" value="{{ $ch->age }}" required />
                     </x-maktabgid.field>
 

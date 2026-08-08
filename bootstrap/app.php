@@ -19,7 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             require __DIR__.'/../routes/ajax.php';
             require __DIR__.'/../routes/telegram.php';
-            require __DIR__.'/../routes/admin.php';
+            // admin.php endi routes/web.php ichida, {slug} catch-all'dan OLDIN
+            // require qilinadi (aks holda bitta segmentli "/admin" {slug}'ga
+            // tushib 404 qaytarardi — auth/admin middleware ishlamay qolardi).
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {

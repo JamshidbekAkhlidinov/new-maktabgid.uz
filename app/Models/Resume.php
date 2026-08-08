@@ -13,6 +13,7 @@ class Resume extends Model
     protected $fillable = [
         'full_name', 'role_title', 'experience', 'specialization_key',
         'salary_expectation', 'district_id', 'languages', 'owner_user_id',
+        'phone', 'education', 'skills', 'description',
     ];
 
     public function district(): BelongsTo

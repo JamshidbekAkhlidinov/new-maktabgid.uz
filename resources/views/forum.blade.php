@@ -23,7 +23,7 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="forum">
-        <x-maktabgid.page-head icon="forum" kicker="{{ __('forum.kicker') }}" title="{{ __('forum.title') }}" sub="{{ __('forum.sub') }}">
+        <x-maktabgid.page-head icon="forum" :kicker="__('forum.kicker')" :title="__('forum.title')" :sub="__('forum.sub')">
             <div class="phead-actions">
                 <button class="btn btn-white" type="button" id="js-new-thread-btn">
                     <x-maktabgid.icon name="plus" :width="17" :height="17" /> {{ __('forum.new_thread') }}

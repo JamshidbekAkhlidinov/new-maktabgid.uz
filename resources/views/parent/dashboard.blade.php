@@ -6,7 +6,7 @@
     $joined = ($user && $user->created_at) ? $user->created_at->year . '-yil ' . $months[$user->created_at->month - 1] . 'dan' : '';
 @endphp
 
-<x-parent.shell active="dashboard" title="{{ __('cabinet_parent.nav_profile') }}" sub="{{ __('cabinet_parent.dashboard_sub') }}" :user="$user" :stats="$stats">
+<x-parent.shell active="dashboard" :title="__('cabinet_parent.nav_profile')" :sub="__('cabinet_parent.dashboard_sub')" :user="$user" :stats="$stats">
 
     @if ($user)
     <div class="pprof-grid">
@@ -88,13 +88,13 @@
             <form class="form js-parent-profile-form">
                 <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
 
-                <x-maktabgid.field label="{{ __('cabinet_parent.field_fullname') }}" icon="user">
+                <x-maktabgid.field :label="__('cabinet_parent.field_fullname')" icon="user">
                     <input type="text" name="name" value="{{ $user->name }}" required />
                 </x-maktabgid.field>
-                <x-maktabgid.field label="{{ __('cabinet_parent.info_phone') }}" icon="phone">
+                <x-maktabgid.field :label="__('cabinet_parent.info_phone')" icon="phone">
                     <input type="tel" name="phone" value="{{ $user->phone }}" required />
                 </x-maktabgid.field>
-                <x-maktabgid.field label="{{ __('cabinet_parent.info_district') }}" icon="pin">
+                <x-maktabgid.field :label="__('cabinet_parent.info_district')" icon="pin">
                     <select name="district">
                         <option value="">—</option>
                         @foreach (\App\Support\MaktabgidData::districts() as $d)

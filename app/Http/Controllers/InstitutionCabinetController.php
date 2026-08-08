@@ -19,11 +19,14 @@ use Illuminate\View\View;
  *
  * Eslatma: "Tariflar va obuna" (billing) uchun hali alohida DB jadvali yo'q —
  * bu sahifa hozircha vizual/mock ma'lumot bilan ishlaydi (to'lov tizimi
- * ulanmagan). "Lidlar" (Application, type=enrollment), "Analitika"
+ * ulanmagan). "Boshqaruv paneli"dagi kartochka/grafik/funnel (2026-08-08),
+ * "Lidlar" (Application, type=enrollment), "Analitika"
  * (InstitutionView/Favorite/Application) va "O'quvchilar yutuqlari"
  * (Achievement) endi real (ADR-0002, Faza 2); Analitika'dagi trafik-manba va
  * yosh taqsimoti hali mock — bu ikkisi uchun hech qanday hodisa yozib
- * olinmaydi. Qolgan barcha sahifalar (Ekskursiyalar, Suhbatlar, Muassasa
+ * olinmaydi. "Boshqaruv paneli" banneridagi "N kishiga ko'rsatilmoqda" raqami
+ * ham hali mock — bepul reja/billing tizimi ulanmaguncha real qamrov cheklovi
+ * hisoblanmaydi. Qolgan barcha sahifalar (Ekskursiyalar, Suhbatlar, Muassasa
  * profili) real bazadagi ma'lumot bilan ishlaydi.
  */
 class InstitutionCabinetController extends Controller
@@ -33,22 +36,24 @@ class InstitutionCabinetController extends Controller
     public function dashboard(Request $request): View
     {
         $ctx = $this->context($request);
+        $institution = $ctx['institution'];
 
-        $applications = $ctx['institution']
-            ? $ctx['institution']->applications()->latest()->take(20)->get()
+        $applications = $institution
+            ? $institution->applications()->latest()->take(20)->get()
             : collect();
 
-        $conversations = $ctx['institution']
-            ? $ctx['institution']->conversations()->with(['parent', 'teacher'])->latest('last_message_at')->take(10)->get()
+        $conversations = $institution
+            ? $institution->conversations()->with(['parent', 'teacher'])->latest('last_message_at')->take(10)->get()
             : collect();
 
-        $reviews = $ctx['institution']
-            ? $ctx['institution']->reviews()->with('author')->latest()->take(5)->get()
+        $reviews = $institution
+            ? $institution->reviews()->with('author')->latest()->take(5)->get()
             : collect();
 
         // "So'nggi harakatlar" — real arizalar (turi bo'yicha "lid"/"ekskursiya" deb ajratiladi)
-        // + suhbatlar + sharhlar bitta oqimga birlashtiriladi. "Ko'rildi" hodisasi — profil
-        // ko'rishlar hisoblagichi hali yo'qligi sababli bitta mock qator sifatida qo'shiladi.
+        // + suhbatlar + sharhlar bitta oqimga birlashtiriladi. "Ko'rildi" hodisasi ham real
+        // (App\Models\InstitutionView, todayViews()) — faqat vaqt belgisi ko'rsatish uchun
+        // "bugun" sifatida qo'lda qo'yiladi (bitta kunlik jamlanma qator, aniq hodisa emas).
         $activity = $applications->map(fn ($a) => $a->type === 'excursion' ? [
             'type' => 'excursion',
             // Ota-ona belgilagan kun/soat (scheduled_at) bo'lsa o'sha ko'rsatiladi;
@@ -71,19 +76,116 @@ class InstitutionCabinetController extends Controller
             'time' => $r->created_at,
         ]))->concat([[
             'type' => 'views',
-            'text' => "E'loningiz bugun {$this->todayViews($ctx['institution'])} marta ko'rildi",
+            'text' => "E'loningiz bugun {$this->todayViews($institution)} marta ko'rildi",
             'time' => now()->subHours(3),
             'subtitle' => 'Bugun',
         ]])->sortByDesc('time')->take(6)->values();
 
-        $confirmed = $applications->where('status', 'confirmed')->count();
-        $totalApps = $applications->count();
+        // Ko'rsatkichlar (2026-08-08) — avval bu bo'lim mock qiymatlar bilan ishlar edi
+        // (statik $mockViews7d/$mockChart/$newLeads7d), endi Analitika sahifasi bilan bir
+        // xil real manbalardan hisoblanadi: InstitutionView (ko'rishlar) va Application
+        // (lidlar/ekskursiya/joylashish). "Lid konversiyasi" — barcha vaqt bo'yicha (Analitika
+        // sahifasidagi bilan bir xil hisob), qolgan barcha ko'rsatkich/funnel bosqichlari —
+        // oxirgi 7 kun (kartochka nomlaridagi "(7 kun)" bilan mos).
+        $viewsSeries = $this->weeklyViewsSeries($institution);
+        $views7d = $viewsSeries['curTotal'];
+        $viewsPrev7d = $viewsSeries['prevTotal'];
+        $viewsDelta = $viewsPrev7d > 0
+            ? (int) round(($views7d - $viewsPrev7d) / $viewsPrev7d * 100)
+            : ($views7d > 0 ? 100 : 0);
+
+        $since7d = now()->subDays(7);
+        $prev7dStart = now()->subDays(14);
+
+        $newLeads7d = $institution
+            ? $institution->applications()->where('type', 'enrollment')->where('created_at', '>=', $since7d)->count()
+            : 0;
+        $newLeadsPrev7d = $institution
+            ? $institution->applications()->where('type', 'enrollment')->whereBetween('created_at', [$prev7dStart, $since7d])->count()
+            : 0;
+
+        $excursionsTotal = $institution ? $institution->applications()->where('type', 'excursion')->count() : 0;
+
+        $totalApps = $institution ? $institution->applications()->count() : 0;
+        $confirmedApps = $institution ? $institution->applications()->where('status', 'confirmed')->count() : 0;
+        $conversionRate = $totalApps > 0 ? round($confirmedApps / $totalApps * 100, 1) : 0;
+
+        // "Lid konversiyasi" o'sish belgisi — shu haftadagi vs oldingi haftadagi konversiya
+        // foizi farqi (foiz punktida, masalan 32% → 35% bo'lsa +3).
+        $totalApps7d = $institution ? $institution->applications()->where('created_at', '>=', $since7d)->count() : 0;
+        $confirmedApps7d = $institution ? $institution->applications()->where('status', 'confirmed')->where('created_at', '>=', $since7d)->count() : 0;
+        $conversionRate7d = $totalApps7d > 0 ? round($confirmedApps7d / $totalApps7d * 100, 1) : 0;
+
+        $totalAppsPrev7d = $institution ? $institution->applications()->whereBetween('created_at', [$prev7dStart, $since7d])->count() : 0;
+        $confirmedAppsPrev7d = $institution ? $institution->applications()->where('status', 'confirmed')->whereBetween('created_at', [$prev7dStart, $since7d])->count() : 0;
+        $conversionRatePrev7d = $totalAppsPrev7d > 0 ? round($confirmedAppsPrev7d / $totalAppsPrev7d * 100, 1) : 0;
+
+        $funnelExcursionChat7d = ($institution ? $institution->applications()->where('type', 'excursion')->where('created_at', '>=', $since7d)->count() : 0)
+            + ($institution ? $institution->conversations()->where('created_at', '>=', $since7d)->count() : 0);
+        $funnelConfirmed7d = $confirmedApps7d;
 
         return view('institution.dashboard', $ctx + [
             'applications' => $applications,
             'activity' => $activity,
-            'conversionRate' => $totalApps > 0 ? round($confirmed / $totalApps * 100, 1) : 0,
+            'conversionRate' => $conversionRate,
+            'conversionDelta' => max(0, round($conversionRate7d - $conversionRatePrev7d, 1)),
+            'views7d' => $views7d,
+            // Aniqlik uchun eng kam 0 (manfiy o'sish "kamaydi" degani, lekin kartochka
+            // dizaynida faqat "+N%" ko'rinishi bor — pastga tushishni alohida belgilash
+            // keyingi bosqich, hozircha 0 bilan cheklaymiz).
+            'viewsDelta' => max(0, $viewsDelta),
+            'viewsChart' => ['cur' => $viewsSeries['cur'], 'prev' => $viewsSeries['prev']],
+            'viewsChartMax' => $viewsSeries['max'],
+            'viewsChartTotal' => $views7d + $viewsPrev7d,
+            'newLeads7d' => $newLeads7d,
+            'newLeadsDelta' => max(0, $newLeads7d - $newLeadsPrev7d),
+            'excursionsTotal' => $excursionsTotal,
+            'funnelExcursionChat7d' => $funnelExcursionChat7d,
+            'funnelConfirmed7d' => $funnelConfirmed7d,
         ]);
+    }
+
+    /**
+     * Oxirgi 14 kun (bu hafta + oldingi hafta) — kun-kun profil ko'rishlari soni,
+     * ISO hafta kuni bo'yicha guruhlangan (0=Dushanba...6=Yakshanba). Dashboard'dagi
+     * "Ko'rishlar dinamikasi" grafigi va Analitika sahifasi shu yerdan bir xil
+     * hisoblaydi (App\Models\InstitutionView, ADR-0002 Faza 2).
+     *
+     * @return array{cur: int[], prev: int[], curTotal: int, prevTotal: int, max: int}
+     */
+    private function weeklyViewsSeries(?Institution $institution): array
+    {
+        $cur = array_fill(0, 7, 0);
+        $prev = array_fill(0, 7, 0);
+
+        if ($institution) {
+            $since = now()->startOfDay()->subDays(13);
+            $rows = $institution->views()
+                ->where('created_at', '>=', $since)
+                ->get()
+                ->groupBy(fn ($v) => $v->created_at->toDateString());
+
+            for ($i = 0; $i < 14; $i++) {
+                $date = $since->copy()->addDays($i);
+                $count = $rows->get($date->toDateString())?->count() ?? 0;
+                // ISO: 0=Du(Mon)...6=Ya(Sun)
+                $slot = $date->dayOfWeekIso - 1;
+
+                if ($i < 7) {
+                    $prev[$slot] = $count;
+                } else {
+                    $cur[$slot] = $count;
+                }
+            }
+        }
+
+        return [
+            'cur' => $cur,
+            'prev' => $prev,
+            'curTotal' => array_sum($cur),
+            'prevTotal' => array_sum($prev),
+            'max' => max(1, max(array_merge($cur, $prev))),
+        ];
     }
 
     /**
@@ -236,41 +338,18 @@ class InstitutionCabinetController extends Controller
         $confirmedApps = $institution ? $institution->applications()->where('status', 'confirmed')->count() : 0;
         $conversionRate = $totalApps > 0 ? round($confirmedApps / $totalApps * 100, 1) : 0;
 
-        // Haftalik dinamika — oxirgi 7 kun vs undan oldingi 7 kun, kun-kun ko'rishlar soni.
+        // Haftalik dinamika — oxirgi 7 kun vs undan oldingi 7 kun, kun-kun ko'rishlar soni
+        // (Boshqaruv paneli bilan bir xil hisob — weeklyViewsSeries()).
         $days = ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh', 'Ya'];
-        $cur = array_fill(0, 7, 0);
-        $prev = array_fill(0, 7, 0);
-
-        if ($institution) {
-            $since = now()->startOfDay()->subDays(13);
-            $rows = $institution->views()
-                ->where('created_at', '>=', $since)
-                ->get()
-                ->groupBy(fn ($v) => $v->created_at->toDateString());
-
-            for ($i = 0; $i < 14; $i++) {
-                $date = $since->copy()->addDays($i);
-                $count = $rows->get($date->toDateString())?->count() ?? 0;
-                // ISO: 0=Du(Mon)...6=Ya(Sun)
-                $slot = $date->dayOfWeekIso - 1;
-
-                if ($i < 7) {
-                    $prev[$slot] = $count;
-                } else {
-                    $cur[$slot] = $count;
-                }
-            }
-        }
-
-        $maxVal = max(1, max(array_merge($cur, $prev)));
+        $series = $this->weeklyViewsSeries($institution);
 
         return view('institution.analytics', $ctx + [
             'totalViews' => $totalViews,
             'totalFavorites' => $totalFavorites,
             'conversionRate' => $conversionRate,
             'weekDays' => $days,
-            'weekChart' => ['cur' => $cur, 'prev' => $prev],
-            'weekMax' => $maxVal,
+            'weekChart' => ['cur' => $series['cur'], 'prev' => $series['prev']],
+            'weekMax' => $series['max'],
         ]);
     }
 
