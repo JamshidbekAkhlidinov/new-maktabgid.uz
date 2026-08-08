@@ -21,12 +21,11 @@ return [
     'loading' => 'Yuklanmoqda...',
 
     // hero.blade.php
-    'hero_eyebrow' => 'Oʻzbekistondagi №1 taʼlim katalogi',
+    'hero_eyebrow' => 'Oʻzbekistondagi 1-raqamli taʼlim qidiruv platformasi',
     'hero_title_before' => 'Farzandingizga',
     'hero_title_highlight' => 'mos maktabni',
     'hero_title_after' => 'bir joyda toping',
-    'hero_sub' => 'Xususiy maktablar, bogʻchalar va oʻquv markazlari — narxi, joylashuvi, dars vaqti va sharhlari bilan.
-            Solishtiring, xaritada koʻring va toʻgʻri tanlov qiling.',
+    'hero_sub' => 'Biz har oy minglab ota-onalarning taʼlim tanlash qarorida qatnashamiz.',
     'mode_manual' => 'Oʻzim qidiraman',
     'mode_ai' => 'AI tanlab bersin',
     'new_badge' => 'Yangi',

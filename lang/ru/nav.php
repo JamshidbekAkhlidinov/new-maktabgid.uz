@@ -10,4 +10,5 @@ return [
     'cabinet' => 'Кабинет',
     'logout' => 'Выйти',
     'telegram_bot' => 'Телеграм бот',
+    'menu' => 'Меню',
 ];
