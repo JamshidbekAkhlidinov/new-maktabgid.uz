@@ -73,8 +73,9 @@ class VacancyController extends Controller implements HasMiddleware
     {
         return [
             'vacancy' => $vacancy,
-            'institutions' => Institution::orderBy('name')->get(),
-            'specializations' => Specialization::orderBy('label')->get(),
+            // 'name'/'label' JSON (uch tillilik) — xotirada, joriy tildagi matn bo'yicha saralanadi.
+            'institutions' => Institution::all()->sortBy(fn ($i) => $i->name)->values(),
+            'specializations' => Specialization::all()->sortBy(fn ($s) => $s->label)->values(),
             'users' => User::orderBy('name')->get(),
         ];
     }

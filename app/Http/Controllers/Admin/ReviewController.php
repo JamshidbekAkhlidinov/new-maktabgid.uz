@@ -72,7 +72,8 @@ class ReviewController extends Controller implements HasMiddleware
     {
         return [
             'review' => $review,
-            'institutions' => Institution::orderBy('name')->get(),
+            // 'name' JSON (uch tillilik) — xotirada, joriy tildagi nom bo'yicha saralanadi.
+            'institutions' => Institution::all()->sortBy(fn ($i) => $i->name)->values(),
             'users' => User::orderBy('name')->get(),
         ];
     }

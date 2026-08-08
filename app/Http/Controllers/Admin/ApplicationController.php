@@ -74,7 +74,8 @@ class ApplicationController extends Controller implements HasMiddleware
     {
         return [
             'application' => $application,
-            'institutions' => Institution::orderBy('name')->get(),
+            // 'name' JSON (uch tillilik) — xotirada, joriy tildagi nom bo'yicha saralanadi.
+            'institutions' => Institution::all()->sortBy(fn ($i) => $i->name)->values(),
             'parents' => User::where('role', User::ROLE_PARENT)->orderBy('name')->get(),
         ];
     }

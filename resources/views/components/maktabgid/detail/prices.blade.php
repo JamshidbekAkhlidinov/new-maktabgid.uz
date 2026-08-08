@@ -2,7 +2,7 @@
 
 @if (count($prices))
 <section class="card-block">
-    <h3><x-maktabgid.icon name="card" :width="19" :height="19" /> Narxlar</h3>
+    <h3><x-maktabgid.icon name="card" :width="19" :height="19" /> {{ __('school.prices_title') }}</h3>
     <div class="price-list">
         @foreach ($prices as $p)
             <div class="price-list-row">
@@ -14,7 +14,7 @@
                 </div>
                 <div class="price-list-amount">
                     <b>{{ \App\Support\MaktabgidData::formatPrice($p['price']) }}</b>
-                    <span>so'm / oy</span>
+                    <span>{{ __('school.sum_per_month') }}</span>
                     @if ($p['discount'])
                         <em>{{ $p['discount'] }}</em>
                     @endif

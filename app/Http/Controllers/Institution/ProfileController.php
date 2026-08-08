@@ -36,15 +36,24 @@ class ProfileController extends Controller
             : null;
 
         $institution->fill(array_filter([
-            'name' => $data['name'] ?? null,
             'type' => $data['type'] ?? null,
-            'about' => $data['about'] ?? null,
             'lang' => $data['lang'] ?? null,
             'district_id' => $district?->id,
-            'address' => $data['address'] ?? null,
-            'grades' => $data['grades'] ?? null,
-            'work_hours' => $data['work_hours'] ?? null,
         ], fn ($v) => $v !== null));
+
+        // Uch tillilik (2026-08-06): name/about/address/grades/work_hours endi JSON
+        // {"uz":..,"ru":..,"en":..} — kabinet formasi esa bitta (joriy) tilda matn yuboradi.
+        // To'g'ridan-to'g'ri fill() qilinsa boshqa tillardagi tarjimalar O'CHIB ketardi,
+        // shu sababli faqat joriy til kaliti yangilanadi, qolganlari saqlanadi.
+        $locale = app()->getLocale();
+        foreach (['name', 'about', 'address', 'grades', 'work_hours'] as $translatableField) {
+            if (filled($data[$translatableField] ?? null)) {
+                $institution->setTranslations($translatableField, array_merge(
+                    $institution->getTranslations($translatableField),
+                    [$locale => $data[$translatableField]],
+                ));
+            }
+        }
 
         if (array_key_exists('works_saturday', $data)) {
             $institution->works_saturday = (bool) $data['works_saturday'];

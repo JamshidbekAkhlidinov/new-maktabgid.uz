@@ -52,7 +52,8 @@ class UserController extends Controller implements HasMiddleware
         return view('admin.users.create', [
             'districts' => District::orderBy('name')->get(),
             'roles' => Role::orderBy('name')->get(),
-            'freeInstitutions' => Institution::whereNull('owner_user_id')->orderBy('name')->get(),
+            // 'name' JSON (uch tillilik) — xotirada, joriy tildagi nom bo'yicha saralanadi.
+            'freeInstitutions' => Institution::whereNull('owner_user_id')->get()->sortBy(fn ($i) => $i->name)->values(),
         ]);
     }
 
@@ -88,10 +89,10 @@ class UserController extends Controller implements HasMiddleware
             'user' => $user,
             'districts' => District::orderBy('name')->get(),
             'roles' => Role::orderBy('name')->get(),
+            // 'name' JSON (uch tillilik) — xotirada, joriy tildagi nom bo'yicha saralanadi.
             'freeInstitutions' => Institution::whereNull('owner_user_id')
                 ->orWhere('owner_user_id', $user->id)
-                ->orderBy('name')
-                ->get(),
+                ->get()->sortBy(fn ($i) => $i->name)->values(),
         ]);
     }
 

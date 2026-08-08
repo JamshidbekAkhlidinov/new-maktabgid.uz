@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Institution;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\InstitutionResource;
 use App\Models\District;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -31,7 +32,9 @@ class OrganizationController extends Controller
             : null;
 
         $institution = $request->user()->institutions()->create([
-            'name' => $data['name'],
+            // Uch tillilik (2026-08-06): 'name' JSON — kiritilgan nom joriy til kaliti
+            // ostiga yoziladi (boshqa tillar keyin kabinet/admin orqali to'ldiriladi).
+            'name' => [app()->getLocale() => $data['name']],
             'type' => $data['type'],
             'district_id' => $district?->id,
             'accepting' => true,
@@ -42,7 +45,9 @@ class OrganizationController extends Controller
 
         $request->session()->put('active_institution_id', $institution->id);
 
-        return response()->json(['institution' => $institution], 201);
+        // Model to'g'ridan-to'g'ri json qilinsa 'name' xom {"uz":..} obyekt bo'lib chiqadi
+        // (toArray() tarjima accessor'idan o'tmaydi) — Resource joriy til matnini beradi.
+        return response()->json(['institution' => new InstitutionResource($institution)], 201);
     }
 
     public function activate(Request $request): JsonResponse
@@ -53,6 +58,6 @@ class OrganizationController extends Controller
 
         $institution = $this->setActiveInstitution($request, (int) $data['institution_id']);
 
-        return response()->json(['institution' => $institution]);
+        return response()->json(['institution' => new InstitutionResource($institution)]);
     }
 }
