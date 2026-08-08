@@ -1,21 +1,12 @@
 @php
-    // Ko'rishlar/konversiya bo'yicha hali analitika hisoblagichi ulanmagan (StatsController'da
-    // ham shunday izohlangan — "profileViews" hozircha null). Shu sahifadagi ko'rishlar soni va
-    // haftalik dinamika grafigi shuning uchun demo/placeholder qiymatlar bilan ko'rsatiladi;
-    // real arizalar (Ekskursiyalar) va suhbatlar (Suhbatlar) esa bazadan — real.
-    $mockViews7d = 142;
-    $mockViewsDelta = 24;
-    $mockChart = [
-        'cur'  => [48, 62, 40, 70, 58, 88, 96],
-        'prev' => [40, 50, 44, 55, 50, 62, 58],
-    ];
+    // Ko'rishlar/lidlar/konversiya (2026-08-08) — endi real (InstitutionCabinetController::
+    // dashboard(), InstitutionView/Application asosida, Analitika sahifasi bilan bir xil manba).
+    // Faqat quyidagi banner ($freeReachMock) hali mock — bepul rejadagi ko'rinish cheklovi
+    // billing tizimi ulanmaguncha real hisoblanmaydi.
     $days = __('cabinet_institution.week_days');
-    $maxVal = max(array_merge($mockChart['cur'], $mockChart['prev']));
-    $chartTotal = array_sum($mockChart['cur']) + array_sum($mockChart['prev']);
+    $maxVal = $viewsChartMax;
+    $chartTotal = $viewsChartTotal;
 
-    $newLeads7d = 14; // mock — Lidlar moduli ulanmaguncha
-    $newLeadsDelta = 8; // mock
-    $excursionsTotal = $applications->count();
     $freeReachMock = 5; // mock — bepul rejadagi ko'rinish cheklovi (billing ulanganda realdan olinadi)
 
     // "So'nggi harakatlar" — har bir hodisa turi uchun belgi/rang.
@@ -30,8 +21,8 @@
 
 <x-institution.shell
     active="dashboard"
-    title="{{ __('cabinet_institution.nav_dashboard') }}"
-    sub="{{ __('cabinet_institution.dashboard_sub') }}"
+    :title="__('cabinet_institution.nav_dashboard')"
+    :sub="__('cabinet_institution.dashboard_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -52,10 +43,10 @@
         <div class="idash-stat">
             <div class="idash-stat-top">
                 <span class="idash-stat-ico" style="background:var(--primary-soft);color:var(--primary)"><x-maktabgid.icon name="eye" :width="18" :height="18" /></span>
-                <span class="idash-stat-delta"><x-maktabgid.icon name="trending" :width="12" :height="12" /> +{{ $mockViewsDelta }}%</span>
+                <span class="idash-stat-delta"><x-maktabgid.icon name="trending" :width="12" :height="12" /> +{{ $viewsDelta }}%</span>
             </div>
             <div>
-                <b>{{ $mockViews7d }}</b>
+                <b>{{ $views7d }}</b>
                 <span>{{ __('cabinet_institution.views_7d') }}</span>
             </div>
         </div>
@@ -85,7 +76,7 @@
         <div class="idash-stat">
             <div class="idash-stat-top">
                 <span class="idash-stat-ico" style="background:#fde7f3;color:#c2247a"><x-maktabgid.icon name="target" :width="18" :height="18" /></span>
-                <span class="idash-stat-delta"><x-maktabgid.icon name="trending" :width="12" :height="12" /> +1.2%</span>
+                <span class="idash-stat-delta"><x-maktabgid.icon name="trending" :width="12" :height="12" /> +{{ $conversionDelta }}%</span>
             </div>
             <div>
                 <b>{{ $conversionRate }}%</b>
@@ -95,14 +86,16 @@
     </div>
 
     @php
-        // Konversiya yo'li — bosqichlar. "Ko'rishlar" va "Profilga kirdi" hali analitika
-        // hisoblagichi ulanmagani uchun mock; "Lidlar" mock (Lidlar moduli); "Ekskursiya/chat"
-        // va "Joylashdi" — real arizalar+suhbatlar sonidan hisoblangan.
-        $funnelViews = max($mockViews7d, 1);
-        $funnelProfile = 60; // mock — profilga kirganlar hisoblagichi hali yo'q
-        $funnelLeads = $newLeads7d; // mock
-        $funnelExcChat = $excursionsTotal + $counts['conversations'];
-        $funnelConfirmed = $applications->where('status', 'confirmed')->count();
+        // Konversiya yo'li — bosqichlar, barchasi real, oxirgi 7 kun (2026-08-08).
+        // Diqqat: "Ko'rishlar" va "Profilga kirdi" bir xil songa teng — chunki
+        // InstitutionView aynan profil sahifasi ochilganda yoziladi (routes/web.php,
+        // /{slug}), ya'ni "ko'rish" va "profilga kirish" bu ma'lumot modelida bitta
+        // hodisa (qidiruv natijasidagi kartochka ko'rinishi alohida kuzatilmaydi).
+        $funnelViews = max($views7d, 1);
+        $funnelProfile = $views7d;
+        $funnelLeads = $newLeads7d;
+        $funnelExcChat = $funnelExcursionChat7d;
+        $funnelConfirmed = $funnelConfirmed7d;
 
         $funnelStages = [
             ['label' => __('cabinet_institution.funnel_views'), 'val' => $funnelViews, 'color' => 'var(--primary)'],
@@ -129,8 +122,8 @@
                     @foreach ($days as $idx => $d)
                         <div class="idash-bcol">
                             <div class="idash-bpair" style="height:100%">
-                                <i class="prev" style="height:{{ round($mockChart['prev'][$idx] / $maxVal * 100) }}%"></i>
-                                <i class="cur" style="height:{{ round($mockChart['cur'][$idx] / $maxVal * 100) }}%"></i>
+                                <i class="prev" style="height:{{ round($viewsChart['prev'][$idx] / $maxVal * 100) }}%"></i>
+                                <i class="cur" style="height:{{ round($viewsChart['cur'][$idx] / $maxVal * 100) }}%"></i>
                             </div>
                             <em>{{ $d }}</em>
                         </div>

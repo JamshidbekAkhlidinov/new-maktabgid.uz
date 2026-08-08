@@ -1,22 +1,42 @@
 @php
     $i = $institution;
     $kindLabels = ['maktab' => __('cabinet_institution.kind_school'), 'bogcha' => __('cabinet_institution.kind_kindergarten'), 'markaz' => __('cabinet_institution.kind_center')];
+
+    // Ish vaqti — endi har bir hafta kuni uchun HAQIQIY alohida {on,hours} (2026-08-08).
+    // Eski (faqat Dushanba + Shanba) yozuvlar uchun standart jadval fallback sifatida
+    // ishlatiladi (App\Models\Institution::normalizeWorkSchedule() bilan bir xil shakl).
     $weekHours = $i->work_hours ?: '08:00 – 18:00';
-    $scheduleDays = [
-        ['key' => 'mon', 'label' => __('cabinet_institution.day_monday'), 'abbr' => __('cabinet_institution.day_abbr_mon'), 'on' => true, 'hours' => $weekHours, 'main' => true],
-        ['key' => 'tue', 'label' => __('cabinet_institution.day_tuesday'), 'abbr' => __('cabinet_institution.day_abbr_tue'), 'on' => true, 'hours' => $weekHours],
-        ['key' => 'wed', 'label' => __('cabinet_institution.day_wednesday'), 'abbr' => __('cabinet_institution.day_abbr_wed'), 'on' => true, 'hours' => $weekHours],
-        ['key' => 'thu', 'label' => __('cabinet_institution.day_thursday'), 'abbr' => __('cabinet_institution.day_abbr_thu'), 'on' => true, 'hours' => $weekHours],
-        ['key' => 'fri', 'label' => __('cabinet_institution.day_friday'), 'abbr' => __('cabinet_institution.day_abbr_fri'), 'on' => true, 'hours' => $weekHours],
-        ['key' => 'sat', 'label' => __('cabinet_institution.day_saturday'), 'abbr' => __('cabinet_institution.day_abbr_sat'), 'on' => $i->works_saturday, 'hours' => '09:00 – 14:00', 'isSat' => true],
-        ['key' => 'sun', 'label' => __('cabinet_institution.day_sunday'), 'abbr' => __('cabinet_institution.day_abbr_sun'), 'on' => false, 'hours' => '09:00 – 14:00'],
+    $defaultSchedule = [
+        'mon' => ['on' => true, 'hours' => $weekHours],
+        'tue' => ['on' => true, 'hours' => $weekHours],
+        'wed' => ['on' => true, 'hours' => $weekHours],
+        'thu' => ['on' => true, 'hours' => $weekHours],
+        'fri' => ['on' => true, 'hours' => $weekHours],
+        'sat' => ['on' => (bool) $i->works_saturday, 'hours' => '09:00 – 14:00'],
+        'sun' => ['on' => false, 'hours' => '09:00 – 14:00'],
     ];
+    $daySchedule = array_replace($defaultSchedule, $i->work_schedule ?? []);
+
+    $scheduleDays = [
+        ['key' => 'mon', 'label' => __('cabinet_institution.day_monday'), 'abbr' => __('cabinet_institution.day_abbr_mon'), 'main' => true],
+        ['key' => 'tue', 'label' => __('cabinet_institution.day_tuesday'), 'abbr' => __('cabinet_institution.day_abbr_tue')],
+        ['key' => 'wed', 'label' => __('cabinet_institution.day_wednesday'), 'abbr' => __('cabinet_institution.day_abbr_wed')],
+        ['key' => 'thu', 'label' => __('cabinet_institution.day_thursday'), 'abbr' => __('cabinet_institution.day_abbr_thu')],
+        ['key' => 'fri', 'label' => __('cabinet_institution.day_friday'), 'abbr' => __('cabinet_institution.day_abbr_fri')],
+        ['key' => 'sat', 'label' => __('cabinet_institution.day_saturday'), 'abbr' => __('cabinet_institution.day_abbr_sat')],
+        ['key' => 'sun', 'label' => __('cabinet_institution.day_sunday'), 'abbr' => __('cabinet_institution.day_abbr_sun')],
+    ];
+    foreach ($scheduleDays as &$__d) {
+        $__d['on'] = $daySchedule[$__d['key']]['on'];
+        $__d['hours'] = $daySchedule[$__d['key']]['hours'];
+    }
+    unset($__d);
 @endphp
 
 <x-institution.shell
     active="profile"
-    title="{{ __('cabinet_institution.nav_profile') }}"
-    sub="{{ __('cabinet_institution.profile_sub') }}"
+    :title="__('cabinet_institution.nav_profile')"
+    :sub="__('cabinet_institution.profile_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -39,6 +59,9 @@
     <div class="inst-grid">
 
         {{-- ===== FORM ===== --}}
+        <div class="inst-form-col">
+
+        {{-- Kategoriya va asosiy ma'lumot --}}
         <div class="panel">
             <div class="panel-head">
                 <h3>{{ __('cabinet_institution.institution_data') }}</h3>
@@ -89,8 +112,11 @@
                     </select>
                 </span>
             </label>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.location') }}</div>
+        {{-- Joylashuv --}}
+        <div class="panel">
+            <div class="panel-head"><h3 style="font-size:16.5px">{{ __('cabinet_institution.location') }}</h3></div>
             <div class="form-row2">
                 <label class="field">
                     <span class="field-label"><x-maktabgid.icon name="pin" :width="14" :height="14" /> {{ __('cabinet_institution.field_district') }}</span>
@@ -118,8 +144,11 @@
                     <input type="text" id="js-f-landmark" placeholder="Masalan, metro bekati yonida, savdo markazi ro'parasida" />
                 </span>
             </label>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.phone_numbers') }}</div>
+        {{-- Telefon raqamlar --}}
+        <div class="panel">
+            <div class="panel-head"><h3 style="font-size:16.5px">{{ __('cabinet_institution.phone_numbers') }}</h3></div>
             <div style="display:flex;flex-direction:column;gap:10px" id="js-phone-list">
                 <div class="phone-row">
                     <span class="phone-ico"><x-maktabgid.icon name="phone" :width="17" :height="17" /></span>
@@ -132,16 +161,20 @@
             <button type="button" class="form-addlink" id="js-phone-add">
                 <x-maktabgid.icon name="plus" :width="15" :height="15" /> {{ __('cabinet_institution.add_phone_number') }}
             </button>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.working_hours_days') }}</div>
-            <p style="font-size:12.5px;color:var(--ink-3);font-weight:600;margin-top:-8px">{{ __('cabinet_institution.working_hours_hint') }}</p>
+        {{-- Ish vaqti va kunlari --}}
+        <div class="panel">
+            <div class="panel-head">
+                <div>
+                    <h3 style="font-size:16.5px">{{ __('cabinet_institution.working_hours_days') }}</h3>
+                    <p class="panel-head-sub">{{ __('cabinet_institution.working_hours_hint') }}</p>
+                </div>
+            </div>
             <div style="display:flex;flex-direction:column;gap:8px" id="js-day-rows">
                 @foreach ($scheduleDays as $d)
-                    <div class="day-row{{ $d['on'] ? ' on' : '' }}" data-abbr="{{ $d['abbr'] }}">
-                        <button type="button"
-                                class="switch js-day-toggle{{ $d['on'] ? ' on' : '' }}"
-                                @if (! empty($d['isSat'])) id="js-sat-toggle" @endif>
-                        </button>
+                    <div class="day-row{{ $d['on'] ? ' on' : '' }}" data-abbr="{{ $d['abbr'] }}" data-day="{{ $d['key'] }}">
+                        <button type="button" class="switch js-day-toggle{{ $d['on'] ? ' on' : '' }}"></button>
                         <span class="day-label">{{ $d['label'] }}</span>
                         <input type="text"
                                class="day-hours-input"
@@ -152,8 +185,11 @@
                     </div>
                 @endforeach
             </div>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.about_institution') }}</div>
+        {{-- Muassasa haqida --}}
+        <div class="panel">
+            <div class="panel-head"><h3 style="font-size:16.5px">{{ __('cabinet_institution.about_institution') }}</h3></div>
             <label class="field">
                 <span class="field-label">{{ __('cabinet_institution.field_short_description') }}</span>
                 <span class="field-control">
@@ -166,8 +202,13 @@
                     <textarea id="js-f-extra" rows="2" placeholder="Basseyn, transport xizmati, kengaytirilgan kun guruhi…" style="width:100%;resize:vertical"></textarea>
                 </span>
             </label>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.specializations') }} <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">({{ __('cabinet_institution.appears_in_search') }})</em></div>
+        {{-- Ixtisosliklar --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.specializations') }} <span class="panel-head-hint">({{ __('cabinet_institution.appears_in_search') }})</span></h3>
+            </div>
             <div class="chip-row" id="js-spec-chips">
                 @foreach ($specializations as $sp)
                     <button type="button"
@@ -178,8 +219,13 @@
                     </button>
                 @endforeach
             </div>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.infrastructure_facilities') }} <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">({{ __('cabinet_institution.appears_on_profile') }})</em></div>
+        {{-- Infratuzilma va qulayliklar --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.infrastructure_facilities') }} <span class="panel-head-hint">({{ __('cabinet_institution.appears_on_profile') }})</span></h3>
+            </div>
             <div class="chip-row" id="js-facility-chips">
                 @foreach ($facilityCatalog as $f)
                     <button type="button"
@@ -190,8 +236,13 @@
                     </button>
                 @endforeach
             </div>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.prices') }} <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">({{ __('cabinet_institution.prices_hint') }})</em></div>
+        {{-- Narxlar --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.prices') }} <span class="panel-head-hint">({{ __('cabinet_institution.prices_hint') }})</span></h3>
+            </div>
             <div class="price-head">
                 <span>{{ __('cabinet_institution.col_grade_group') }}</span><span>{{ __('cabinet_institution.col_teaching_language') }}</span><span>{{ __('cabinet_institution.col_monthly_price') }}</span><span>{{ __('cabinet_institution.col_discount') }}</span><span></span>
             </div>
@@ -229,8 +280,13 @@
             <div class="idash-badge-soft" style="margin-top:4px">
                 <x-maktabgid.icon name="sparkle" :width="14" :height="14" /> {{ __('cabinet_institution.preview_only_notice') }}
             </div>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.programs_directions') }} <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">{{ __('cabinet_institution.title_and_description_each') }}</em></div>
+        {{-- Yo'nalishlar va dastur --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.programs_directions') }} <span class="panel-head-hint">{{ __('cabinet_institution.title_and_description_each') }}</span></h3>
+            </div>
             <div style="display:flex;flex-direction:column;gap:8px" id="js-program-rows">
                 @forelse ($programRows as $p)
                     <div class="js-program-row" style="display:flex;gap:10px;align-items:center">
@@ -249,8 +305,13 @@
             <button type="button" class="form-addlink" id="js-program-add">
                 <x-maktabgid.icon name="plus" :width="15" :height="15" /> {{ __('cabinet_institution.add_direction') }}
             </button>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.learning_process_moments') }} <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">{{ __('cabinet_institution.one_moment_name_each') }}</em></div>
+        {{-- O'quv jarayonidan lavhalar --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.learning_process_moments') }} <span class="panel-head-hint">{{ __('cabinet_institution.one_moment_name_each') }}</span></h3>
+            </div>
             <div style="display:flex;flex-direction:column;gap:8px" id="js-lesson-rows">
                 @forelse ($lessonRows as $l)
                     <div class="js-lesson-row" style="display:flex;gap:10px;align-items:center">
@@ -267,10 +328,13 @@
             <button type="button" class="form-addlink" id="js-lesson-add">
                 <x-maktabgid.icon name="plus" :width="15" :height="15" /> {{ __('cabinet_institution.add_moment') }}
             </button>
+        </div>
 
-            <div class="form-section">
-                {{ __('cabinet_institution.videos') }} <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">{{ __('cabinet_institution.videos_hint') }}</em>
-                <button type="button" class="form-addlink" style="margin-left:auto" data-modal-open="add-video-modal">
+        {{-- Videolar --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.videos') }} <span class="panel-head-hint">{{ __('cabinet_institution.videos_hint') }}</span></h3>
+                <button type="button" class="btn btn-ghost sm" data-modal-open="add-video-modal">
                     <x-maktabgid.icon name="plus" :width="15" :height="15" /> {{ __('cabinet_institution.add_video') }}
                 </button>
             </div>
@@ -288,8 +352,13 @@
             @empty
                 <p style="font-size:13px;color:var(--ink-3);font-weight:600;margin:4px 0">{{ __('cabinet_institution.no_videos_yet') }}</p>
             @endforelse
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.admission_steps') }} <em style="font-style:normal;font-size:11.5px;color:var(--ink-3);font-weight:600">{{ __('cabinet_institution.title_and_description_each') }}</em></div>
+        {{-- Qabul bosqichlari --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.admission_steps') }} <span class="panel-head-hint">{{ __('cabinet_institution.title_and_description_each') }}</span></h3>
+            </div>
             <div style="display:flex;flex-direction:column;gap:8px" id="js-step-rows">
                 @forelse ($stepRows as $s)
                     <div class="js-step-row" style="display:flex;gap:10px;align-items:center">
@@ -308,8 +377,13 @@
             <button type="button" class="form-addlink" id="js-step-add">
                 <x-maktabgid.icon name="plus" :width="15" :height="15" /> {{ __('cabinet_institution.add_step') }}
             </button>
+        </div>
 
-            <div class="form-section">{{ __('cabinet_institution.indicators') }} <em style="font-style:normal;font-size:12px;font-weight:600;color:var(--ink-3)">({{ __('cabinet_institution.indicators_hint') }})</em></div>
+        {{-- Ko'rsatkichlar --}}
+        <div class="panel">
+            <div class="panel-head">
+                <h3 style="font-size:16.5px">{{ __('cabinet_institution.indicators') }} <span class="panel-head-hint">({{ __('cabinet_institution.indicators_hint') }})</span></h3>
+            </div>
             <div class="form-row2">
                 <label class="field">
                     <span class="field-label">{{ $statLabels[0] ?? __('cabinet_institution.indicator_n', ['n' => 1]) }}</span>
@@ -334,6 +408,8 @@
             <button class="btn btn-primary form-submit" type="button" id="js-inst-save">
                 <x-maktabgid.icon name="check" :width="17" :height="17" /> {{ __('cabinet_institution.save_data') }}
             </button>
+        </div>
+
         </div>
 
         {{-- ===== LIVE PREVIEW ===== --}}
@@ -381,14 +457,14 @@
                 <input type="hidden" name="type" value="video" />
                 <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
 
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_title') }}" icon="play">
+                <x-maktabgid.field :label="__('cabinet_institution.field_title')" icon="play">
                     <input type="text" name="caption" required placeholder="Masalan, Maktab bilan tanishuv" />
                 </x-maktabgid.field>
                 <div class="form-row2">
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_duration') }}" hint="{{ __('cabinet_institution.hint_optional') }}" icon="clock">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_duration')" :hint="__('cabinet_institution.hint_optional')" icon="clock">
                         <input type="text" name="duration" placeholder="2:14" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_note') }}" hint="{{ __('cabinet_institution.hint_optional') }}" icon="book">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_note')" :hint="__('cabinet_institution.hint_optional')" icon="book">
                         <input type="text" name="description" placeholder="360° sayohat" />
                     </x-maktabgid.field>
                 </div>
@@ -400,7 +476,7 @@
                 </label>
 
                 <p class="form-note" style="text-align:center">{{ __('cabinet_institution.or_word') }}</p>
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_video_link') }}" hint="{{ __('cabinet_institution.hint_optional_instead_of_file') }}" icon="send">
+                <x-maktabgid.field :label="__('cabinet_institution.field_video_link')" :hint="__('cabinet_institution.hint_optional_instead_of_file')" icon="send">
                     <input type="url" name="url" placeholder="https://youtube.com/..." />
                 </x-maktabgid.field>
 

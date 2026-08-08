@@ -898,6 +898,23 @@
                 return abbrs.length ? abbrs.join(", ") : "Dam olish kunlari";
             }
 
+            /* Har bir hafta kuni uchun real {on,hours} massivini yig'ib oladi
+               (work_schedule, 2026-08-08) — saqlashda shu to'g'ridan-to'g'ri yuboriladi. */
+            function collectWorkSchedule() {
+                var schedule = {};
+                Array.prototype.slice.call(document.querySelectorAll("#js-day-rows .day-row")).forEach(function (row) {
+                    var day = row.dataset.day;
+                    if (!day) return;
+                    var toggle = row.querySelector(".js-day-toggle");
+                    var input = row.querySelector(".day-hours-input");
+                    schedule[day] = {
+                        on: !!(toggle && toggle.classList.contains("on")),
+                        hours: input ? input.value.trim() : "",
+                    };
+                });
+                return schedule;
+            }
+
             /* "Narxlar" jadvalidagi eng kichik narx — real saqlashda ham
                (institutions.monthly_price) xuddi shu mantiq ishlatiladi
                (Institution\ProfileController::syncPrices(), 2026-07-15). */
@@ -964,10 +981,9 @@
                 });
             });
 
-            /* --- har bir kun qatorining toggle tugmasi: Dushanba (js-f-hours) va
-                   Shanba (js-sat-toggle, real works_saturday) shu orqali ham ishlaydi,
-                   qolgan kunlar hozircha faqat ko'rinish/preview uchun. --- */
-            var satToggle = document.getElementById("js-sat-toggle");
+            /* --- har bir kun qatorining toggle tugmasi: barcha 7 kun endi real
+                   saqlanadi (work_schedule, 2026-08-08) — collectWorkSchedule() shu
+                   qatorlardan to'liq {mon:{on,hours},...} massivini yig'ib oladi. --- */
             document.querySelectorAll(".js-day-toggle").forEach(function (btn) {
                 btn.addEventListener("click", function () {
                     var on = !btn.classList.contains("on");
@@ -1161,8 +1177,7 @@
                         // Diqqat: "grades" (Sinflar/Yosh oralig'i) inputi bu sahifadan olib
                         // tashlandi, shuning uchun bu yerdan ham yubormaymiz — aks holda
                         // saqlashda mavjud qiymat bo'sh qator bilan ustidan yozilib ketardi.
-                        work_hours: (document.getElementById("js-f-hours") || {}).value || "",
-                        works_saturday: !!(satToggle && satToggle.classList.contains("on")),
+                        work_schedule: collectWorkSchedule(),
                         specializations: specs,
                         facilities: facilities,
                         // Diqqat: "teachers_text" endi bu sahifada yo'q (Ustozlar bo'limi olib
@@ -1381,6 +1396,49 @@
                         alert("Videoni o'chirib bo'lmadi. Qayta urining.");
                     }).catch(function () {
                         btn.disabled = false;
+                        alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
+                    });
+                });
+            });
+
+            /* --- vakansiya ochish: real POST /ajax/institution/me/vacancies
+               (institution-cabinet Vakansiyalar sahifasi — ADR-0002) --- */
+            document.querySelectorAll(".js-vacancy-form").forEach(function (form) {
+                form.addEventListener("submit", function (e) {
+                    e.preventDefault();
+
+                    var errBox = form.querySelector(".js-form-error");
+                    var data = {};
+                    var els = form.elements;
+                    for (var i = 0; i < els.length; i++) {
+                        if (els[i].name) data[els[i].name] = els[i].value;
+                    }
+
+                    var submitBtn = form.querySelector(".form-submit");
+                    if (submitBtn) submitBtn.disabled = true;
+                    if (errBox) errBox.style.display = "none";
+
+                    jsonFetch("/ajax/institution/me/vacancies", "POST", data).then(function (result) {
+                        if (submitBtn) submitBtn.disabled = false;
+
+                        if (!result.ok) {
+                            var msg = "Xatolik yuz berdi. Maʼlumotlarni tekshirib qayta urining.";
+                            if (result.body) {
+                                if (result.body.errors) {
+                                    var firstKey = Object.keys(result.body.errors)[0];
+                                    if (firstKey && result.body.errors[firstKey][0]) msg = result.body.errors[firstKey][0];
+                                } else if (result.body.message) {
+                                    msg = result.body.message;
+                                }
+                            }
+                            if (errBox) { errBox.textContent = msg; errBox.style.display = ""; }
+                            else alert(msg);
+                            return;
+                        }
+
+                        window.location.reload();
+                    }).catch(function () {
+                        if (submitBtn) submitBtn.disabled = false;
                         alert("Tarmoq xatosi. Internet aloqasini tekshirib qayta urining.");
                     });
                 });

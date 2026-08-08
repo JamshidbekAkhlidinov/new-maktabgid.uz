@@ -92,6 +92,10 @@ class ResumeController extends Controller implements HasMiddleware
             'district_id' => ['nullable', 'exists:districts,id'],
             'languages' => ['nullable', 'string', 'max:255'],
             'owner_user_id' => ['nullable', 'exists:users,id'],
+            'phone' => ['nullable', 'string', 'max:50'],
+            'education' => ['nullable', 'string', 'max:255'],
+            'skills' => ['nullable', 'string', 'max:2000'],
+            'description' => ['nullable', 'string', 'max:5000'],
         ]);
     }
 }

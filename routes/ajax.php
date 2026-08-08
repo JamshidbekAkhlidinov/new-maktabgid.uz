@@ -67,7 +67,8 @@ Route::middleware('web')->prefix('ajax')->group(function () {
         Route::post('conversations/{conversation}/messages', [MessageController::class, 'store'])
             ->middleware('throttle:chat-message');
 
-        // O'z vakansiyasini o'chirish (institution-cabinet Vakansiyalar sahifasi, ADR-0002)
+        // Vakansiya ochish/o'chirish (institution-cabinet Vakansiyalar sahifasi, ADR-0002)
+        Route::post('vacancies', [InstitutionVacancyController::class, 'store']);
         Route::delete('vacancies/{vacancy}', [InstitutionVacancyController::class, 'destroy']);
 
         // Nomzod arizasi holatini o'zgartirish — qabul/rad (ADR-0002, Faza 2)

@@ -14,8 +14,8 @@
 
 <x-institution.shell
     active="leads"
-    title="{{ __('cabinet_institution.nav_leads') }}"
-    sub="{{ __('cabinet_institution.leads_sub') }}"
+    :title="__('cabinet_institution.nav_leads')"
+    :sub="__('cabinet_institution.leads_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"

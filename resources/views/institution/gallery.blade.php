@@ -6,8 +6,8 @@
 
 <x-institution.shell
     active="gallery"
-    title="{{ __('cabinet_institution.nav_gallery') }}"
-    sub="{{ __('cabinet_institution.gallery_sub') }}"
+    :title="__('cabinet_institution.nav_gallery')"
+    :sub="__('cabinet_institution.gallery_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"

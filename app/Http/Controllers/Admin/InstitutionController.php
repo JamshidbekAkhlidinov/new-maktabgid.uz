@@ -115,9 +115,6 @@ class InstitutionController extends Controller implements HasMiddleware
             'grades_uz' => ['nullable', 'string', 'max:100'],
             'grades_ru' => ['nullable', 'string', 'max:100'],
             'grades_en' => ['nullable', 'string', 'max:100'],
-            'work_hours_uz' => ['nullable', 'string', 'max:100'],
-            'work_hours_ru' => ['nullable', 'string', 'max:100'],
-            'work_hours_en' => ['nullable', 'string', 'max:100'],
             'badge_uz' => ['nullable', 'string', 'max:100'],
             'badge_ru' => ['nullable', 'string', 'max:100'],
             'badge_en' => ['nullable', 'string', 'max:100'],
@@ -132,7 +129,6 @@ class InstitutionController extends Controller implements HasMiddleware
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'monthly_price' => ['nullable', 'integer', 'min:0'],
-            'works_saturday' => ['nullable', 'boolean'],
             'accepting' => ['nullable', 'boolean'],
             'rating' => ['nullable', 'numeric', 'between:0,5'],
             'review_count' => ['nullable', 'integer', 'min:0'],
@@ -147,6 +143,12 @@ class InstitutionController extends Controller implements HasMiddleware
 
             'phone_numbers' => ['nullable', 'array'],
             'phone_numbers.*' => ['nullable', 'string', 'max:50'],
+
+            // Ish vaqti — har bir hafta kuni uchun alohida {on,hours} (2026-08-08).
+            // 'work_hours'/'works_saturday' shundan avtomatik hisoblanadi (prepare()).
+            'work_schedule' => ['nullable', 'array'],
+            'work_schedule.*.on' => ['nullable', 'boolean'],
+            'work_schedule.*.hours' => ['nullable', 'string', 'max:50'],
 
             'social_links' => ['nullable', 'array'],
             'social_links.instagram' => ['nullable', 'string', 'max:255'],
@@ -195,7 +197,7 @@ class InstitutionController extends Controller implements HasMiddleware
         // yassi maydonlarni {"uz":..,"ru":..,"en":..} massiviga yig'amiz (bo'sh
         // qiymatlar tashlab yuboriladi). Institution modelidagi 'array' cast +
         // HasTranslatable trait shu formatni to'g'ridan-to'g'ri qabul qiladi.
-        foreach (['name', 'about', 'address', 'grades', 'work_hours', 'badge', 'refer_point'] as $field) {
+        foreach (['name', 'about', 'address', 'grades', 'badge', 'refer_point'] as $field) {
             $data[$field] = collect(['uz', 'ru', 'en'])
                 ->mapWithKeys(fn ($locale) => [$locale => trim((string) ($data["{$field}_{$locale}"] ?? ''))])
                 ->filter(fn ($v) => $v !== '')
@@ -203,7 +205,15 @@ class InstitutionController extends Controller implements HasMiddleware
             unset($data["{$field}_uz"], $data["{$field}_ru"], $data["{$field}_en"]);
         }
 
-        $data['works_saturday'] = (bool) ($data['works_saturday'] ?? false);
+        // Ish vaqti — har bir hafta kuni uchun alohida {on,hours} (2026-08-08). 'work_hours'
+        // (Dushanba vaqti, uch tilda bir xil — soat matni tarjima qilinmaydi) va
+        // 'works_saturday' shundan avtomatik hisoblanadi, chunki ommaviy sahifalar/filtr
+        // hozircha shu ikkitasini ishlatishda davom etadi (InstitutionResource, MaktabgidData).
+        $schedule = Institution::normalizeWorkSchedule($data['work_schedule'] ?? []);
+        $data['work_schedule'] = $schedule;
+        $data['work_hours'] = array_fill_keys(['uz', 'ru', 'en'], $schedule['mon']['hours']);
+        $data['works_saturday'] = $schedule['sat']['on'];
+
         $data['accepting'] = (bool) ($data['accepting'] ?? false);
         $data['is_active'] = (bool) ($data['is_active'] ?? false);
         // 'rating'/'review_count' ustunlari bazada NOT NULL (default 0) — forma bo'sh

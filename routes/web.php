@@ -83,6 +83,13 @@ Route::get('/vakansiyalar/{id}', function (int $id) {
     return view('vacancy', ['vacancy' => $vacancy]);
 })->name('careers.show');
 
+Route::get('/vakansiyalar/rezyume/{id}', function (int $id) {
+    $resume = MaktabgidData::careerResume($id);
+    abort_if(! $resume, 404);
+
+    return view('resume', ['resume' => $resume]);
+})->name('careers.resume.show');
+
 /* ---------------- Kabinet (ota-ona) ----------------
  * ParentCabinetController + x-parent.shell — institution-cabinet/teacher-cabinet
  * bilan bir xil andozada (bitta umumiy qobiq, har bir bo'lim o'z route'i). */
@@ -120,6 +127,14 @@ Route::get('/teacher-cabinet/vacancies', [TeacherCabinetController::class, 'vaca
 Route::get('/teacher-cabinet/offers', [TeacherCabinetController::class, 'offers'])->name('teacher.cabinet.offers');
 Route::get('/teacher-cabinet/conversations', [TeacherCabinetController::class, 'conversations'])->name('teacher.cabinet.conversations');
 Route::get('/teacher-cabinet/payment', [TeacherCabinetController::class, 'tariffs'])->name('teacher.cabinet.tariffs');
+
+/* ---------------- Admin panel ----------------
+ * bootstrap/app.php'dagi then() callback'i (ajax.php/telegram.php/admin.php) shu
+ * faylning BUTUNI yuklangandan KEYIN ishga tushadi — shuning uchun admin.php'ni
+ * shu yerda, {slug} catch-all'dan OLDIN talab qilamiz. Aks holda bitta segmentli
+ * "/admin" so'rovi pastdagi {slug} route'iga tushib, muassasa slug'i sifatida
+ * "yutilib" ketadi va 404 qaytaradi (auth/admin middleware'gacha yetib bormaydi). */
+require __DIR__.'/admin.php';
 
 /* ---------------- Muassasa profili (ommaviy) — /{slug}, masalan /katta-tanaffus-uchtepa-filiali-1 ----------------
  * Diqqat: bu route ATAYLAB fayl OXIRIDA turadi — bitta segmentli "catch-all"

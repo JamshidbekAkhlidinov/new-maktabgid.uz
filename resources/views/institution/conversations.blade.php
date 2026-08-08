@@ -1,7 +1,7 @@
 <x-institution.shell
     active="conversations"
-    title="{{ __('cabinet_institution.nav_conversations') }}"
-    sub="{{ __('cabinet_institution.institution_conversations_sub') }}"
+    :title="__('cabinet_institution.nav_conversations')"
+    :sub="__('cabinet_institution.institution_conversations_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"

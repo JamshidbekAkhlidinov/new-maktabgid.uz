@@ -1,4 +1,4 @@
-<x-teacher.shell active="conversations" title="{{ __('cabinet_teacher.nav_conversations') }}" sub="{{ __('cabinet_teacher.conversations_sub') }}" :teacher="$teacher" :counts="$counts">
+<x-teacher.shell active="conversations" :title="__('cabinet_teacher.nav_conversations')" :sub="__('cabinet_teacher.conversations_sub')" :teacher="$teacher" :counts="$counts">
 
     <div class="chat-shell">
         {{-- ===== Suhbatlar ro'yxati ===== --}}

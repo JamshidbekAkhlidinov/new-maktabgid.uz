@@ -11,8 +11,8 @@
 
 <x-institution.shell
     active="achievements"
-    title="{{ __('cabinet_institution.nav_achievements') }}"
-    sub="{{ __('cabinet_institution.achievements_sub') }}"
+    :title="__('cabinet_institution.nav_achievements')"
+    :sub="__('cabinet_institution.achievements_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -76,22 +76,22 @@
             <form class="form js-achievement-form" enctype="multipart/form-data">
                 <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
 
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_achievement_title') }}" icon="trophy">
+                <x-maktabgid.field :label="__('cabinet_institution.field_achievement_title')" icon="trophy">
                     <input type="text" name="title" required placeholder="Matematika olimpiadasi — 1-o'rin" />
                 </x-maktabgid.field>
                 <div class="form-row2">
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_student_name') }}" hint="{{ __('cabinet_institution.hint_optional') }}" icon="user">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_student_name')" :hint="__('cabinet_institution.hint_optional')" icon="user">
                         <input type="text" name="student_name" placeholder="Sardor Karimov" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_year') }}" icon="cal">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_year')" icon="cal">
                         <input type="number" name="year" min="2000" max="2100" value="{{ now()->year }}" />
                     </x-maktabgid.field>
                 </div>
                 <div class="form-row2">
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_type') }}" hint="{{ __('cabinet_institution.hint_optional') }}" icon="award">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_type')" :hint="__('cabinet_institution.hint_optional')" icon="award">
                         <input type="text" name="type" placeholder="Olimpiada" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_level') }}" icon="badge">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_level')" icon="badge">
                         <select name="level" required>
                             @foreach ($levelMeta as $key => $lvl)
                                 <option value="{{ $key }}">{{ $lvl['label'] }}</option>
@@ -126,22 +126,22 @@
                 <form class="form js-achievement-form" enctype="multipart/form-data" data-achievement-id="{{ $a->id }}">
                     <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
 
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_achievement_title') }}" icon="trophy">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_achievement_title')" icon="trophy">
                         <input type="text" name="title" value="{{ $a->title }}" required />
                     </x-maktabgid.field>
                     <div class="form-row2">
-                        <x-maktabgid.field label="{{ __('cabinet_institution.field_student_name') }}" hint="{{ __('cabinet_institution.hint_optional') }}" icon="user">
+                        <x-maktabgid.field :label="__('cabinet_institution.field_student_name')" :hint="__('cabinet_institution.hint_optional')" icon="user">
                             <input type="text" name="student_name" value="{{ $a->student_name }}" />
                         </x-maktabgid.field>
-                        <x-maktabgid.field label="{{ __('cabinet_institution.field_year') }}" icon="cal">
+                        <x-maktabgid.field :label="__('cabinet_institution.field_year')" icon="cal">
                             <input type="number" name="year" min="2000" max="2100" value="{{ $a->year }}" />
                         </x-maktabgid.field>
                     </div>
                     <div class="form-row2">
-                        <x-maktabgid.field label="{{ __('cabinet_institution.field_type') }}" hint="{{ __('cabinet_institution.hint_optional') }}" icon="award">
+                        <x-maktabgid.field :label="__('cabinet_institution.field_type')" :hint="__('cabinet_institution.hint_optional')" icon="award">
                             <input type="text" name="type" value="{{ $a->type }}" />
                         </x-maktabgid.field>
-                        <x-maktabgid.field label="{{ __('cabinet_institution.field_level') }}" icon="badge">
+                        <x-maktabgid.field :label="__('cabinet_institution.field_level')" icon="badge">
                             <select name="level" required>
                                 @foreach ($levelMeta as $key => $lvl)
                                     <option value="{{ $key }}" @selected($key === $a->level)>{{ $lvl['label'] }}</option>

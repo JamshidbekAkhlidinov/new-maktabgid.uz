@@ -1,7 +1,7 @@
 <x-institution.shell
     active="plans"
-    title="{{ __('cabinet_institution.nav_plans') }}"
-    sub="{{ __('cabinet_institution.plans_sub') }}"
+    :title="__('cabinet_institution.nav_plans')"
+    :sub="__('cabinet_institution.plans_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -62,7 +62,7 @@
             </div>
         </form>
 
-        <x-maktabgid.success-note title="{{ __('cabinet_institution.payment_success_title') }}" class="js-fake-success" style="display:none">
+        <x-maktabgid.success-note :title="__('cabinet_institution.payment_success_title')" class="js-fake-success" style="display:none">
             <b>{{ $plan['name'] }}</b> {{ __('cabinet_institution.payment_success_body') }}
             <br /><br />
             <a href="{{ route('institution.cabinet') }}" class="btn btn-primary">{{ __('cabinet_institution.back_to_dashboard') }}</a>

@@ -32,9 +32,9 @@
          joylay olardi — bu xato edi. --}}
     <x-maktabgid.page-head
         icon="bag"
-        kicker="{{ __('careers.kicker') }}"
-        title="{{ __('careers.title') }}"
-        sub="{{ __('careers.sub') }}"
+        :kicker="__('careers.kicker')"
+        :title="__('careers.title')"
+        :sub="__('careers.sub')"
     />
 
     {{-- ===== MAIN CONTENT ===== --}}
@@ -51,7 +51,7 @@
             {{-- ===== RESUMES TAB ===== --}}
             <div class="res-grid" style="margin-top:24px">
                 @foreach ($resumes as $r)
-                    <article class="res-card">
+                    <a href="{{ route('careers.resume.show', $r['id']) }}" class="res-card">
                         <div class="res-top">
                             <x-maktabgid.avatar :name="$r['name']" :size="48" />
                             <div><b>{{ $r['name'] }}</b><span>{{ $r['role'] }}</span></div>
@@ -63,11 +63,9 @@
                         </div>
                         <div class="res-foot">
                             <div class="vac-salary">{{ $r['salary'] }} <span>UZS</span></div>
-                            <button class="btn btn-ghost sm" type="button">
-                                <x-maktabgid.icon name="phone" :width="14" :height="14" /> {{ __('careers.contact') }}
-                            </button>
+                            <span class="vac-until"><x-maktabgid.icon name="arrowR" :width="14" :height="14" /></span>
                         </div>
-                    </article>
+                    </a>
                 @endforeach
             </div>
         @else

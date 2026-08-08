@@ -12,8 +12,8 @@ return [
     'login_submit' => 'Log in',
     'no_account' => "Don't have an account?",
     'register_as_parent' => 'Sign up as a parent',
-    'im_institution' => "I'm an institution — add my institution",
-    'im_teacher' => "I'm a teacher — open a teacher account",
+    'im_institution' => 'Add institution',
+    'im_teacher' => 'Add vacancy',
 
     'parent_title' => 'Create a parent account',
     'parent_subtitle' => 'Sign up in a minute and manage your applications',

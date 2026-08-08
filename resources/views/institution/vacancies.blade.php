@@ -1,15 +1,15 @@
 @php
-    // Real ro'yxat — App\Models\Vacancy (Institution::vacancies()). "Vakansiya ochish"
-    // (yaratish) formasi hali pullik-demo bo'lib qoladi, nomzodlar/ariza boshqaruvi esa
-    // hali qurilmagan (ADR-0002, Faza 2: vacancy_applications jadvali) — shuning uchun
-    // pastda faqat real e'lonlar ro'yxati va o'chirish amali ko'rsatiladi.
+    // Real ro'yxat va yaratish — App\Models\Vacancy (Institution::vacancies()).
+    // Joylashtirish to'lov tizimi (Payme/Click) hali ulanmagani uchun hozircha
+    // bepul ishlaydi — ADR-0002 rejasiga ko'ra keyinchalik to'lov bosqichi
+    // qo'shiladi. Nomzodlar/ariza boshqaruvi (Faza 2) allaqachon real ulangan.
     $employmentLabels = ['full' => __('cabinet_institution.employment_full'), 'part' => __('cabinet_institution.employment_part'), 'hourly' => __('cabinet_institution.employment_hourly')];
 @endphp
 
 <x-institution.shell
     active="vacancies"
-    title="{{ __('cabinet_institution.nav_vacancies') }}"
-    sub="{{ __('cabinet_institution.institution_vacancies_sub') }}"
+    :title="__('cabinet_institution.nav_vacancies')"
+    :sub="__('cabinet_institution.institution_vacancies_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -58,51 +58,45 @@
         </div>
     @endif
 
-    {{-- ===== "Vakansiya ochish" modali — vakansiya joylash pullik xizmat (100 000 so'm),
-         to'lov tizimi (Payme/Click) hali ulanmagani uchun umumiy "fake form" andozasi
-         orqali demo ko'rinishda ishlaydi (ADR-0002). ===== --}}
+    {{-- ===== "Vakansiya ochish" modali — real POST /ajax/institution/me/vacancies
+         (ADR-0002). To'lov tizimi (Payme/Click) hali ulanmagani uchun joylashtirish
+         hozircha bepul; keyinchalik to'lov bosqichi shu yerga qo'shiladi. ===== --}}
     <x-maktabgid.modal-shell id="add-vacancy-modal" :width="480">
         <div class="js-modal-body">
-            <div class="modal-head js-fake-form-head">
+            <div class="modal-head">
                 <h3>{{ __('cabinet_institution.open_vacancy') }}</h3>
             </div>
 
-            <form class="form js-fake-form">
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_position') }}" icon="bag">
-                    <input type="text" required placeholder="Ingliz tili o'qituvchisi" />
+            <form class="form js-vacancy-form">
+                <div class="js-form-error" style="display:none;padding:10px 14px;background:#fdecec;color:#d4504e;border-radius:var(--r-md);font-size:13px;font-weight:700"></div>
+
+                <x-maktabgid.field :label="__('cabinet_institution.field_position')" icon="bag">
+                    <input type="text" name="title" required placeholder="Ingliz tili o'qituvchisi" />
                 </x-maktabgid.field>
                 <div class="form-row2">
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_employment') }}" icon="sliders">
-                        <select required>
-                            <option>{{ __('cabinet_institution.employment_full') }}</option>
-                            <option>{{ __('cabinet_institution.employment_part') }}</option>
+                    <x-maktabgid.field :label="__('cabinet_institution.field_employment')" icon="sliders">
+                        <select name="employment_type" required>
+                            <option value="full">{{ __('cabinet_institution.employment_full') }}</option>
+                            <option value="part">{{ __('cabinet_institution.employment_part') }}</option>
+                            <option value="hourly">{{ __('cabinet_institution.employment_hourly') }}</option>
                         </select>
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_salary_range') }}" icon="card">
-                        <input type="text" required placeholder="8-12 mln" />
+                    <x-maktabgid.field :label="__('cabinet_institution.field_salary_range')" icon="card">
+                        <input type="text" name="salary_range" placeholder="8-12 mln" />
                     </x-maktabgid.field>
                 </div>
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_requirements') }}" icon="edit">
-                    <textarea rows="3" placeholder="{{ __('cabinet_institution.requirements_placeholder') }}"></textarea>
+                <x-maktabgid.field :label="__('cabinet_institution.field_requirements')" icon="edit">
+                    <textarea name="requirements" rows="3" placeholder="{{ __('cabinet_institution.requirements_placeholder') }}"></textarea>
                 </x-maktabgid.field>
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_deadline') }}" icon="cal">
-                    <input type="text" required placeholder="30-iyul" />
+                <x-maktabgid.field :label="__('cabinet_institution.field_deadline')" icon="cal">
+                    <input type="date" name="expires_at" min="{{ now()->toDateString() }}" />
                 </x-maktabgid.field>
-
-                <div style="display:flex;align-items:center;gap:9px;padding:12px 14px;background:var(--accent-soft);border-radius:var(--r-md);font-size:12.5px;font-weight:700;color:#b45309">
-                    <x-maktabgid.icon name="card" :width="16" :height="16" />
-                    {{ __('cabinet_institution.vacancy_paid_notice') }}
-                </div>
 
                 <div style="display:flex;gap:10px;margin-top:4px">
                     <button class="btn btn-primary form-submit" type="submit" style="flex:1;justify-content:center">{{ __('cabinet_institution.post_vacancy_cta') }}</button>
                     <button class="btn btn-ghost js-modal-close" type="button">{{ __('cabinet_institution.cancel') }}</button>
                 </div>
             </form>
-
-            <x-maktabgid.success-note title="{{ __('cabinet_institution.vacancy_posted_title') }}" :close-target="true" class="js-fake-success" style="display:none">
-                {{ __('cabinet_institution.vacancy_posted_body') }}
-            </x-maktabgid.success-note>
         </div>
     </x-maktabgid.modal-shell>
 

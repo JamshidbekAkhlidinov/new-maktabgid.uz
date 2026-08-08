@@ -14,8 +14,8 @@
 
 <x-institution.shell
     active="teachers"
-    title="{{ __('cabinet_institution.nav_teachers') }}"
-    sub="{{ __('cabinet_institution.teachers_sub') }}"
+    :title="__('cabinet_institution.nav_teachers')"
+    :sub="__('cabinet_institution.teachers_sub')"
     :institution="$institution"
     :organizations="$organizations"
     :counts="$counts"
@@ -70,21 +70,21 @@
             </div>
 
             <form class="form js-fake-form">
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_fullname') }}" icon="user">
+                <x-maktabgid.field :label="__('cabinet_institution.field_fullname')" icon="user">
                     <input type="text" required placeholder="Masalan, Alisher Normatov" />
                 </x-maktabgid.field>
                 <div class="form-row2">
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_position_subject') }}" icon="bag">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_position_subject')" icon="bag">
                         <input type="text" required placeholder="Matematika" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_experience_years') }}" icon="clock">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_experience_years')" icon="clock">
                         <input type="text" required placeholder="10 yil" />
                     </x-maktabgid.field>
                 </div>
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_education') }}" hint="{{ __('cabinet_institution.hint_edu') }}" icon="book">
+                <x-maktabgid.field :label="__('cabinet_institution.field_education')" :hint="__('cabinet_institution.hint_edu')" icon="book">
                     <input type="text" placeholder="TDPU — 2009-yil" />
                 </x-maktabgid.field>
-                <x-maktabgid.field label="{{ __('cabinet_institution.field_achievements') }}" hint="{{ __('cabinet_institution.hint_comma_separated') }}" icon="award">
+                <x-maktabgid.field :label="__('cabinet_institution.field_achievements')" :hint="__('cabinet_institution.hint_comma_separated')" icon="award">
                     <textarea rows="3" placeholder="Yil o'qituvchisi — 2023, Respublika murabbiyi"></textarea>
                 </x-maktabgid.field>
 
@@ -100,7 +100,7 @@
                 </div>
             </form>
 
-            <x-maktabgid.success-note title="{{ __('cabinet_institution.teacher_added_title') }}" :close-target="true" class="js-fake-success" style="display:none">
+            <x-maktabgid.success-note :title="__('cabinet_institution.teacher_added_title')" :close-target="true" class="js-fake-success" style="display:none">
                 {{ __('cabinet_institution.teacher_added_body') }}
             </x-maktabgid.success-note>
         </div>
@@ -115,21 +115,21 @@
                 </div>
 
                 <form class="form js-fake-form">
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_fullname') }}" icon="user">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_fullname')" icon="user">
                         <input type="text" value="{{ $t['name'] }}" required />
                     </x-maktabgid.field>
                     <div class="form-row2">
-                        <x-maktabgid.field label="{{ __('cabinet_institution.field_position_subject') }}" icon="bag">
+                        <x-maktabgid.field :label="__('cabinet_institution.field_position_subject')" icon="bag">
                             <input type="text" value="{{ $t['subject'] }}" required />
                         </x-maktabgid.field>
-                        <x-maktabgid.field label="{{ __('cabinet_institution.field_experience_years') }}" icon="clock">
+                        <x-maktabgid.field :label="__('cabinet_institution.field_experience_years')" icon="clock">
                             <input type="text" value="{{ $t['exp'] }}" required />
                         </x-maktabgid.field>
                     </div>
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_education') }}" hint="{{ __('cabinet_institution.hint_edu') }}" icon="book">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_education')" :hint="__('cabinet_institution.hint_edu')" icon="book">
                         <input type="text" value="{{ $t['edu'] }}" />
                     </x-maktabgid.field>
-                    <x-maktabgid.field label="{{ __('cabinet_institution.field_achievements') }}" hint="{{ __('cabinet_institution.hint_comma_separated') }}" icon="award">
+                    <x-maktabgid.field :label="__('cabinet_institution.field_achievements')" :hint="__('cabinet_institution.hint_comma_separated')" icon="award">
                         <textarea rows="3">{{ implode(', ', $t['ach']) }}</textarea>
                     </x-maktabgid.field>
 
@@ -145,7 +145,7 @@
                     </div>
                 </form>
 
-                <x-maktabgid.success-note title="{{ __('cabinet_institution.data_updated_title') }}" :close-target="true" class="js-fake-success" style="display:none">
+                <x-maktabgid.success-note :title="__('cabinet_institution.data_updated_title')" :close-target="true" class="js-fake-success" style="display:none">
                     {{ __('cabinet_institution.data_updated_body') }}
                 </x-maktabgid.success-note>
             </div>

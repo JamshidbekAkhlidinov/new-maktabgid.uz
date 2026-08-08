@@ -38,9 +38,9 @@
 
     <x-maktabgid.page-head
         icon="news"
-        kicker="{{ __('news.kicker') }}"
-        title="{{ __('news.title') }}"
-        sub="{{ __('news.sub') }}"
+        :kicker="__('news.kicker')"
+        :title="__('news.title')"
+        :sub="__('news.sub')"
     />
 
     <div class="wrap section">

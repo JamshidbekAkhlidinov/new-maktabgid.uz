@@ -17,8 +17,8 @@
 
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
-    <div class="wrap" style="padding-top:20px">
-        <x-maktabgid.back-link href="{{ route('careers.index') }}" label="{{ __('careers.back_to_vacancies') }}" />
+    <div class="wrap" style="padding-top:91px">
+        <x-maktabgid.back-link :href="route('careers.index')" :label="__('careers.back_to_vacancies')" />
     </div>
 
     <div class="wrap detail-grid">
@@ -56,18 +56,18 @@
                 <div class="js-inline-enroll">
                     <form class="enroll-form js-vacancy-apply-form" data-vacancy-id="{{ $vacancy['id'] }}" enctype="multipart/form-data" style="gap:14px">
                         <div class="form-row2">
-                            <x-maktabgid.field label="{{ __('careers.full_name_label') }}" icon="user"><input name="full_name" required placeholder="{{ __('careers.full_name_placeholder') }}" /></x-maktabgid.field>
-                            <x-maktabgid.field label="{{ __('careers.phone_label') }}" icon="phone"><input name="phone" required placeholder="{{ __('careers.phone_placeholder') }}" /></x-maktabgid.field>
+                            <x-maktabgid.field :label="__('careers.full_name_label')" icon="user"><input name="full_name" required placeholder="{{ __('careers.full_name_placeholder') }}" /></x-maktabgid.field>
+                            <x-maktabgid.field :label="__('careers.phone_label')" icon="phone"><input name="phone" required placeholder="{{ __('careers.phone_placeholder') }}" /></x-maktabgid.field>
                         </div>
-                        <x-maktabgid.field label="{{ __('careers.message_label') }}" icon="edit"><textarea name="note" rows="3" placeholder="{{ __('careers.message_placeholder') }}"></textarea></x-maktabgid.field>
-                        <x-maktabgid.field label="{{ __('careers.resume_label') }}" icon="paperclip" hint="{{ __('careers.resume_hint') }}">
+                        <x-maktabgid.field :label="__('careers.message_label')" icon="edit"><textarea name="note" rows="3" placeholder="{{ __('careers.message_placeholder') }}"></textarea></x-maktabgid.field>
+                        <x-maktabgid.field :label="__('careers.resume_label')" icon="paperclip" :hint="__('careers.resume_hint')">
                             <input type="file" name="resume" accept=".pdf,.doc,.docx" />
                         </x-maktabgid.field>
                         <div>
                             <button class="btn btn-primary" type="submit"><x-maktabgid.icon name="send" :width="16" :height="16" /> {{ __('careers.apply') }}</button>
                         </div>
                     </form>
-                    <x-maktabgid.success-note title="{{ __('careers.application_accepted_title') }}" class="js-fake-success" style="display:none">
+                    <x-maktabgid.success-note :title="__('careers.application_accepted_title')" class="js-fake-success" style="display:none">
                         {{ __('careers.application_accepted_body') }}
                     </x-maktabgid.success-note>
                 </div>

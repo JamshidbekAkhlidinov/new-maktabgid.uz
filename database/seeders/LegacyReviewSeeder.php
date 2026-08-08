@@ -44,7 +44,7 @@ class LegacyReviewSeeder extends Seeder
                 continue;
             }
 
-            $body = trim((string) ($c['text'] ?? ''));
+            $body = trim($this->decodeLegacyText((string) ($c['text'] ?? '')));
             $rating = (int) ($c['rate'] ?? 5);
             $rating = max(1, min(5, $rating ?: 5));
 
@@ -53,7 +53,7 @@ class LegacyReviewSeeder extends Seeder
                 [
                     'institution_id' => $institutionId,
                     'user_id' => null,
-                    'guest_name' => filled($c['name'] ?? null) ? trim($c['name']) : 'Mehmon',
+                    'guest_name' => filled($c['name'] ?? null) ? $this->decodeLegacyText(trim($c['name'])) : 'Mehmon',
                     'rating' => $rating,
                     'body' => $body !== '' ? $body : null,
                 ]
@@ -107,5 +107,17 @@ class LegacyReviewSeeder extends Seeder
         $decoded = json_decode((string) file_get_contents($path), true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * Eski tizim matnni saqlashdan oldin htmlspecialchars() qilib qo'ygan
+     * (masalan "zo&#039;r" — asli "zo'r"). Laravel buni qayta chiqarganda
+     * ({{ }} avtomatik escape qiladi) "&" belgisi yana escape bo'lib,
+     * ekranda literal "&#039;" ko'rinib qoladi — shu sababli import paytida
+     * bir marta dekod qilib, haqiqiy belgilarni tiklaymiz.
+     */
+    private function decodeLegacyText(string $text): string
+    {
+        return html_entity_decode($text, ENT_QUOTES | ENT_HTML5);
     }
 }

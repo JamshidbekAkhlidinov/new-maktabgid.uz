@@ -13,7 +13,7 @@ class Vacancy extends Model
 
     protected $fillable = [
         'legacy_id', 'title', 'institution_id', 'org_name', 'salary_range', 'employment_type',
-        'specialization_key', 'posted_by_user_id', 'expires_at',
+        'specialization_key', 'requirements', 'posted_by_user_id', 'expires_at',
     ];
 
     protected function casts(): array

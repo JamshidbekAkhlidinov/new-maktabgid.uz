@@ -22,8 +22,11 @@ class UpdateProfileRequest extends FormRequest
             'district' => ['sometimes', 'nullable', 'string', 'max:255'],
             'address' => ['sometimes', 'nullable', 'string', 'max:255'],
             'grades' => ['sometimes', 'nullable', 'string', 'max:100'],
-            'work_hours' => ['sometimes', 'nullable', 'string', 'max:100'],
-            'works_saturday' => ['sometimes', 'boolean'],
+            // Ish vaqti — endi har bir hafta kuni uchun alohida {on,hours} (2026-08-08).
+            // 'work_hours'/'works_saturday' shundan avtomatik hisoblanadi (ProfileController::update()).
+            'work_schedule' => ['sometimes', 'array'],
+            'work_schedule.*.on' => ['sometimes', 'boolean'],
+            'work_schedule.*.hours' => ['sometimes', 'nullable', 'string', 'max:50'],
             'specializations' => ['sometimes', 'array'],
             'specializations.*' => ['string'],
 

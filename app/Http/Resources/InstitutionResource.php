@@ -23,6 +23,7 @@ class InstitutionResource extends JsonResource
             'grades' => $this->grades,
             'workHours' => $this->work_hours,
             'worksSaturday' => (bool) $this->works_saturday,
+            'workSchedule' => $this->work_schedule ?? [],
             'accepting' => (bool) $this->accepting,
             'rating' => (float) $this->rating,
             'reviewCount' => $this->review_count,
