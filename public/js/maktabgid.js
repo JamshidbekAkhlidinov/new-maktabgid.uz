@@ -182,11 +182,10 @@
 
         var state = { cat: "maktab", query: "", district: "", sat: false, distance: "", price: "", districts: [], sort: "rel", spec: "" };
 
-        /* Cheksiz skroll — bir vaqtda 10 tadan koʻrsatiladi, pastga tushilganda yana 10 ta qoʻshiladi. */
-        var PAGE_SIZE = 10;
-        var visibleCount = PAGE_SIZE;
-        var loadMoreSentinel = document.getElementById("js-load-more-sentinel");
-        var loadMoreSpinner = document.getElementById("js-load-more-spinner");
+        /* Sahifalash — har sahifada 20 tadan natija, istalgan sahifaga toʻgʻridan-toʻgʻri oʻtish mumkin. */
+        var PAGE_SIZE = 20;
+        var currentPage = 1;
+        var paginationEl = document.getElementById("js-pagination");
 
         function setActiveCatButtons() {
             document.querySelectorAll(".js-cat").forEach(function (b) {
@@ -231,13 +230,70 @@
 
         function render() {
             // Filtr/toifa/saralash oʻzgarganda — yangi qidiruv, birinchi sahifadan boshlanadi.
-            visibleCount = PAGE_SIZE;
+            currentPage = 1;
             paint();
         }
 
-        function loadMore() {
-            visibleCount += PAGE_SIZE;
+        // Kartochka fon rasmini faqat u aynan koʻrsatilayotgan sahifada boʻlganda yuklaydi
+        // (barchasini bir vaqtda ochish yuzlab parallel soʻrov yuboradi).
+        function applyCardMedia(card) {
+            var media = card.querySelector(".scard-media");
+            if (media && media.dataset.bg && !media.dataset.bgApplied) {
+                media.style.background = media.dataset.bg;
+                media.dataset.bgApplied = "1";
+            }
+        }
+
+        function scrollToResultsHead() {
+            var resultsHead = document.getElementById("js-results-head");
+            if (resultsHead) resultsHead.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+        function goToPage(page) {
+            currentPage = page;
             paint();
+            scrollToResultsHead();
+        }
+
+        function paginationButton(label, page, opts) {
+            opts = opts || {};
+            var btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = label;
+            if (opts.on) { btn.classList.add("on"); btn.setAttribute("aria-current", "page"); }
+            if (opts.disabled) {
+                btn.disabled = true;
+            } else {
+                btn.addEventListener("click", function () { goToPage(page); });
+            }
+            return btn;
+        }
+
+        function renderPagination(totalPages) {
+            if (!paginationEl) return;
+            paginationEl.innerHTML = "";
+            if (totalPages <= 1) { paginationEl.style.display = "none"; return; }
+            paginationEl.style.display = "";
+
+            paginationEl.appendChild(paginationButton("‹", currentPage - 1, { disabled: currentPage === 1 }));
+
+            var pages = [];
+            for (var p = 1; p <= totalPages; p++) {
+                if (p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1) pages.push(p);
+            }
+            var prev = 0;
+            pages.forEach(function (p) {
+                if (prev && p - prev > 1) {
+                    var dots = document.createElement("span");
+                    dots.className = "pg-ellipsis";
+                    dots.textContent = "…";
+                    paginationEl.appendChild(dots);
+                }
+                paginationEl.appendChild(paginationButton(String(p), p, { on: p === currentPage }));
+                prev = p;
+            });
+
+            paginationEl.appendChild(paginationButton("›", currentPage + 1, { disabled: currentPage === totalPages }));
         }
 
         function paint() {
@@ -245,13 +301,19 @@
 
             var matched = sortCards(applyFilters());
             var matchedIds = matched.map(function (c) { return c.dataset.id; });
-            var shown = matched.slice(0, visibleCount);
+            var totalPages = Math.max(1, Math.ceil(matched.length / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+            var start = (currentPage - 1) * PAGE_SIZE;
+            var shown = matched.slice(start, start + PAGE_SIZE);
 
-            // DOM tartibi butun moslashgan roʻyxat boʻyicha saqlanadi (keyingi sahifa ochilganda
+            // DOM tartibi butun moslashgan roʻyxat boʻyicha saqlanadi (sahifa almashganda
             // qayta tartiblash shart boʻlmasin uchun) — faqat koʻrinish (display) sahifalanadi.
             cards.forEach(function (card) { card.style.display = "none"; });
             matched.forEach(function (card) { cardList.appendChild(card); });
-            shown.forEach(function (card) { card.style.display = ""; });
+            shown.forEach(function (card) {
+                card.style.display = "";
+                applyCardMedia(card);
+            });
 
             if (pinsReady) {
                 Object.keys(pins).forEach(function (id) {
@@ -264,26 +326,14 @@
             emptyBox.style.display = matched.length === 0 ? "" : "none";
             cardList.style.display = matched.length === 0 ? "none" : "";
 
-            if (loadMoreSentinel) loadMoreSentinel.style.display = shown.length < matched.length ? "" : "none";
-            if (loadMoreSpinner) loadMoreSpinner.style.display = "none";
-        }
-
-        if (loadMoreSentinel && "IntersectionObserver" in window) {
-            var loadMoreObserver = new IntersectionObserver(function (entries) {
-                if (entries[0].isIntersecting && loadMoreSentinel.style.display !== "none") {
-                    if (loadMoreSpinner) loadMoreSpinner.style.display = "";
-                    loadMore();
-                }
-            }, { rootMargin: "300px" });
-            loadMoreObserver.observe(loadMoreSentinel);
+            renderPagination(totalPages);
         }
 
         document.querySelectorAll(".js-cat").forEach(function (btn) {
             btn.addEventListener("click", function () {
                 state.cat = btn.dataset.cat;
                 render();
-                var natijalar = document.getElementById("natijalar");
-                if (natijalar) natijalar.scrollIntoView({ behavior: "smooth" });
+                scrollToResultsHead();
             });
         });
 
@@ -296,19 +346,15 @@
                 document.querySelectorAll(".js-spec-tile").forEach(function (t) {
                     t.classList.toggle("on", t.dataset.spec === state.spec);
                 });
-                var natijalar = document.getElementById("natijalar");
-                if (natijalar) natijalar.scrollIntoView({ behavior: "smooth" });
                 render();
+                scrollToResultsHead();
             });
         });
 
         if (queryInput) queryInput.addEventListener("input", function () { state.query = queryInput.value.trim(); render(); });
         if (districtSelect) districtSelect.addEventListener("change", function () { state.district = districtSelect.value; render(); });
         if (sortSelect) sortSelect.addEventListener("change", function () { state.sort = sortSelect.value; render(); });
-        if (searchGoBtn) searchGoBtn.addEventListener("click", function () {
-            var target = document.getElementById("natijalar");
-            if (target) target.scrollIntoView({ behavior: "smooth" });
-        });
+        if (searchGoBtn) searchGoBtn.addEventListener("click", scrollToResultsHead);
 
         if (satSwitch) satSwitch.addEventListener("click", function () {
             state.sat = !state.sat;

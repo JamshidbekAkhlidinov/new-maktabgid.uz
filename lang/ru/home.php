@@ -19,6 +19,7 @@ return [
     'empty_hint_before' => 'Попробуйте расширить фильтры или',
     'empty_reset' => 'сбросить их',
     'loading' => 'Загрузка...',
+    'pagination' => 'Пагинация',
 
     // hero.blade.php
     'hero_eyebrow' => 'Каталог образования №1 в Узбекистане',

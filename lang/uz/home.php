@@ -19,6 +19,7 @@ return [
     'empty_hint_before' => 'Filtrlarni kengaytirib koʻring yoki',
     'empty_reset' => 'tozalang',
     'loading' => 'Yuklanmoqda...',
+    'pagination' => 'Sahifalash',
 
     // hero.blade.php
     'hero_eyebrow' => 'Oʻzbekistondagi 1-raqamli taʼlim qidiruv platformasi',
