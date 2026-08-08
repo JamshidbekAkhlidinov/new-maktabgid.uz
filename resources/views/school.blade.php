@@ -38,7 +38,7 @@
         </div>
 
         <div class="detail-hero-stack">
-            <x-maktabgid.detail.gallery :media="$media" :photos="$s['photos']" />
+            <x-maktabgid.detail.gallery :photos="$s['photos']" />
             <x-maktabgid.detail.title-card :school="$s" :cat-label="$catLabel" :stats="$stats" />
         </div>
 

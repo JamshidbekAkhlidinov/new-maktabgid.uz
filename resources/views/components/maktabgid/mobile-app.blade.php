@@ -102,7 +102,9 @@
                                         <span class="x"><x-maktabgid.icon name="map" :width="13" :height="13" /> {{ $s['dist'] }} km</span>
                                     </div>
                                     <div class="m-tags">
-                                        <span class="m-tag lang">{{ $s['lang'] }}</span>
+                                        @if (!empty($s['lang']))
+                                            <span class="m-tag lang">{{ $s['lang'] }}</span>
+                                        @endif
                                         @if ($s['sat'])
                                             <span class="m-tag sat">{{ __('home.saturday_short') }}</span>
                                         @endif

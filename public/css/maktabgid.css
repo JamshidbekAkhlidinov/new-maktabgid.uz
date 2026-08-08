@@ -1054,7 +1054,7 @@ svg { display: block; }
 .detail-hero-stack { display: flex; flex-direction: column; }
 .detail-hero-stack > .wrap { width: 100%; }
 
-/* gallery */
+/* gallery — 1 katta + 4 kichik, yozuv/badge'siz (faqat rasm) */
 .gallery { display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px; }
 .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .ptile { position: relative; border-radius: var(--r-md); overflow: hidden; min-height: 150px; display: flex; align-items: flex-end; box-shadow: var(--shadow-sm); }

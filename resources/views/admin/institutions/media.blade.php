@@ -9,20 +9,49 @@
         <x-admin.icon name="arrow-left" class="w-4 h-4" /> Tashkilot tahririga qaytish
     </a>
 
+    <x-admin.card class="mb-6">
+        <h3 class="text-base font-semibold text-slate-900 mb-1">Logo</h3>
+        <p class="text-sm text-slate-500 mb-4">Bosh sahifa kartochkasi va /{{ $institution->slug }} sahifasidagi asosiy rasm sifatida shu foydalaniladi. Belgilanmagan bo'lsa, galereyadagi birinchi rasm standart sifatida ishlatiladi.</p>
+
+        @if ($logoMedia)
+            <div class="relative w-28 aspect-square rounded-lg overflow-hidden border-2 border-amber-400 bg-slate-50 bg-cover bg-center" style="background-image:url('{{ $logoMedia->url }}')">
+                <span class="absolute top-1 left-1 flex items-center justify-center w-6 h-6 rounded-full bg-amber-400 text-white">
+                    <x-admin.icon name="star" class="w-3.5 h-3.5" />
+                </span>
+                <form method="POST" action="{{ route('admin.institutions.media.logo', [$institution, $logoMedia]) }}" class="absolute bottom-1 inset-x-1">
+                    @csrf
+                    @method('PATCH')
+                    <button type="submit" class="w-full rounded-md bg-black/60 hover:bg-black/75 text-white text-[11px] font-medium px-2 py-1 transition">Bekor qilish</button>
+                </form>
+            </div>
+        @else
+            <p class="text-sm text-slate-400">Logo belgilanmagan — quyidagi galereyadan birini "Logo qilish" tugmasi bilan tanlang.</p>
+        @endif
+    </x-admin.card>
+
     <x-admin.card>
         <h3 class="text-base font-semibold text-slate-900 mb-1">Galereya</h3>
-        <p class="text-sm text-slate-500 mb-4">JPG, PNG, WebP — maks 5 MB. /{{ $institution->slug }} sahifasidagi asosiy rasm va galereya shu ro'yxatdan.</p>
+        <p class="text-sm text-slate-500 mb-4">JPG, PNG, WebP — maks 5 MB.</p>
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 mb-5">
             @foreach ($galleryMedia as $m)
                 <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 bg-slate-50 bg-cover bg-center" style="background-image:url('{{ $m->url }}')">
-                    <form method="POST" action="{{ route('admin.institutions.media.destroy', [$institution, $m]) }}" onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?')" class="absolute top-1.5 right-1.5">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white hover:bg-rose-600 transition" title="O'chirish">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" /></svg>
-                        </button>
-                    </form>
+                    <div class="absolute top-1.5 right-1.5 left-1.5 flex items-start justify-between gap-1">
+                        <form method="POST" action="{{ route('admin.institutions.media.logo', [$institution, $m]) }}">
+                            @csrf
+                            @method('PATCH')
+                            <button type="submit" class="flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white hover:bg-amber-500 transition" title="Logo qilish">
+                                <x-admin.icon name="star" class="w-3.5 h-3.5" />
+                            </button>
+                        </form>
+                        <form method="POST" action="{{ route('admin.institutions.media.destroy', [$institution, $m]) }}" onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white hover:bg-rose-600 transition" title="O'chirish">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6L6 18" /></svg>
+                            </button>
+                        </form>
+                    </div>
                     @if ($m->caption)
                         <span class="absolute bottom-0 inset-x-0 bg-black/50 text-white text-[11px] px-2 py-1 truncate">{{ $m->caption }}</span>
                     @endif

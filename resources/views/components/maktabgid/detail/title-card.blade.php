@@ -8,7 +8,9 @@
                 @if (!empty($school['badge']))
                     <span class="tag" style="background:var(--accent-soft);color:#b45309">{{ $school['badge'] }}</span>
                 @endif
-                <span class="tag lang">{{ $school['lang'] }}</span>
+                @if (!empty($school['lang']))
+                    <span class="tag lang">{{ $school['lang'] }}</span>
+                @endif
                 @if ($school['sat'])
                     <span class="tag sat">{{ __('school.saturday_work') }}</span>
                 @endif

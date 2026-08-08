@@ -35,6 +35,7 @@ class InstitutionMediaController extends Controller implements HasMiddleware
 
         return view('admin.institutions.media', [
             'institution' => $institution,
+            'logoMedia' => $institution->logoMedia(),
             'galleryMedia' => $institution->media->where('type', 'gallery')->sortBy('sort_order')->values(),
             'videoMedia' => $institution->media->where('type', 'video')->sortBy('sort_order')->values(),
         ]);
@@ -75,5 +76,28 @@ class InstitutionMediaController extends Controller implements HasMiddleware
         $uploader->delete($media);
 
         return redirect()->route('admin.institutions.media.index', $institution)->with('status', 'Fayl o\'chirildi.');
+    }
+
+    /**
+     * Galereyadagi bitta rasmni "logo" qilib belgilaydi (bosh sahifa kartochkasi va
+     * detail sahifadagi asosiy rasm sifatida ishlatiladi) — yoki agar u allaqachon
+     * logo bo'lsa, qayta galereyaga qaytaradi. Bir muassasada faqat bitta logo
+     * bo'lishi mumkin, shuning uchun avvalgi logo (bo'lsa) galereyaga qaytariladi.
+     */
+    public function toggleLogo(Institution $institution, InstitutionMedia $media): RedirectResponse
+    {
+        abort_unless($media->institution_id === $institution->id, 404);
+        abort_unless(in_array($media->type, ['gallery', 'logo'], true), 404);
+
+        if ($media->type === 'logo') {
+            $media->update(['type' => 'gallery']);
+            $status = 'Logo bekor qilindi.';
+        } else {
+            $institution->media()->where('type', 'logo')->update(['type' => 'gallery']);
+            $media->update(['type' => 'logo']);
+            $status = 'Logo belgilandi.';
+        }
+
+        return redirect()->route('admin.institutions.media.index', $institution)->with('status', $status);
     }
 }

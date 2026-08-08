@@ -5,9 +5,6 @@ return [
     'save' => 'Saqlash',
     'share' => 'Ulashish',
 
-    // Gallery
-    'main_photo' => 'Asosiy rasm',
-
     // Title card
     'saturday_work' => 'Shanba ish',
     'reviews_count' => ':count sharh',

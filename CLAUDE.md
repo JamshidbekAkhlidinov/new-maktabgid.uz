@@ -145,7 +145,7 @@ config/              standart Laravel konfiguratsiyasi
 | `District` | Tuman/hudud spravochnigi | `Institution` (1:M) |
 | `Specialization` | Muassasa yo'nalishi/mutaxassisligi | `Institution` (M:M, `institution_specialization`) |
 | `InstitutionType` | Muassasa turi (bog'cha/maktab/markaz va h.k.) | `Institution`ga bog'lanadi |
-| `InstitutionMedia` | Galereya rasm/video (`type`: gallery va h.k.) | `Institution`ga tegishli |
+| `InstitutionMedia` | Galereya rasm/video (`type`: `gallery`/`video`/`logo`) — `type='logo'` FAQAT bosh sahifa kartochkasi thumbnail'i uchun (`MaktabgidData::mapInstitution()`ning `thumb` maydoni); detail sahifada "asosiy rasm" tushunchasi yo'q, galereya faqat `type='gallery'` (`photos` maydoni) bilan ishlaydi, logo u yerda hech qachon ko'rinmaydi | `Institution`ga tegishli; `Institution::logoMedia()` orqali o'qiladi, `Admin\InstitutionMediaController::toggleLogo()` orqali belgilanadi/bekor qilinadi (2026-08-08) |
 | `InstitutionPrice` | Muassasa narx bandlari | `Institution`ga tegishli |
 | `Review` | Foydalanuvchi sharhi va bahosi | `ReviewObserver` orqali `Institution.rating`/`review_count` avtomatik qayta hisoblanadi |
 | `Favorite` | Ota-onaning saqlangan muassasalari | `User` <-> `Institution` |
@@ -330,7 +330,65 @@ sozlash shart emas.
   Yandex Maps kutubxonasining o'z kodidan (copyright havolasi, 3rd-party
   cookie) kelib chiqadi — bizning kodda tuzatib bo'lmaydi.
 
----
+### 2026-08-08 — Muassasa galereyasiga "logo" (faqat kartochka thumbnail'i) belgilash
+- **Vazifa:** `/admin/institutions/{slug}/media`da admin galereyadan bitta
+  rasmni "logo" qilib belgilay olishi kerak. **Muhim aniqlik (bir necha
+  marta qayta ko'rib chiqilgan):** logo FAQAT bosh sahifa kartochkasining
+  thumbnail'i uchun ishlatiladi. Detail sahifada "asosiy rasm" degan
+  tushuncha UMUMAN YO'Q — u yerda galereya oddiygina o'zining tabiiy
+  tartibida (1 katta + 4 kichik, yozuv/badge'siz) chiqadi, logo esa u yerda
+  hech qachon ko'rinmaydi (agar galereyaga alohida qo'shilmagan bo'lsa).
+- **Nima o'rganildi:** `InstitutionMedia.type` — cheklanmagan oddiy string
+  ustun (enum/DB constraint yo'q), butun loyihada faqat `where('type',
+  'gallery')`/`where('type', 'video')` orqali filtrlanadi (3 ta joyda:
+  `MaktabgidData::mapInstitution()`, `Admin\InstitutionMediaController`,
+  `InstitutionCabinetController::gallery()`). Shu sababli yangi `type`
+  qiymati (`'logo'`) qo'shish — alohida boolean ustun/migratsiya yozishdan
+  ko'ra ancha kam kod bilan "galereyadan avtomatik chiqib ketish"ni bepul
+  beradi (uchala joyda ham qo'shimcha filtr yozish shart bo'lmadi).
+- **Yakuniy arxitektura — `MaktabgidData::mapInstitution()` ikkita alohida
+  maydon qaytaradi:**
+  - `photos` — FAQAT `type='gallery'` ro'yxati (logo hech qachon
+    aralashmaydi) — `school-card`ning fallback holati va detail sahifadagi
+    `<x-maktabgid.detail.gallery :photos="..." />` shu bilan ishlaydi
+    (1-rasm katta, keyingi 4-tasi kichik grid, `photo-tile.blade.php`da
+    yozuv/badge yo'q — faqat `@unless($url)` holatida, ya'ni rasm
+    umuman bo'lmaganda, placeholder ikonka+yorliq ko'rinadi).
+  - `thumb` — `Institution::logoMedia()?->url ?? $photos[0] ?? null` —
+    FAQAT `school-card.blade.php`da (`$photoUrl = $s['thumb']`) ishlatiladi.
+  - `app/Models/Institution.php`: `logoMedia()` — `media` collection'idan
+    `type='logo'` yozuvni qaytaruvchi yordamchi metod.
+  - `app/Http/Controllers/Admin/InstitutionMediaController.php`:
+    `toggleLogo()` — bitta muassasada faqat bitta logo bo'lishini
+    ta'minlaydi. Route: `PATCH admin/institutions/{institution}/media/{media}/logo`
+    (`media.logo`). Admin view'da alohida "Logo" kartasi va har bir
+    galereya plitkasida ⭐ "Logo qilish" tugmasi.
+- **Eslatma:** Institution-cabinet'ning o'z galereya sahifasi
+  (`InstitutionCabinetController::gallery()`) ham `where('type','gallery')`
+  ishlatgani uchun, logo qilingan rasm u yerda ham avtomatik yashiriladi.
+- **Qo'shimcha:** `admin/institutions/index.blade.php` jadvalidagi har bir
+  qatorga "Galereya va videolar"/"Yutuqlar" tezkor havolalari qo'shildi.
+- **Ehtiyot bo'ling — legacy import ma'lumotida ham `type='logo'` bor edi
+  emas, aslida foydalanuvchi yangi "Logo qilish" tugmasini bir nechta real
+  muassasada (masalan `humo-school-academy-7`) sinab ko'rib, natija
+  yoqmagani uchun bekor qilgan — bu funksiya kodi to'g'ri ishlaydi,
+  faqat noto'g'ri rasm tanlansa vizual natija yomon ko'rinishi mumkin
+  (masalan brend-logotip/banner rasmi thumbnail sifatida yaxshi
+  ko'rinmaydi) — bu kutilgan xatti-harakat, bug emas.
+- **Detail sahifa galereyasidagi eski mock-data qoldig'i ham tuzatildi:**
+  avval `MaktabgidData::mediaFor()`dagi statik placeholder yorliqlar
+  ("Bino tashqi ko'rinishi" va h.k.) HAQIQIY rasm mavjud bo'lsa ham
+  ustiga yozib chiqardi — endi `<span class="ptile-cap">` faqat
+  `@unless($url)` holatida (rasm yo'qligida) ko'rinadi. `gallery.blade.php`
+  endi statik 6 ta mock array o'rniga real `$photos` soniga qarab render
+  qiladi — 0 ta rasm bo'lsa butun bo'lim chiqmaydi, bo'sh gradient-katakcha
+  qolmaydi. `school.blade.php`dagi chaqiruv endi `:media` propini bermaydi.
+- **`detail/title-card.blade.php`dagi bo'sh `<span class="tag lang">` tuzatildi:**
+  `$school['lang']` bo'sh bo'lganda (masalan `institutions.lang` NULL)
+  yorliq shartsiz chiqib, bo'sh pill ko'rinardi — endi `badge`/`sat`
+  yorliqlari kabi `@if (!empty(...))` bilan o'ralgan. Xuddi shu naqsh
+  `mobile-app.blade.php`da (`m-tag lang`, hozircha ishlatilmayotgan mobil
+  ko'rinishda) ham tuzatildi.
 
 ## 7. Ma'lum muammolar, cheklovlar va texnik qarzlar
 

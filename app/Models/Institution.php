@@ -147,6 +147,16 @@ class Institution extends Model
         return $this->hasMany(InstitutionMedia::class)->orderBy('sort_order');
     }
 
+    /**
+     * Admin panelda galereyadan "logo" qilib belgilangan rasm (InstitutionMedia.type='logo').
+     * Bo'lmasa null — chaqiruvchi tomon galereyadagi birinchi rasmni standart sifatida
+     * ishlatishi kerak (MaktabgidData::mapInstitution() shunday qiladi).
+     */
+    public function logoMedia(): ?InstitutionMedia
+    {
+        return $this->media->firstWhere('type', 'logo');
+    }
+
     /** "Narxlar" — sinf/guruh + o'quv tili bo'yicha alohida narx-chegirma (2026-07-15). */
     public function prices(): HasMany
     {
