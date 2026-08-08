@@ -745,10 +745,31 @@
         /* --- dropdown helpers (auth holatidan mustaqil) --- */
         var _userMenu = document.getElementById("js-user-menu");
         var _langMenu = document.getElementById("js-lang-menu");
+        var _navLinks = document.getElementById("js-nav-links");
+        var _navBurger = document.getElementById("js-nav-burger");
 
         function closeAll() {
             if (_userMenu) _userMenu.style.display = "none";
             if (_langMenu) _langMenu.style.display = "none";
+            if (_navLinks) _navLinks.classList.remove("on");
+            if (_navBurger) {
+                _navBurger.classList.remove("on");
+                _navBurger.setAttribute("aria-expanded", "false");
+            }
+        }
+
+        if (_navBurger && _navLinks) {
+            _navBurger.addEventListener("click", function (e) {
+                e.stopPropagation();
+                var open = _navLinks.classList.contains("on");
+                closeAll();
+                if (!open) {
+                    _navLinks.classList.add("on");
+                    _navBurger.classList.add("on");
+                    _navBurger.setAttribute("aria-expanded", "true");
+                }
+            });
+            _navLinks.addEventListener("click", function (e) { e.stopPropagation(); });
         }
 
         var userMenuBtn = document.getElementById("js-user-menu-btn");

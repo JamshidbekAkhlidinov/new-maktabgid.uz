@@ -41,12 +41,24 @@
             Maktab<b>GID</b>
         </a>
 
-        <nav class="nav-links">
+        <nav class="nav-links" id="js-nav-links">
             @foreach ($links as $l)
                 <a href="{{ route($l['route']) }}" class="nav-link{{ request()->routeIs($l['route']) ? ' on' : '' }}">
                     {{ $l['label'] }}
                 </a>
             @endforeach
+            @unless ($authUser)
+                <button type="button" class="nav-link nav-link-mobile-auth" data-modal-open="auth-modal">
+                    <x-maktabgid.icon name="user" :width="16" :height="16" /> {{ __('nav.login') }}
+                </button>
+            @else
+                <a href="{{ $cabinetUrl }}" class="nav-link nav-link-mobile-auth">
+                    <x-maktabgid.icon name="user" :width="16" :height="16" /> {{ __('nav.cabinet') }}
+                </a>
+                <button type="button" class="nav-link nav-link-mobile-auth js-logout-trigger">
+                    <x-maktabgid.icon name="logout" :width="16" :height="16" /> {{ __('nav.logout') }}
+                </button>
+            @endunless
         </nav>
 
         <div class="nav-right">
@@ -54,21 +66,21 @@
             {{-- Til almashtirgich — /til/{locale}ga real havolalar (2026-08-06, avval JS'siz "o'lik" tugmalar edi) --}}
             <div class="nav-acc" id="js-lang-wrap">
                 <button class="lang" type="button" id="js-lang-btn">
-                    <svg width="16" height="11" viewBox="0 0 16 11"><rect width="16" height="11" rx="2" fill="#0099B5"/><rect y="4" width="16" height="3" fill="#fff"/><rect y="4.6" width="16" height="1.8" fill="#1EB53A"/><circle cx="3.2" cy="2.2" r="1.1" fill="#fff"/></svg>
+                    <x-maktabgid.flag :code="$currentLocale" />
                     <span id="js-lang-label">{{ $supportedLocales[$currentLocale]['native'] ?? $currentLocale }}</span>
                     <x-maktabgid.icon name="chevron" :width="14" :height="14" />
                 </button>
                 <div class="acc-menu" id="js-lang-menu" style="display:none;min-width:160px">
                     <a href="{{ route('locale.switch', 'uz') }}" class="{{ $currentLocale === 'uz' ? 'on' : '' }}">
-                        <svg width="16" height="11" viewBox="0 0 16 11"><rect width="16" height="11" rx="2" fill="#0099B5"/><rect y="4" width="16" height="3" fill="#fff"/><rect y="4.6" width="16" height="1.8" fill="#1EB53A"/><circle cx="3.2" cy="2.2" r="1.1" fill="#fff"/></svg>
+                        <x-maktabgid.flag code="uz" />
                         O'zbekcha
                     </a>
                     <a href="{{ route('locale.switch', 'ru') }}" class="{{ $currentLocale === 'ru' ? 'on' : '' }}">
-                        <svg width="16" height="11" viewBox="0 0 16 11"><rect width="16" height="11" rx="2" fill="#fff"/><rect y="3.67" width="16" height="3.67" fill="#003DA5"/><rect y="7.33" width="16" height="3.67" fill="#E4181C"/></svg>
+                        <x-maktabgid.flag code="ru" />
                         Русский
                     </a>
                     <a href="{{ route('locale.switch', 'en') }}" class="{{ $currentLocale === 'en' ? 'on' : '' }}">
-                        <svg width="16" height="11" viewBox="0 0 16 11"><rect width="16" height="11" rx="2" fill="#012169"/><path d="M0 0l16 11M16 0L0 11" stroke="#fff" stroke-width="2.2"/><path d="M8 0v11M0 5.5h16" stroke="#fff" stroke-width="4"/><path d="M8 0v11M0 5.5h16" stroke="#C8102E" stroke-width="2.4"/></svg>
+                        <x-maktabgid.flag code="en" />
                         English
                     </a>
                 </div>
@@ -97,6 +109,10 @@
             </div>
 
             <a class="btn btn-tg" href="#"><x-maktabgid.icon name="send" :width="17" :height="17" /> {{ __('nav.telegram_bot') }}</a>
+
+            <button type="button" class="nav-burger js-nav-burger" id="js-nav-burger" aria-label="{{ __('nav.menu') }}" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </div>
 </header>

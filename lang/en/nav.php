@@ -10,4 +10,5 @@ return [
     'cabinet' => 'Dashboard',
     'logout' => 'Log out',
     'telegram_bot' => 'Telegram bot',
+    'menu' => 'Menu',
 ];
