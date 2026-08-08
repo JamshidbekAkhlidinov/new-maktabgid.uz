@@ -345,6 +345,7 @@ class MaktabgidData
             'g' => $gradients[$institution->id % count($gradients)],
             'specs' => $institution->specializations->pluck('key')->all(),
             'photos' => $photos,
+            'social' => $institution->social_links ?? [],
             'facilities' => self::resolveFacilities($institution),
             'teachers' => self::resolveTeachers($institution),
             'programs' => self::resolvePrograms($institution),

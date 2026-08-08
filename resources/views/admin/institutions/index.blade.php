@@ -10,10 +10,9 @@
                class="rounded-lg border border-slate-300 px-3.5 py-2 text-sm w-72 focus:outline-none focus:ring-1 focus:ring-indigo-500" />
         <select name="type" class="rounded-lg border border-slate-300 px-3.5 py-2 text-sm bg-white">
             <option value="">Barcha turlar</option>
-            <option value="maktab" @selected(request('type') === 'maktab')>Maktab</option>
-            <option value="bogcha" @selected(request('type') === 'bogcha')>Bog'cha</option>
-            <option value="markaz" @selected(request('type') === 'markaz')>Markaz</option>
-            <option value="mutaxassis" @selected(request('type') === 'mutaxassis')>Mutaxassis</option>
+            @foreach ($institutionTypes as $type)
+                <option value="{{ $type->key }}" @selected(request('type') === $type->key)>{{ $type->label }}</option>
+            @endforeach
         </select>
         <button class="rounded-lg bg-slate-800 text-white text-sm px-4 py-2">Qidirish</button>
     </form>

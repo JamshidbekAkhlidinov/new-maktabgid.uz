@@ -29,7 +29,7 @@
     <x-maktabgid.nav :categories="MaktabgidData::categories()" />
 
     <div class="detail">
-        <div class="wrap detail-topbar">
+        <div class="wrap detail-topbar" style="padding-top:91px">
             <x-maktabgid.back-link :href="route('welcome')" :label="__('school.back_to_catalog')" />
             <div class="detail-topact">
                 <button type="button" class="iconbtn js-fav" aria-label="{{ __('school.save') }}"><x-maktabgid.icon name="heart" :width="18" :height="18" /></button>
@@ -37,8 +37,10 @@
             </div>
         </div>
 
-        <x-maktabgid.detail.gallery :media="$media" :photos="$s['photos']" />
-        <x-maktabgid.detail.title-card :school="$s" :cat-label="$catLabel" :stats="$stats" />
+        <div class="detail-hero-stack">
+            <x-maktabgid.detail.gallery :media="$media" :photos="$s['photos']" />
+            <x-maktabgid.detail.title-card :school="$s" :cat-label="$catLabel" :stats="$stats" />
+        </div>
 
         <div class="wrap detail-grid">
             <div class="detail-main">

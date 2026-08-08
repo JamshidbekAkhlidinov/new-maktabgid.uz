@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\District;
 use App\Models\Institution;
+use App\Models\InstitutionType;
 use App\Models\Specialization;
 use App\Models\User;
 use App\Support\MaktabgidData;
@@ -39,7 +40,10 @@ class InstitutionController extends Controller implements HasMiddleware
             ->paginate(15)
             ->withQueryString();
 
-        return view('admin.institutions.index', compact('institutions'));
+        // 'label' JSON (uch tillilik) — DB darajasida saralanmaydi, xotirada saralaymiz.
+        $institutionTypes = InstitutionType::all()->sortBy(fn (InstitutionType $t) => $t->label)->values();
+
+        return view('admin.institutions.index', compact('institutions', 'institutionTypes'));
     }
 
     public function create(): View
@@ -91,6 +95,7 @@ class InstitutionController extends Controller implements HasMiddleware
             'districts' => District::orderBy('name')->get(),
             // 'label' JSON (uch tillilik) — DB darajasida saralanmaydi, xotirada saralaymiz.
             'specializations' => Specialization::all()->sortBy(fn (Specialization $s) => $s->label)->values(),
+            'institutionTypes' => InstitutionType::all()->sortBy(fn (InstitutionType $t) => $t->label)->values(),
             'owners' => User::whereIn('role', [User::ROLE_INSTITUTION, User::ROLE_ADMIN])->orderBy('name')->get(),
             'facilityCatalog' => MaktabgidData::facilityCatalog(),
         ];
@@ -122,7 +127,7 @@ class InstitutionController extends Controller implements HasMiddleware
             'refer_point_ru' => ['nullable', 'string', 'max:255'],
             'refer_point_en' => ['nullable', 'string', 'max:255'],
 
-            'type' => ['required', 'string', 'in:maktab,bogcha,markaz,mutaxassis'],
+            'type' => ['required', 'string', Rule::in(InstitutionType::pluck('key'))],
             'owner_user_id' => ['nullable', 'exists:users,id'],
             'district_id' => ['nullable', 'exists:districts,id'],
             'lang' => ['nullable', 'string', 'max:100'],

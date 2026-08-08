@@ -279,7 +279,12 @@
         }
 
         document.querySelectorAll(".js-cat").forEach(function (btn) {
-            btn.addEventListener("click", function () { state.cat = btn.dataset.cat; render(); });
+            btn.addEventListener("click", function () {
+                state.cat = btn.dataset.cat;
+                render();
+                var natijalar = document.getElementById("natijalar");
+                if (natijalar) natijalar.scrollIntoView({ behavior: "smooth" });
+            });
         });
 
         if (catSelect) catSelect.addEventListener("change", function () { state.cat = catSelect.value; render(); });

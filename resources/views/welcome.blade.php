@@ -14,6 +14,7 @@
 <body>
 
     @php
+        use App\Models\InstitutionType;
         use App\Support\MaktabgidData;
         $categories = MaktabgidData::categories();
         $districts = MaktabgidData::districts();
@@ -27,28 +28,28 @@
         $defaultCat = $categories[0]['key'];
         $defaultResults = array_values(array_filter($schools, fn ($s) => $s['cat'] === $defaultCat));
 
-        /* Natijalar boʻlimi ustidagi toifa-tab satri (sonlar bilan) — hozircha faqat vizual moslik. */
+        /* Natijalar boʻlimi ustidagi toifa-tab satri (sonlar bilan) — admin "Muassasa turlari"da
+           "faol" deb belgilagan turlar, seed qilingan tartibda (id boʻyicha) chiqadi (2026-08-08). */
         $catCounts = collect($schools)->countBy('cat');
-        $catTabs = [
-            ['key' => 'maktab', 'label' => __('home.cat_maktab'), 'icon' => 'school', 'count' => $catCounts->get('maktab', 0)],
-            ['key' => 'bogcha', 'label' => __('home.cat_bogcha'), 'icon' => 'teddy', 'count' => $catCounts->get('bogcha', 0)],
-            ['key' => 'markaz', 'label' => __('home.cat_markaz'), 'icon' => 'book', 'count' => $catCounts->get('markaz', 0)],
-            ['key' => 'mutaxassis', 'label' => __('home.cat_mutaxassis'), 'icon' => 'heart', 'count' => $catCounts->get('mutaxassis', 0)],
-        ];
-        /* "Oʻyin maydonchalari" uchun hali alohida toifa/maʼlumot bazasi yoʻq — faqat dizaynga moslash uchun statik. */
-        $catExtraTab = ['label' => __('home.cat_playgrounds'), 'icon' => 'grid', 'count' => 4];
+        $catTabs = InstitutionType::where('is_active', true)->orderBy('id')->get()
+            ->map(fn (InstitutionType $t) => [
+                'key' => $t->key,
+                'label' => $t->label,
+                'icon' => $t->icon,
+                'count' => $catCounts->get($t->key, 0),
+            ])->all();
     @endphp
 
     {{-- ===================== DESKTOP / TABLET ===================== --}}
     <div class="desktop-shell">
         <x-maktabgid.nav :categories="$categories" />
-        <x-maktabgid.hero :categories="$categories" :districts="$districts" :total="103" />
+        <x-maktabgid.hero :categories="$categories" :districts="$districts" :cat-tabs="$catTabs" :active="$defaultCat" />
 
         {{-- "Ixtisoslik boʻyicha qidiring" boʻlimi vaqtincha oʻchirilgan, oʻrniga reklama banneri chiqadi --}}
         {{-- <x-maktabgid.spec-strip :specs="$specializations" /> --}}
         <x-maktabgid.ad-banner />
 
-        <x-maktabgid.cat-count-tabs :tabs="$catTabs" :extra="$catExtraTab" :active="$defaultCat" />
+        <x-maktabgid.cat-count-tabs :tabs="$catTabs" :active="$defaultCat" />
 
         <main class="results" id="natijalar">
             <div class="wrap">

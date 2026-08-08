@@ -1,6 +1,6 @@
 @props(['media', 'photos' => []])
 
-<div class="wrap">
+<div class="wrap detail-gallery-wrap">
     <div class="gallery">
         <x-maktabgid.detail.photo-tile big :icon="$media['gallery'][0]['icon']" :label="$media['gallery'][0]['label']" :gi="0" :badge="__('school.main_photo')" :url="$photos[0] ?? null" />
         <div class="gallery-grid">

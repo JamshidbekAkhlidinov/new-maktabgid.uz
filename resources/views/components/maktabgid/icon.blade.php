@@ -68,6 +68,15 @@
         @case('phone')
             <path d="M5 4h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a2 2 0 0 1-2 2A15 15 0 0 1 3 6a2 2 0 0 1 2-2z" />
             @break
+        @case('instagram')
+            <rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.2" cy="6.8" r="0.7" fill="currentColor" stroke="none" />
+            @break
+        @case('facebook')
+            <path d="M14 21v-8h2.7l.4-3.2H14V7.7c0-.9.3-1.6 1.6-1.6h1.7V3.3C17 3.2 15.9 3 14.7 3 12.1 3 10.3 4.6 10.3 7.4v2.4H7.5V13h2.8v8z" />
+            @break
+        @case('link')
+            <path d="M9.5 14.5l5-5" /><path d="M8 16.5l-1.8 1.8a3.5 3.5 0 0 1-5-5L3 11.5" /><path d="M16 7.5l1.8-1.8a3.5 3.5 0 0 1 5 5L21 12.5" />
+            @break
         @case('send')
             <path d="M21 4L3 11l6 2.5L12 20l3-7 6-9z" /><path d="M9 13.5L21 4" />
             @break
