@@ -156,7 +156,9 @@ class LegacyInstitutionSeeder extends Seeder
                     'lat' => $row['latitude'] ?? null,
                     'lng' => $row['longitude'] ?? null,
                     'monthly_price' => $minPrice ?? $maxPrice,
-                    'work_hours' => $workHours,
+                    // work_hours ham tarjima formatida ({"uz":..}) — "08:00–18:00" kabi
+                    // qiymat tildan mustaqil, ru/en avtomatik uz'ga fallback qiladi.
+                    'work_hours' => $workHours ? ['uz' => $workHours] : null,
                     'works_saturday' => $worksSaturday,
                     'accepting' => $isActive,
                     'is_active' => $isActive,

@@ -10,7 +10,7 @@
     <div class="vthumb" style="background:linear-gradient(140deg, {{ $g[0] }}, {{ $g[1] }})">
         @if ($url && $isExternal)
             {{-- Tashqi havola (YouTube/Vimeo) — yangi oynada ochiladi --}}
-            <a href="{{ $url }}" target="_blank" rel="noopener" class="vplay-link" aria-label="Videoni ochish">
+            <a href="{{ $url }}" target="_blank" rel="noopener" class="vplay-link" aria-label="{{ __('school.open_video') }}">
                 <x-maktabgid.icon name="play" class="vcard-wm" :width="64" :height="64" />
                 <span class="vplay"><x-maktabgid.icon name="play" :width="22" :height="22" /></span>
             </a>
@@ -19,7 +19,7 @@
             <video src="{{ $url }}" controls preload="metadata" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"></video>
         @else
             <x-maktabgid.icon name="play" class="vcard-wm" :width="64" :height="64" />
-            <button type="button" class="vplay" aria-label="Ijro"><x-maktabgid.icon name="play" :width="22" :height="22" /></button>
+            <button type="button" class="vplay" aria-label="{{ __('school.play') }}"><x-maktabgid.icon name="play" :width="22" :height="22" /></button>
         @endif
         @if ($dur)<span class="vdur">{{ $dur }}</span>@endif
     </div>

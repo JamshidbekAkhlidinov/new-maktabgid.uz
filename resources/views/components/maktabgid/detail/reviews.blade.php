@@ -5,7 +5,7 @@
         <div class="rev-score">
             <b>{{ $school['rating'] }}</b>
             <div class="rev-stars-lg">{{ str_repeat('★', (int) round($school['rating'])) }}<em>{{ str_repeat('★', 5 - (int) round($school['rating'])) }}</em></div>
-            <span>{{ $school['reviews'] }} ta sharh</span>
+            <span>{{ __('school.reviews_total', ['count' => $school['reviews']]) }}</span>
         </div>
         <div class="rev-bars">
             @foreach ($ratingBars as $rb)

@@ -2,7 +2,7 @@
 
 @if (count($programs))
 <section class="card-block">
-    <h3><x-maktabgid.icon name="target" :width="19" :height="19" /> Yoʻnalishlar va dastur</h3>
+    <h3><x-maktabgid.icon name="target" :width="19" :height="19" /> {{ __('school.programs_title') }}</h3>
     <div class="dir-grid">
         @php $grads = \App\Support\MaktabgidData::tileGradients(); @endphp
         @foreach ($programs as $i => $p)

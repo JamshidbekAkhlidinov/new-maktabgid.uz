@@ -47,31 +47,31 @@ class MaktabgidData
     public static function categories(): array
     {
         return [
-            ['key' => 'maktab', 'label' => 'Xususiy maktablar', 'short' => 'Maktablar', 'icon' => 'school'],
-            ['key' => 'bogcha', 'label' => 'Xususiy bogʻchalar', 'short' => 'Bogʻchalar', 'icon' => 'teddy'],
-            ['key' => 'markaz', 'label' => 'Oʻquv markazlari', 'short' => 'Markazlar', 'icon' => 'book'],
-            ['key' => 'mutaxassis', 'label' => 'Bolalar mutaxassislari', 'short' => 'Mutaxassislar', 'icon' => 'heart'],
+            ['key' => 'maktab', 'label' => __('data.cat_maktab_label'), 'short' => __('data.cat_maktab_short'), 'icon' => 'school'],
+            ['key' => 'bogcha', 'label' => __('data.cat_bogcha_label'), 'short' => __('data.cat_bogcha_short'), 'icon' => 'teddy'],
+            ['key' => 'markaz', 'label' => __('data.cat_markaz_label'), 'short' => __('data.cat_markaz_short'), 'icon' => 'book'],
+            ['key' => 'mutaxassis', 'label' => __('data.cat_mutaxassis_label'), 'short' => __('data.cat_mutaxassis_short'), 'icon' => 'heart'],
         ];
     }
 
     public static function categoryLabel(string $key): string
     {
         return [
-            'maktab' => 'Maktab',
-            'bogcha' => 'Bogʻcha',
-            'markaz' => 'Oʻquv markazi',
-            'mutaxassis' => 'Mutaxassis',
+            'maktab' => __('data.cat_label_maktab'),
+            'bogcha' => __('data.cat_label_bogcha'),
+            'markaz' => __('data.cat_label_markaz'),
+            'mutaxassis' => __('data.cat_label_mutaxassis'),
         ][$key] ?? $key;
     }
 
     public static function priceBands(): array
     {
         return [
-            ['key' => 'lt2', 'label' => '2 mln dan kam', 'min' => 0, 'max' => 2000000],
-            ['key' => '2-3.5', 'label' => '2 – 3.5 mln', 'min' => 2000000, 'max' => 3500000],
-            ['key' => '3.5-5', 'label' => '3.5 – 5 mln', 'min' => 3500000, 'max' => 5000000],
-            ['key' => '5-7', 'label' => '5 – 7 mln', 'min' => 5000000, 'max' => 7000000],
-            ['key' => '7+', 'label' => '7 mln+', 'min' => 7000000, 'max' => PHP_INT_MAX],
+            ['key' => 'lt2', 'label' => __('data.price_lt2'), 'min' => 0, 'max' => 2000000],
+            ['key' => '2-3.5', 'label' => __('data.price_2_3_5'), 'min' => 2000000, 'max' => 3500000],
+            ['key' => '3.5-5', 'label' => __('data.price_3_5_5'), 'min' => 3500000, 'max' => 5000000],
+            ['key' => '5-7', 'label' => __('data.price_5_7'), 'min' => 5000000, 'max' => 7000000],
+            ['key' => '7+', 'label' => __('data.price_7_plus'), 'min' => 7000000, 'max' => PHP_INT_MAX],
         ];
     }
 
@@ -88,7 +88,7 @@ class MaktabgidData
     public static function formatPrice(int|float|null $n): string
     {
         if ($n === null) {
-            return 'Kelishilgan';
+            return __('data.price_negotiated');
         }
 
         if ($n >= 1000000) {

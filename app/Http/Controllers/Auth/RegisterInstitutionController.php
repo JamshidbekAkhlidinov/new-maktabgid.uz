@@ -32,7 +32,9 @@ class RegisterInstitutionController extends Controller
 
             Institution::create([
                 'owner_user_id' => $user->id,
-                'name' => $data['org'],
+                // Uch tillilik (2026-08-06): 'name' JSON — ro'yxatdan o'tishda kiritilgan
+                // nom joriy til kaliti ostiga yoziladi.
+                'name' => [app()->getLocale() => $data['org']],
                 'type' => $data['kind'],
                 'accepting' => true,
                 'works_saturday' => false,

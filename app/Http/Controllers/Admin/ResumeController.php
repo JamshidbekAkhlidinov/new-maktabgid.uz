@@ -74,7 +74,8 @@ class ResumeController extends Controller implements HasMiddleware
         return [
             'resume' => $resume,
             'districts' => District::orderBy('name')->get(),
-            'specializations' => Specialization::orderBy('label')->get(),
+            // 'label' JSON (uch tillilik) — xotirada, joriy tildagi nom bo'yicha saralanadi.
+            'specializations' => Specialization::all()->sortBy(fn ($s) => $s->label)->values(),
             'users' => User::orderBy('name')->get(),
         ];
     }
