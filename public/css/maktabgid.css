@@ -409,7 +409,7 @@ svg { display: block; }
 .map-tag .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
 
 /* ============ SECTION blocks ============ */
-.section { padding: 50px 0; }
+.section { padding-top: 50px; padding-bottom: 50px; }
 .section.alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .sec-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 26px; gap: 16px; flex-wrap: wrap; }
 .sec-head h2 { font-size: clamp(26px, 3vw, 34px); }
@@ -740,7 +740,7 @@ svg { display: block; }
 /* ---------- page header band ---------- */
 .pagehead { position: relative; overflow: hidden; background: var(--surface); border-bottom: 1px solid var(--line); padding-top: 41px; }
 .pagehead-bg { position: absolute; inset: 0; background: radial-gradient(60% 100% at 90% -20%, color-mix(in oklab, var(--primary) 13%, transparent), transparent 70%), radial-gradient(50% 90% at 0% 120%, var(--accent-soft), transparent 70%); }
-.pagehead-inner { position: relative; padding: 44px 0 38px; }
+.pagehead-inner { position: relative; padding-top: 44px; padding-bottom: 38px; }
 .pagehead h1 { font-size: clamp(28px, 3.4vw, 42px); max-width: 20ch; line-height: 1.12; }
 .pagehead-sub { margin-top: 14px; font-size: 17px; color: var(--ink-2); max-width: 60ch; line-height: 1.5; }
 .pagehead.accent { background: linear-gradient(135deg, var(--hero-from), var(--hero-to)); }

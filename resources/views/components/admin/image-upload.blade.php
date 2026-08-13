@@ -29,6 +29,12 @@
         <input type="file" id="{{ $inputId }}" name="{{ $name }}" accept="image/*" class="hidden" data-image-upload-input />
     </label>
 
+    @if ($value)
+        <p class="mt-1.5 max-w-sm truncate text-xs text-slate-400">
+            <a href="{{ $value }}" target="_blank" rel="noopener" class="hover:text-indigo-600 hover:underline">{{ $value }}</a>
+        </p>
+    @endif
+
     @if ($hint)
         <p class="mt-1 text-xs text-slate-400">{{ $hint }}</p>
     @endif
