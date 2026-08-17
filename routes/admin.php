@@ -54,6 +54,7 @@ Route::middleware('web')->prefix('admin')->name('admin.')->group(function () {
 
         Route::resource('users', AdminUserController::class)->except(['show']);
         Route::resource('institutions', AdminInstitutionController::class)->except(['show']);
+        Route::patch('institutions/{institution}/order', [AdminInstitutionController::class, 'updateOrder'])->name('institutions.order');
 
         // Institution kabinetidagi galereya/video va yutuqlar bilan bir xil imkoniyat —
         // admin muassasa nomidan boshqaradi (2026-07-15).

@@ -341,6 +341,7 @@ class MaktabgidData
             'price' => $institution->monthly_price,
             'rating' => (float) $institution->rating,
             'reviews' => $institution->review_count,
+            'order' => $institution->sort_order,
             'grades' => $institution->grades,
             'lang' => $institution->lang,
             'sat' => (bool) $institution->works_saturday,
@@ -532,8 +533,12 @@ class MaktabgidData
         // (school-card) haqiqiy birinchi galereya rasmi ko'rsatilishi uchun (avval faqat
         // bitta muassasa sahifasida yuklanardi, kataloq har doim monogram/gradient
         // ko'rsatardi — real rasm bo'lsa ham). Bitta eager-load so'rovi, N+1 emas.
+        // 'sort_order' — admin panelidan (admin/institutions) qo'lda belgilanadigan
+        // tartib, kichigi oldin chiqadi; bosh sahifadagi "Tavsiya etiladi" saralashi
+        // ham shu bo'yicha (public/js/maktabgid.js, sorters.rel).
         return Institution::with(['district', 'specializations', 'achievements', 'prices', 'media'])
             ->where('is_active', true)
+            ->orderBy('sort_order')
             ->orderBy('id')
             ->get()
             ->map(fn (Institution $institution) => self::mapInstitution($institution))

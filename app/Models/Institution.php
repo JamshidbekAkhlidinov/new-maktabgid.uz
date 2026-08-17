@@ -69,7 +69,19 @@ class Institution extends Model
         'stat_class_size', 'stat_experience_years', 'stat_admission_rate', 'stat_first_grade_seats',
         // Eski (Yii2) `telegram_object`dan import qilingan maydonlar (LegacyInstitutionSeeder).
         'legacy_id', 'phone_numbers', 'social_links', 'location_url', 'refer_point',
-        'slug', 'is_active', 'legacy_view_count',
+        'slug', 'is_active', 'legacy_view_count', 'sort_order',
+    ];
+
+    /**
+     * 'sort_order' uchun standart qiymat 1000 (DB ustunidagi 0 emas) — admin
+     * hali qo'lda tartib bermagan yangi muassasalar ro'yxat oxirida qolishi
+     * uchun (2026-08-17). Faqat qo'lda kichik raqam (1, 2, 3...) berilganlar
+     * yuqoriga chiqadi. `doctrine/dbal` o'rnatilmagani uchun DB ustunining
+     * o'zi (`->change()`) o'zgartirilmaydi — standart qiymat shu yerda,
+     * model darajasida beriladi.
+     */
+    protected $attributes = [
+        'sort_order' => 1000,
     ];
 
     /** Haftaning ish vaqti jadvalidagi kun kalitlari, tartib bilan (Dushanbadan boshlab). */
@@ -107,6 +119,7 @@ class Institution extends Model
             'work_schedule' => 'array',
             'accepting' => 'boolean',
             'is_active' => 'boolean',
+            'sort_order' => 'integer',
             'rating' => 'decimal:1',
             'facilities' => 'array',
             'teachers' => 'array',

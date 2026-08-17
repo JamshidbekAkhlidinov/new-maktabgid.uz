@@ -141,7 +141,7 @@ config/              standart Laravel konfiguratsiyasi
 | Jadval/Model | Tavsif | Bog'lanishlar |
 |---|---|---|
 | `User` | Barcha rol turlari uchun yagona jadval (`role` ustuni: parent/institution/teacher + Spatie rol) | `Institution`ga (agar institution bo'lsa), `Child`, `Conversation`, `Application` va h.k.ga bog'lanadi |
-| `Institution` | Ta'lim muassasasi profili (nomi, tavsifi, manzil, narx, reyting — ba'zi maydonlar `HasTranslatable` orqali tarjima qilinadi) | `District`, `Specialization` (M:M), `InstitutionMedia`, `InstitutionPrice`, `Review`, `Achievement`, `Vacancy` |
+| `Institution` | Ta'lim muassasasi profili (nomi, tavsifi, manzil, narx, reyting — ba'zi maydonlar `HasTranslatable` orqali tarjima qilinadi). `sort_order` (unsignedInteger, default 0) — admin panelida (`/admin/institutions`) qo'lda belgilanadigan tartib, kichigi oldin chiqadi; bosh sahifadagi "Tavsiya etiladi" saralashi ham shu bo'yicha (2026-08-17) | `District`, `Specialization` (M:M), `InstitutionMedia`, `InstitutionPrice`, `Review`, `Achievement`, `Vacancy` |
 | `District` | Tuman/hudud spravochnigi | `Institution` (1:M) |
 | `Specialization` | Muassasa yo'nalishi/mutaxassisligi | `Institution` (M:M, `institution_specialization`) |
 | `InstitutionType` | Muassasa turi (bog'cha/maktab/markaz va h.k.) | `Institution`ga bog'lanadi |
@@ -389,6 +389,63 @@ sozlash shart emas.
   yorliqlari kabi `@if (!empty(...))` bilan o'ralgan. Xuddi shu naqsh
   `mobile-app.blade.php`da (`m-tag lang`, hozircha ishlatilmayotgan mobil
   ko'rinishda) ham tuzatildi.
+
+### 2026-08-17 — Muassasalar uchun qo'lda "Tartib" (sort_order) qo'shildi
+- **Vazifa:** `/admin/institutions` ro'yxatida admin har bir muassasaga qo'lda
+  tartib raqami bera olishi, va bosh sahifadagi standart ("Tavsiya etiladi")
+  saralash ham shu tartibga mos chiqishi kerak edi.
+- **Nima o'rganildi:** Ishni boshlaganda `institutions` jadvalida `sort_order`
+  ustuni allaqachon mavjud edi (indeks bilan), lekin uni yaratgan migratsiya
+  fayli repo'da yo'q edi — faqat `migrations` jadvalida yozuv qolgan
+  ("orfan" holat, avvalgi seans faylni yaratib ishga tushirgan, keyin fayl
+  yo'qolgan). Fayl nomini ("`2026_08_17_155225_add_sort_order_to_institutions_table`")
+  aynan `migrations` jadvalidagi nomga mos qilib qayta yaratish orqali
+  tuzatildi — shunday qilib mavjud DB holati buzilmadi va yangi/toza
+  o'rnatishlarda ham xuddi shu ustun to'g'ri yaratiladi.
+- **Qo'shilgan/o'zgargan funksiya:**
+  - `database/migrations/2026_08_17_155225_add_sort_order_to_institutions_table.php` —
+    `institutions.sort_order` (unsignedInteger, default 0, index).
+  - `Institution::$fillable` + `casts()` ga `sort_order` qo'shildi.
+  - `Admin\InstitutionController@index` — `orderBy('sort_order')` (asosiy
+    saralash), yangi `updateOrder()` metodi (`PATCH
+    admin/institutions/{institution}/order`, `institutions.order` route,
+    `institutions.update` ruxsati) — faqat `sort_order`ni yangilaydi va
+    orqaga (`back()`) qaytaradi.
+  - `admin/institutions/index.blade.php` — "Tartib" ustuni: har qator uchun
+    kichik `<input type="number">` (alohida `PATCH` forma, `toggleLogo` bilan
+    bir xil naqsh — to'liq sahifa submit, AJAX emas). Saqlash tugmasi yo'q —
+    `onchange="this.form.submit()"`: qiymat o'zgartirilib fokus boshqa
+    joyga o'tishi bilan (yoki Enter) avtomatik saqlanadi (2026-08-17,
+    foydalanuvchi so'rovi bilan tugma olib tashlandi).
+  - `MaktabgidData::schools()` — `orderBy('sort_order')->orderBy('id')`
+    (avval faqat `orderBy('id')`); `mapInstitution()` endi `'order'`
+    maydonini ham qaytaradi.
+  - `school-card.blade.php` — `data-order="{{ $s['order'] }}"` qo'shildi.
+  - `public/js/maktabgid.js` — `sorters.rel` (bosh sahifadagi "Tavsiya
+    etiladi" saralash) endi reyting bo'yicha emas, `data-order` (admin
+    tartib raqami) bo'yicha o'sish tartibida saralaydi.
+- **Eslatma:** Brauzerda sinovdan o'tkazildi — admin ro'yxatida tartib
+  o'zgartirilganda "Tartib yangilandi." xabari chiqadi va qator ro'yxatda
+  joyini o'zgartiradi; bosh sahifada ham o'sha muassasa "Tavsiya etiladi"
+  saralashida mos joyga tushib qoldi.
+- **Qo'shimcha (2026-08-17, o'sha kuni):** "Tartib" ustun sarlavhasi
+  bosiladigan qilindi — `?order_dir=asc|desc` query parametri orqali
+  yo'nalishni almashtiradi (standart holat — o'sish/asc, sarlavha yonida
+  ▲/▼ belgisi bilan). `Admin\InstitutionController@index`dagi `$orderDir`
+  o'zgaruvchisi shuni boshqaradi, `q`/`type` filtrlari va pagination bilan
+  birga ishlaydi (`fullUrlWithQuery`, `page` almashtirilganda 1-sahifaga
+  qaytadi).
+- **Qo'shimcha (2026-08-17, o'sha kuni):** Standart `sort_order` 0 emas,
+  1000 qilindi — foydalanuvchi so'rovi: "0 lar hisob bo'lmasin", ya'ni
+  tartib qo'lda berilmagan muassasalar ro'yxat OXIRIDA qolishi, faqat
+  admin kichik raqam (1, 2, 3...) bergan muassasalar YUQORIDA chiqishi
+  kerak edi. `doctrine/dbal` yo'qligi sababli DB ustunining o'zi
+  (`->change()`) o'zgartirilmadi — standart qiymat `Institution::$attributes`
+  (model darajasida) orqali beriladi, yangi yaratilgan yozuv uchun ham
+  ishlaydi. Mavjud yozuvlar uchun bir martalik data-migratsiya
+  (`2026_08_17_180144_bump_default_institution_sort_order.php`) barcha
+  `sort_order=0` bo'lgan qatorlarni 1000ga ko'chirdi (339 tadan 334 tasi;
+  qolgan 5 tasi allaqachon qo'lda 1/1/1/3/5 qilib belgilangan edi).
 
 ## 7. Ma'lum muammolar, cheklovlar va texnik qarzlar
 

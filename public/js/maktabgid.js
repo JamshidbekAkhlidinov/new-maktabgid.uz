@@ -219,7 +219,9 @@
 
         function sortCards(list) {
             var sorters = {
-                rel: function (a, b) { return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating); },
+                // "Tavsiya etiladi" — admin panelidan (admin/institutions) belgilangan
+                // tartib (kichigi oldin), reyting emas.
+                rel: function (a, b) { return parseFloat(a.dataset.order) - parseFloat(b.dataset.order); },
                 priceA: function (a, b) { return parseFloat(a.dataset.price) - parseFloat(b.dataset.price); },
                 priceD: function (a, b) { return parseFloat(b.dataset.price) - parseFloat(a.dataset.price); },
                 dist: function (a, b) { return parseFloat(a.dataset.dist) - parseFloat(b.dataset.dist); },

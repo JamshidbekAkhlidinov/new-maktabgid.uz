@@ -23,19 +23,24 @@ class InstitutionController extends Controller implements HasMiddleware
         return [
             new Middleware('permission:institutions.view', only: ['index', 'show']),
             new Middleware('permission:institutions.create', only: ['create', 'store']),
-            new Middleware('permission:institutions.update', only: ['edit', 'update']),
+            new Middleware('permission:institutions.update', only: ['edit', 'update', 'updateOrder']),
             new Middleware('permission:institutions.delete', only: ['destroy']),
         ];
     }
 
     public function index(Request $request): View
     {
+        // "Tartib" ustuni sarlavhasidan boshqariladigan saralash — standart holat
+        // o'sish (asc) bo'yicha, sarlavhaga bosilganda kamayish (desc)ga almashadi.
+        $orderDir = $request->string('order_dir', 'asc')->toString() === 'desc' ? 'desc' : 'asc';
+
         $institutions = Institution::query()
             ->with(['district', 'owner'])
             // 'name' endi JSON (uch tillilik) — matn qidiruvi xom JSON qatori ichida
             // ishlaydi (uz/ru/en, qaysi tilda kiritilgan bo'lsa ham topadi).
             ->when($request->filled('q'), fn ($q) => $q->where('name', 'like', "%{$request->string('q')}%"))
             ->when($request->filled('type'), fn ($q) => $q->where('type', $request->string('type')))
+            ->orderBy('sort_order', $orderDir)
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -43,7 +48,7 @@ class InstitutionController extends Controller implements HasMiddleware
         // 'label' JSON (uch tillilik) — DB darajasida saralanmaydi, xotirada saralaymiz.
         $institutionTypes = InstitutionType::all()->sortBy(fn (InstitutionType $t) => $t->label)->values();
 
-        return view('admin.institutions.index', compact('institutions', 'institutionTypes'));
+        return view('admin.institutions.index', compact('institutions', 'institutionTypes', 'orderDir'));
     }
 
     public function create(): View
@@ -85,6 +90,22 @@ class InstitutionController extends Controller implements HasMiddleware
         $institution->delete();
 
         return redirect()->route('admin.institutions.index')->with('status', 'Tashkilot o\'chirildi.');
+    }
+
+    /**
+     * Ro'yxat sahifasidagi "Tartib" ustunidan tezkor yangilash — kichik raqam
+     * oldinroq chiqadi, shu ustun bo'sh sahifa/bosh sahifa saralashida ham
+     * ishlatiladi (MaktabgidData::schools()).
+     */
+    public function updateOrder(Request $request, Institution $institution): RedirectResponse
+    {
+        $data = $request->validate([
+            'sort_order' => ['required', 'integer', 'min:0'],
+        ]);
+
+        $institution->update($data);
+
+        return back()->with('status', 'Tartib yangilandi.');
     }
 
     /** @return array<string, mixed> */
