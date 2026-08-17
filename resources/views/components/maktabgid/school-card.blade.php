@@ -16,6 +16,7 @@
     data-dist="{{ $s['dist'] }}"
     data-price="{{ $s['price'] }}"
     data-rating="{{ $s['rating'] }}"
+    data-order="{{ $s['order'] }}"
     data-sat="{{ $s['sat'] ? '1' : '0' }}"
     data-specs="{{ implode(',', $s['specs'] ?? []) }}"
 >

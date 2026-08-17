@@ -21,6 +21,13 @@
         <table class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
                 <tr>
+                    <th class="px-4 py-3">
+                        <a href="{{ request()->fullUrlWithQuery(['order_dir' => $orderDir === 'asc' ? 'desc' : 'asc', 'page' => null]) }}"
+                           class="inline-flex items-center gap-1 hover:text-slate-700">
+                            Tartib
+                            <span class="text-[10px] leading-none">{{ $orderDir === 'asc' ? '▲' : '▼' }}</span>
+                        </a>
+                    </th>
                     <th class="px-4 py-3">Nomi</th>
                     <th class="px-4 py-3">Turi</th>
                     <th class="px-4 py-3">Tuman</th>
@@ -33,6 +40,19 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($institutions as $inst)
                     <tr>
+                        <td class="px-4 py-3">
+                            @can('institutions.update')
+                                <form method="POST" action="{{ route('admin.institutions.order', $inst) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <input type="number" name="sort_order" value="{{ $inst->sort_order }}" min="0"
+                                           onchange="this.form.submit()"
+                                           class="w-16 rounded-lg border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" />
+                                </form>
+                            @else
+                                {{ $inst->sort_order }}
+                            @endcan
+                        </td>
                         <td class="px-4 py-3 font-medium text-slate-800">{{ $inst->name }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $inst->type }}</td>
                         <td class="px-4 py-3 text-slate-600">{{ $inst->district?->name ?? '—' }}</td>
@@ -63,7 +83,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-8 text-center text-slate-500">Tashkilotlar topilmadi.</td>
+                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">Tashkilotlar topilmadi.</td>
                     </tr>
                 @endforelse
             </tbody>
