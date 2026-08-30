@@ -59,8 +59,10 @@
 
         /* Bosh sahifadagi reklama banneri (2026-08-30) — to'liq admin panelidan
            boshqariladi (`/admin/advertisements`), faqat faol va sana oralig'iga
-           mos yozuvlar chiqadi. */
-        $ads = Advertisement::query()->where('is_active', true)->latest()->get()->filter->isCurrentlyRunning()->values();
+           mos yozuvlar chiqadi. `whereNotNull('title')` — eski rasm-asosidagi
+           dizayndan qolgan `LegacyAdvertisementSeeder` yozuvlarini (title'siz,
+           yangi matnli dizaynga mos kelmaydi) chiqarib tashlaydi. */
+        $ads = Advertisement::query()->where('is_active', true)->whereNotNull('title')->where('title', '!=', '')->latest()->get()->filter->isCurrentlyRunning()->values();
     @endphp
 
     {{-- ===================== DESKTOP / TABLET ===================== --}}

@@ -591,6 +591,24 @@ sozlash shart emas.
   so'rovi bo'yicha ataylab shunday — "shunchaki link"). Qayta tekshirildi:
   0 ta faol reklama bilan bo'lim butunlay yashiringan, 1 ta reklama bilan
   havola to'g'ri chiqqan, admin CRUD (index/create/edit/store) ishlaydi.
+- **PRODUKSHIN XATO (2026-08-30, shu kuni tuzatildi):** Production'da 500
+  xato chiqdi — `MaktabgidData::monogram(): Argument #1 ($name) must be of
+  type string, null given`. Sabab: `LegacyAdvertisementSeeder` orqali
+  import qilingan eski (rasm-asosidagi) reklama yozuvlarida yangi `title`
+  ustuni `NULL` (bu ustunlar migratsiyada backfill qilinmagan, faqat
+  nullable qo'shilgan) — ba'zilari `is_active=true` bo'lgani uchun
+  `welcome.blade.php`dagi so'rovga tushib, `ad-banner.blade.php`
+  `MaktabgidData::monogram($ad->title)`ni `null` bilan chaqirib qulagan.
+  **Tuzatish:** `welcome.blade.php`dagi `$ads` so'roviga
+  `->whereNotNull('title')->where('title', '!=', '')` qo'shildi (title'siz
+  eski yozuvlar butunlay chiqarib tashlanadi) + `ad-banner.blade.php`da
+  `MaktabgidData::monogram($ad->title ?? '')` (ikkinchi qatlam himoya).
+  **Xulosa:** yangi nullable ustun qo'shilganda, agar shu ustunga
+  bog'liq kod uni "har doim to'ldirilgan" deb faraz qilsa — DB darajasida
+  bo'sh qolishi mumkin bo'lgan ESKI qatorlarni so'rov darajasida chiqarib
+  tashlash yoki chaqiruv joyida null-fallback qo'yish SHART (faqat admin
+  formadagi "required" validatsiyasiga tayanib bo'lmaydi — u faqat YANGI
+  yozuvlarni qamrab oladi, mavjudlarini emas).
 
 ## 7. Ma'lum muammolar, cheklovlar va texnik qarzlar
 

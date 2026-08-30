@@ -14,7 +14,7 @@
                             <span class="ad-banner-tag">{{ $ad->tag }}</span>
                         @endif
 
-                        <div class="ad-banner-avatar">{{ $ad->initials ?: MaktabgidData::monogram($ad->title) }}</div>
+                        <div class="ad-banner-avatar">{{ $ad->initials ?: MaktabgidData::monogram($ad->title ?? '') }}</div>
 
                         <div class="ad-banner-body">
                             @if ($ad->badge)
