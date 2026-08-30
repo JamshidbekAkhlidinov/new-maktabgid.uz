@@ -31,6 +31,7 @@
 <body>
 
     @php
+        use App\Models\Advertisement;
         use App\Models\InstitutionType;
         use App\Support\MaktabgidData;
         $categories = MaktabgidData::categories();
@@ -55,6 +56,11 @@
                 'icon' => $t->icon,
                 'count' => $catCounts->get($t->key, 0),
             ])->all();
+
+        /* Bosh sahifadagi reklama banneri (2026-08-30) — to'liq admin panelidan
+           boshqariladi (`/admin/advertisements`), faqat faol va sana oralig'iga
+           mos yozuvlar chiqadi. */
+        $ads = Advertisement::query()->where('is_active', true)->latest()->get()->filter->isCurrentlyRunning()->values();
     @endphp
 
     {{-- ===================== DESKTOP / TABLET ===================== --}}
@@ -64,7 +70,7 @@
 
         {{-- "Ixtisoslik boʻyicha qidiring" boʻlimi vaqtincha oʻchirilgan, oʻrniga reklama banneri chiqadi --}}
         {{-- <x-maktabgid.spec-strip :specs="$specializations" /> --}}
-        <x-maktabgid.ad-banner />
+        <x-maktabgid.ad-banner :ads="$ads" />
 
         <x-maktabgid.cat-count-tabs :tabs="$catTabs" :active="$defaultCat" />
 

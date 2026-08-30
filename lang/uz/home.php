@@ -74,6 +74,7 @@ return [
     // ad-banner.blade.php
     'ad_label' => 'REKLAMA',
     'ad_aria' => 'Reklama :n',
+    'ad_default_cta' => 'Batafsil',
 
     // forum-strip.blade.php
     'forum_kicker' => 'Jonli muhokama',

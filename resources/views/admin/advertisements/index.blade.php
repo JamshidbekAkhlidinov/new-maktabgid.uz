@@ -9,7 +9,7 @@
         <table class="w-full text-sm">
             <thead class="bg-slate-50 text-slate-500 text-left">
                 <tr>
-                    <th class="px-4 py-3">Banner</th>
+                    <th class="px-4 py-3">Sarlavha</th>
                     <th class="px-4 py-3">Havola</th>
                     <th class="px-4 py-3">Muddat</th>
                     <th class="px-4 py-3">Holati</th>
@@ -19,8 +19,11 @@
             <tbody class="divide-y divide-slate-100">
                 @forelse ($advertisements as $ad)
                     <tr>
-                        <td class="px-4 py-3">
-                            <img src="{{ $ad->image_url }}" alt="" class="w-24 h-14 object-cover rounded-lg border border-slate-200" />
+                        <td class="px-4 py-3 font-medium text-slate-800 max-w-xs truncate">
+                            {{ $ad->title }}
+                            @if ($ad->badge)
+                                <span class="block text-xs font-normal text-slate-400">{{ $ad->badge }}</span>
+                            @endif
                         </td>
                         <td class="px-4 py-3 text-slate-600 max-w-xs truncate">
                             @if ($ad->link_url)

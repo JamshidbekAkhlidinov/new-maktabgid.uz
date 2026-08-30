@@ -75,6 +75,7 @@ return [
     // ad-banner.blade.php
     'ad_label' => 'РЕКЛАМА',
     'ad_aria' => 'Реклама :n',
+    'ad_default_cta' => 'Подробнее',
 
     // forum-strip.blade.php
     'forum_kicker' => 'Живое обсуждение',

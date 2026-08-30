@@ -157,7 +157,7 @@ config/              standart Laravel konfiguratsiyasi
 | `News` / `Article` | Yangiliklar va blog | Admin CRUD orqali boshqariladi |
 | `Vacancy` / `Resume` | Karyera bo'limi (ish o'rni / rezyume) | `Institution` -> `Vacancy`; `Resume` foydalanuvchiga tegishli |
 | `Achievement` | Muassasa yutuqlari galereyasi | `Institution`ga tegishli |
-| `Advertisement` | Reklama bloklari | Admin CRUD |
+| `Advertisement` | Bosh sahifadagi gradient reklama banneri (rasm ishlatilmaydi — `title`/`badge`/`tag`/`initials`/`rating`/`description`/`cta_label`/`link_url` matn maydonlari) — to'liq admin CRUD orqali (`/admin/advertisements`), faqat `is_active` + sana oralig'iga mos yozuvlar `welcome.blade.php`da chiqadi (2026-08-30, avval hech qayerda render qilinmasdi) | Admin CRUD; `link_url` — oddiy matn, Institution bilan bog'lanish yo'q |
 | `InstitutionView` | Muassasa profili ko'rishlar hisoblagichi (analitika uchun) | `Institution` <-> `User`(nullable, mehmon ham) |
 | `OtpCode` / `TelegramLink` | Telefon orqali OTP tasdiqlash va telefon<->Telegram chat_id bog'lanishi | Auth oqimida ishlatiladi |
 | `Setting` | Generik key-value sozlama qatori (`key`, `value`) — `/admin/settings` orqali tahrirlanadi | Kalitlar jadvalda emas, `App\Enums\SettingKey`da qat'iy belgilanadi (label/inputType/group/maxLength/default shu yerda); `Setting::get(SettingKey::X)`/`Setting::set()` orqali o'qiladi/yoziladi. Hozirgi kalitlar: `MetaTitle`, `MetaDescription`, `OgImage`, `GoogleSiteVerification`, `YandexVerification`, `CustomJs`. Yangi sozlama qo'shish uchun jadvalga ustun qo'shish SHART EMAS — faqat enumga `case` qo'shiladi, admin forma (`admin/settings/edit.blade.php`) va `Admin\SeoSettingController` shu ro'yxat bo'yicha avtomatik ishlaydi |
@@ -538,6 +538,59 @@ sozlash shart emas.
   hech qachon `state`ga ulanmagan (JS'da butunlay ishlatilmaydi) — bu holat
   o'zgartirilmadi, alohida vazifa kerak bo'ladi. `mobile-app.blade.php`
   (ishlatilmayotgan mobil maket) ga tegilmadi.
+
+### 2026-08-30 — Reklama banneri (`ad-banner`) admin panelidan boshqariladigan qilindi
+- **Vazifa:** Bosh sahifadagi gradient reklama banneri (`<x-maktabgid.ad-banner>`,
+  hero ostida) uch slayd bilan blade fayl ichida hardcode qilingan edi.
+  Foydalanuvchi: admin qo'sha/o'chira olishi, va CTA tugmasi bosilganda
+  ko'rsatilgan havolaga (masalan muassasa profiliga) o'tishi kerak — "shunchaki
+  link uchun joy bo'lsa bas" (alohida "tashkilot tanlash" bog'lanishi shart emas).
+- **Nima o'rganildi:** `Advertisement` modeli/migratsiyasi/admin CRUD'i
+  (`/admin/advertisements`) allaqachon mavjud edi (`LegacyAdvertisementSeeder`
+  qoldig'i), lekin **hech qayerda public sahifada render qilinmasdi** — butunlay
+  o'lik kod edi. Eski sxemasi rasm-yuklash asosidagi bitta-banner dizayni uchun
+  moʻljallangan edi (`image_url` NOT NULL, `link_url`, sana oralig'i, `is_active`),
+  hozirgi jonli dizayn esa rasm ishlatmaydi (faqat gradient fon + matn/avatar
+  harflari) — shu sababli mavjud jadval/CRUD'ga matn maydonlari qo'shib qayta
+  ishlatildi (yangi parallel tizim qurilmadi).
+- **Qo'shilgan/o'zgargan funksiya:**
+  - `database/migrations/2026_08_30_150548_add_content_fields_to_advertisements_table.php`
+    — `badge`, `tag`, `initials` (max 4), `title`, `rating` (max 5), `description`,
+    `cta_label` ustunlari qo'shildi (barchasi nullable).
+  - `Advertisement::$fillable` yangi ustunlarni qamrab oldi;
+    `Advertisement::$attributes = ['image_url' => '']` — `image_url` hali ham
+    DB darajasida `NOT NULL` (`doctrine/dbal` yo'qligi sababli migratsiyada
+    nullable qilib o'zgartirilmadi — bo'lim 7ga qarang), lekin yangi dizaynda
+    umuman ishlatilmaydi, shu sababli standart bo'sh qator model darajasida
+    beriladi (`sort_order`dagi 1000 andozasi bilan bir xil yechim).
+  - `Admin\AdvertisementController` — rasm yuklash (`handleImage()`,
+    "Banner rasmi shart" tekshiruvi) butunlay olib tashlandi;
+    `validateData()` endi `title` (majburiy) + `badge`/`tag`/`initials`/
+    `rating`/`description`/`cta_label`/`link_url` (ixtiyoriy) qabul qiladi.
+  - `admin/advertisements/_form.blade.php` — rasm yuklash o'rniga matn
+    maydonlari (Sarlavha, Avatar harflari, Ustki yorliq, Burchak yorlig'i,
+    Reyting, Tugma matni, Tavsif, Havola) + muddat/faollik (o'zgarishsiz).
+    `admin/advertisements/index.blade.php` — "Banner" (rasm) ustuni o'rniga
+    "Sarlavha" (title + badge) ustuni.
+  - `components/maktabgid/ad-banner.blade.php` — endi `$ads` prop majburiy
+    (standart yo'q), `Advertisement` modelidan to'g'ridan-to'g'ri o'qiydi
+    (`$ad->title`, `->badge`, `->tag`, `->rating`, `->description`,
+    `->cta_label`, `->link_url`). `initials` bo'sh bo'lsa
+    `MaktabgidData::monogram($ad->title)` bilan avtomatik hosil qilinadi.
+    `$ads` bo'sh bo'lsa butun `<section>` chiqmaydi.
+  - `welcome.blade.php` — `$ads = Advertisement::query()->where('is_active',
+    true)->latest()->get()->filter->isCurrentlyRunning()->values();`
+    (`isCurrentlyRunning()` `started_at`/`finished_at` oralig'ini ham
+    tekshiradi) — `<x-maktabgid.ad-banner :ads="$ads" />`.
+  - `lang/*/home.php` — yangi `ad_default_cta` kaliti (admin `cta_label`ni
+    bo'sh qoldirsa ko'rinadigan standart tugma matni: "Batafsil"/"Подробнее"/
+    "Learn more").
+- **Eslatma:** Havola oddiy matn (`link_url`, `string`) — admin muassasa
+  profilining to'liq URL'ini (`route('maktabgid.school', $slug)`) qo'lda
+  kiritadi, Institution bilan DB darajasida bog'lanish yo'q (foydalanuvchi
+  so'rovi bo'yicha ataylab shunday — "shunchaki link"). Qayta tekshirildi:
+  0 ta faol reklama bilan bo'lim butunlay yashiringan, 1 ta reklama bilan
+  havola to'g'ri chiqqan, admin CRUD (index/create/edit/store) ishlaydi.
 
 ## 7. Ma'lum muammolar, cheklovlar va texnik qarzlar
 

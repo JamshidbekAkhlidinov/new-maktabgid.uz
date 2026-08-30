@@ -13,6 +13,16 @@ class Advertisement extends Model
     protected $fillable = [
         'legacy_id', 'image_url', 'disk', 'image_path', 'link_url',
         'is_active', 'started_at', 'finished_at',
+        'badge', 'tag', 'initials', 'title', 'rating', 'description', 'cta_label',
+    ];
+
+    /**
+     * `image_url` ustuni hali `NOT NULL` (doctrine/dbal o'rnatilmagani uchun
+     * migratsiyada nullable qilib o'zgartirilmagan) — matnli/gradient dizaynda
+     * esa umuman ishlatilmaydi, shu sababli standart bo'sh qator beriladi.
+     */
+    protected $attributes = [
+        'image_url' => '',
     ];
 
     protected function casts(): array
