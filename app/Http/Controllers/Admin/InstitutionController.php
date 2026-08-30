@@ -23,7 +23,7 @@ class InstitutionController extends Controller implements HasMiddleware
         return [
             new Middleware('permission:institutions.view', only: ['index', 'show']),
             new Middleware('permission:institutions.create', only: ['create', 'store']),
-            new Middleware('permission:institutions.update', only: ['edit', 'update', 'updateOrder']),
+            new Middleware('permission:institutions.update', only: ['edit', 'update', 'updateOrder', 'updateVerified']),
             new Middleware('permission:institutions.delete', only: ['destroy']),
         ];
     }
@@ -106,6 +106,17 @@ class InstitutionController extends Controller implements HasMiddleware
         $institution->update($data);
 
         return back()->with('status', 'Tartib yangilandi.');
+    }
+
+    /**
+     * Ro'yxat sahifasidagi "Tasdiqlangan" tumbler — landing sahifada muassasa
+     * kartochkasida success badge sifatida ko'rinadigan holatni yoqadi/o'chiradi.
+     */
+    public function updateVerified(Institution $institution): RedirectResponse
+    {
+        $institution->update(['is_verified' => ! $institution->is_verified]);
+
+        return back()->with('status', $institution->is_verified ? 'Muassasa tasdiqlandi.' : 'Tasdiq bekor qilindi.');
     }
 
     /** @return array<string, mixed> */

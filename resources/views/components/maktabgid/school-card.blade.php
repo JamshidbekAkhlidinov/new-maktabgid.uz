@@ -29,7 +29,14 @@
             @endunless
         </div>
         <div class="scard-body">
-            <h3 class="scard-name">{{ $s['name'] }}</h3>
+            <div class="scard-name-row">
+                <h3 class="scard-name">{{ $s['name'] }}</h3>
+                @if (!empty($s['verified']))
+                    <span class="tag-verified" title="{{ __('home.verified_badge') }}">
+                        <x-maktabgid.icon name="shield" :width="11" :height="11" />
+                    </span>
+                @endif
+            </div>
             <div class="scard-meta">{{ $s['district'] }} · {{ $s['dist'] }} km · {{ $catLabel }}</div>
         </div>
         <div class="scard-rating"><x-maktabgid.icon name="star" class="star" :width="14" :height="14" fill="currentColor" /> {{ $s['rating'] }} <em>({{ $s['reviews'] }})</em></div>

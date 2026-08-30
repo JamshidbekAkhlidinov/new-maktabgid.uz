@@ -64,6 +64,7 @@ return [
     'trust_reviews_p' => 'Реальные оценки и опыт родителей.',
     'trust_fast_h' => 'Быстрая заявка',
     'trust_fast_p' => 'Свяжитесь за несколько секунд через Telegram-бота.',
+    'verified_badge' => 'Подтверждено',
 
     // cta-band.blade.php
     'cta_title' => 'Добавьте свою школу на MaktabGID',

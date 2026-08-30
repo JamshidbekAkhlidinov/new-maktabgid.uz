@@ -62,7 +62,8 @@ return [
     'trust_reviews_h' => 'Haqiqiy sharhlar',
     'trust_reviews_p' => 'Ota-onalarning real baholari va tajribalari.',
     'trust_fast_h' => 'Tez ariza',
-    'trust_fast_p' => 'Telegram bot orqali bir necha soniyada bogʻlaning.',
+    'trust_fast_p' => 'Maktabgid orqali muassasalarga 24/7 ariza yuborish imkoniyati.',
+    'verified_badge' => 'Tasdiqlangan',
 
     // cta-band.blade.php
     'cta_title' => "Maktabingizni MaktabGID'ga qoʻshing",

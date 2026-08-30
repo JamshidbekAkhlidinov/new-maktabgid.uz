@@ -180,12 +180,76 @@
             "5-7": [5000000, 7000000], "7+": [7000000, Infinity],
         };
 
+        var STATE_DEFAULTS = { cat: "maktab", sort: "rel" };
         var state = { cat: "maktab", query: "", district: "", sat: false, distance: "", price: "", districts: [], sort: "rel", spec: "" };
 
         /* Sahifalash — har sahifada 20 tadan natija, istalgan sahifaga toʻgʻridan-toʻgʻri oʻtish mumkin. */
         var PAGE_SIZE = 20;
         var currentPage = 1;
         var paginationEl = document.getElementById("js-pagination");
+
+        /* Qidiruv/filtr holati URL query-parametrlariga yoziladi (refreshdan keyin
+           yoʻqolib qolmasin uchun) — sahifa qayta yuklanganda shu yerdan tiklanadi. */
+        function restoreStateFromURL() {
+            var params = new URLSearchParams(window.location.search);
+
+            if (params.has("cat")) state.cat = params.get("cat");
+            if (params.has("q")) {
+                state.query = params.get("q");
+                if (queryInput) queryInput.value = state.query;
+            }
+            if (params.has("district")) {
+                state.district = params.get("district");
+                if (districtSelect) districtSelect.value = state.district;
+            }
+            if (params.has("districts")) {
+                state.districts = params.get("districts").split(",").filter(Boolean);
+                if (districtList) districtList.querySelectorAll(".dist-item").forEach(function (item) {
+                    item.classList.toggle("on", state.districts.indexOf(item.dataset.value) !== -1);
+                });
+                if (districtsClearBtn) districtsClearBtn.hidden = state.districts.length === 0;
+            }
+            if (params.has("sat")) {
+                state.sat = params.get("sat") === "1";
+                if (satSwitch) satSwitch.classList.toggle("on", state.sat);
+            }
+            if (params.has("distance")) {
+                state.distance = params.get("distance");
+                if (distanceRow) distanceRow.querySelectorAll(".chip").forEach(function (c) { c.classList.toggle("on", c.dataset.value === state.distance); });
+            }
+            if (params.has("price")) {
+                state.price = params.get("price");
+                if (priceRow) priceRow.querySelectorAll(".chip").forEach(function (c) { c.classList.toggle("on", c.dataset.value === state.price); });
+            }
+            if (params.has("sort")) {
+                state.sort = params.get("sort");
+                if (sortSelect) sortSelect.value = state.sort;
+            }
+            if (params.has("spec")) {
+                state.spec = params.get("spec");
+                document.querySelectorAll(".js-spec-tile").forEach(function (t) { t.classList.toggle("on", t.dataset.spec === state.spec); });
+            }
+            if (params.has("page")) currentPage = parseInt(params.get("page"), 10) || 1;
+        }
+
+        function syncURLFromState() {
+            var params = new URLSearchParams();
+
+            if (state.cat && state.cat !== STATE_DEFAULTS.cat) params.set("cat", state.cat);
+            if (state.query) params.set("q", state.query);
+            if (state.district) params.set("district", state.district);
+            if (state.districts.length) params.set("districts", state.districts.join(","));
+            if (state.sat) params.set("sat", "1");
+            if (state.distance) params.set("distance", state.distance);
+            if (state.price) params.set("price", state.price);
+            if (state.sort && state.sort !== STATE_DEFAULTS.sort) params.set("sort", state.sort);
+            if (state.spec) params.set("spec", state.spec);
+            if (currentPage > 1) params.set("page", String(currentPage));
+
+            var qs = params.toString();
+            var url = window.location.pathname + (qs ? "?" + qs : "") + window.location.hash;
+            window.history.replaceState(null, "", url);
+        }
 
         function setActiveCatButtons() {
             document.querySelectorAll(".js-cat").forEach(function (b) {
@@ -329,6 +393,7 @@
             cardList.style.display = matched.length === 0 ? "none" : "";
 
             renderPagination(totalPages);
+            syncURLFromState();
         }
 
         document.querySelectorAll(".js-cat").forEach(function (btn) {
@@ -425,7 +490,8 @@
             });
         });
 
-        render();
+        restoreStateFromURL();
+        paint();
     }
 
     /* ===================== HERO SEARCH MODE (O'zim qidiraman / AI tanlab bersin) ===================== */

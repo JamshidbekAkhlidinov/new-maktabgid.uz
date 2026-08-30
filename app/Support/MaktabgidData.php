@@ -346,6 +346,7 @@ class MaktabgidData
             'lang' => $institution->lang,
             'sat' => (bool) $institution->works_saturday,
             'badge' => $institution->badge,
+            'verified' => (bool) $institution->is_verified,
             'g' => $gradients[$institution->id % count($gradients)],
             'specs' => $institution->specializations->pluck('key')->all(),
             'photos' => $photos,

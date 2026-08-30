@@ -141,7 +141,7 @@ config/              standart Laravel konfiguratsiyasi
 | Jadval/Model | Tavsif | Bog'lanishlar |
 |---|---|---|
 | `User` | Barcha rol turlari uchun yagona jadval (`role` ustuni: parent/institution/teacher + Spatie rol) | `Institution`ga (agar institution bo'lsa), `Child`, `Conversation`, `Application` va h.k.ga bog'lanadi |
-| `Institution` | Ta'lim muassasasi profili (nomi, tavsifi, manzil, narx, reyting — ba'zi maydonlar `HasTranslatable` orqali tarjima qilinadi). `sort_order` (unsignedInteger, default 0) — admin panelida (`/admin/institutions`) qo'lda belgilanadigan tartib, kichigi oldin chiqadi; bosh sahifadagi "Tavsiya etiladi" saralashi ham shu bo'yicha (2026-08-17) | `District`, `Specialization` (M:M), `InstitutionMedia`, `InstitutionPrice`, `Review`, `Achievement`, `Vacancy` |
+| `Institution` | Ta'lim muassasasi profili (nomi, tavsifi, manzil, narx, reyting — ba'zi maydonlar `HasTranslatable` orqali tarjima qilinadi). `sort_order` (unsignedInteger, default 0) — admin panelida (`/admin/institutions`) qo'lda belgilanadigan tartib, kichigi oldin chiqadi; bosh sahifadagi "Tavsiya etiladi" saralashi ham shu bo'yicha (2026-08-17). `is_verified` (boolean, default false) — admin tomonidan bir bosishda yoqiladigan "Tasdiqlangan" holati, landing kartochkada yashil success badge sifatida ko'rinadi (2026-08-30, `badge` matn maydonidan mustaqil) | `District`, `Specialization` (M:M), `InstitutionMedia`, `InstitutionPrice`, `Review`, `Achievement`, `Vacancy` |
 | `District` | Tuman/hudud spravochnigi | `Institution` (1:M) |
 | `Specialization` | Muassasa yo'nalishi/mutaxassisligi | `Institution` (M:M, `institution_specialization`) |
 | `InstitutionType` | Muassasa turi (bog'cha/maktab/markaz va h.k.) | `Institution`ga bog'lanadi |
@@ -245,6 +245,10 @@ npm run build
 composer test                                 # yoki: php artisan test
 php artisan test tests/Feature/ChatTest.php   # bitta test fayli
 php artisan test --filter=ChatTest            # nom bo'yicha filtr
+
+# Bir martalik data-tuzatish komandalari
+php artisan institutions:fix-html-entities --dry-run   # nechta yozuv tuzatilishini ko'rsatadi
+php artisan institutions:fix-html-entities              # Institution.about'dagi xom &lsquo;/&rsquo;/&nbsp; kabi HTML entity kodlarini dekodlaydi
 
 # Kod formatlash (PHP)
 vendor/bin/pint
@@ -446,6 +450,94 @@ sozlash shart emas.
   (`2026_08_17_180144_bump_default_institution_sort_order.php`) barcha
   `sort_order=0` bo'lgan qatorlarni 1000ga ko'chirdi (339 tadan 334 tasi;
   qolgan 5 tasi allaqachon qo'lda 1/1/1/3/5 qilib belgilangan edi).
+
+### 2026-08-30 — Muassasa profilida "Muassasa haqida" matni buzilib chiqishi (xom HTML entity)
+- **Vazifa:** Foydalanuvchi skrinshot bilan xabar qildi — muassasa detail
+  sahifasida (`components/maktabgid/detail/about.blade.php`) "Muassasa
+  haqida" matni ichida `o&lsquo;rgatishga`, `Ta&rsquo;lim` kabi literal
+  HTML entity matnlari ko'rinardi (apostrof o'rniga).
+- **Nima o'rganildi:** Sabab — eski (Yii2) importidan qolgan
+  `institutions.about` (tarjima qilinadigan JSON ustun, `HasTranslatable`)
+  ba'zi yozuvlarda HTML entity kodlarini (`&lsquo;`, `&rsquo;`, `&nbsp;`,
+  `&ndash;`, `&mdash;`, `&amp;`, `&bull;`, `&laquo;`/`&raquo;`, `&ograve;`,
+  `&zwj;`) xom holda saqlagan — hech qachon `html_entity_decode()`
+  qilinmagan. Blade `{{ $school['about'] }}` (`htmlspecialchars`) buni
+  yana escape qiladi (`&` -> `&amp;`), natijada brauzer literal
+  `o&lsquo;rgatishga` matnini ko'rsatadi. Tekshiruv shuni ko'rsatdiki, bu
+  faqat `Institution.about`da bor edi (181 ta yozuv) — `name`/`address`/
+  boshqa `Institution.$translatable` ustunlar, `Specialization`/
+  `InstitutionType.label`, va `Achievement`/`News`/`Article`/`Vacancy`
+  matn ustunlarida bu muammo topilmadi.
+- **Qo'shilgan/o'zgargan funksiya:**
+  - `app/Console/Commands/FixInstitutionHtmlEntitiesCommand.php` — bir
+    martalik `institutions:fix-html-entities` (`--dry-run` bilan) —
+    `Institution::getTranslatable()` orqali barcha tarjima ustunlarini
+    (kelajakda shunga o'xshash muammo boshqa ustunda ham chiqsa qamrab
+    olish uchun umumiy yozilgan) tekshirib, har bir til qiymatini
+    `html_entity_decode(..., ENT_QUOTES | ENT_HTML5, 'UTF-8')` bilan
+    dekodlaydi, `setTranslations()` + `saveQuietly()` bilan saqlaydi.
+  - `app/Support/Concerns/HasTranslatable.php` — yangi `getTranslatable()`
+    public metodi (avval `$translatable` faqat `protected`, model
+    tashqarisidan o'qib bo'lmasdi).
+  - Komanda ishga tushirildi: 181 ta muassasa, 181 ta ustun (`about`)
+    tuzatildi; qayta tekshiruvda `&...;` ko'rinishidagi qoldiq qolmadi.
+- **Eslatma:** Bu — bir martalik data-tuzatish (kod xatosi emas, import
+  ma'lumotidagi nuqson edi). Kelajakda yangi legacy import qilinsa, import
+  skriptida ham `html_entity_decode()` qo'shish kerak bo'ladi (hozircha
+  import skripti alohida topilmadi/tekshirilmadi).
+
+### 2026-08-30 — "Tasdiqlangan" badge, qidiruv holati URL'da saqlanishi, hero statistika karuseli
+- **Vazifa:** Foydalanuvchidan 4 talab keldi: (1) tasdiqlangan muassasalar uchun
+  badge, (2) admin tartiblash — tekshirilganda allaqachon mavjud ekan (2026-08-17
+  yozuviga qarang), shu sababli o'tkazib yuborildi; (1) aniqlashtirilganda
+  foydalanuvchi buni alohida boolean "status" (tayyor `badge` matn maydonidan farqli)
+  deb ta'rifladi — landing kartochkada success (yashil) badge sifatida ko'rinishi
+  kerak; (3) bosh sahifadagi qidiruv/filtr holati refreshdan keyin yo'qolib qolishi;
+  (4) hero bo'limidagi statistika pilllari (Maktab/Bog'cha/Markaz/Mutaxassis/24/7)
+  uzluksiz aylanuvchi karusel bo'lishi kerak (foydalanuvchi tasdiqladi).
+- **Nima o'rganildi:** Bosh sahifadagi qidiruv/filtr butunlay JS xotirasidagi
+  `state` obyekti orqali ishlaydi (`public/js/maktabgid.js`, `js-results-grid`
+  bloki) — hech qachon URL'ga yozilmagan, shuning uchun F5 bosilganda hamma
+  narsa standart holatga qaytardi. `Institution.badge` (tarjima qilinadigan,
+  admin qo'lda matn kiritadigan) "tasdiqlangan" tushunchasidan butunlay farqli —
+  yangi alohida `is_verified` boolean ustun kerak bo'ldi.
+- **Qo'shilgan/o'zgargan funksiya:**
+  - `database/migrations/2026_08_30_144844_add_is_verified_to_institutions_table.php`
+    — `institutions.is_verified` (boolean, default false, index).
+  - `Institution::$fillable` + `casts()` ga `is_verified` qo'shildi.
+  - `Admin\InstitutionController@updateVerified` (`PATCH
+    admin/institutions/{institution}/verified`, `institutions.verified` route,
+    `institutions.update` ruxsati) — bir bosishda yoqadi/o'chiradi (`toggleLogo`
+    bilan bir xil naqsh). `admin/institutions/index.blade.php`da yangi
+    "Tasdiqlangan" ustuni (yashil/kulrang pill tugma).
+  - `MaktabgidData::mapInstitution()` — `'verified' => (bool)
+    $institution->is_verified`. `school-card.blade.php` — `is_verified` bo'lsa
+    ism yonida kichik yashil `tag-verified` (shield ikonka) doira-badge
+    (`.scard-name-row` wrapper). `lang/*/home.php` — `verified_badge` kaliti.
+    CSS: `public/css/maktabgid.css` (`.scard-name-row`, `.tag-verified`, `--ok`
+    ranglaridan foydalanadi — mavjud `.saved-pill`/`.appl-status.done` bilan bir
+    xil "success" andoza).
+  - `public/js/maktabgid.js` — `restoreStateFromURL()` (sahifa yuklanganda
+    `URLSearchParams`dan `state`ni va tegishli DOM elementlarini tiklaydi) +
+    `syncURLFromState()` (har bir `paint()`da joriy `state`ni URL query
+    (`?cat=&q=&district=&districts=&sat=&distance=&price=&sort=&spec=&page=`)ga
+    `history.replaceState` bilan yozadi, standart qiymatlar URLga qo'shilmaydi).
+    Yakuniy init `render()` o'rniga `restoreStateFromURL(); paint();` (`render()`
+    har doim `currentPage`ni 1ga qaytaradi — URL'dan tiklangan sahifa raqami
+    yo'qolib qolmasligi uchun `paint()` to'g'ridan-to'g'ri chaqirildi).
+  - `components/maktabgid/hero.blade.php` — `.hero-stats` endi `.hero-stats-track`
+    ichida bir xil kontentni 2 marta render qiladi (ikkinchisi `aria-hidden`) —
+    uzluksiz "marquee" illyuziyasi uchun. CSS: `@keyframes hero-stats-scroll`
+    (`translateX(0)` → `translateX(-50%)`, 24s linear infinite), hoverda
+    to'xtaydi (`animation-play-state: paused`), `prefers-reduced-motion:
+    reduce`da o'chadi, chetlari `mask-image` bilan yumshoq fade qilingan.
+  - `lang/uz/home.php` — `trust_fast_p` matni "Telegram bot orqali..." dan
+    "Maktabgid orqali muassasalarga 24/7 ariza yuborish imkoniyati." ga
+    almashtirildi (foydalanuvchi so'rovi, faqat uz — ru/en eskicha qoldi).
+- **Eslatma:** `js-lang-select` (hero qidiruv panelidagi "O'qitish tili")
+  hech qachon `state`ga ulanmagan (JS'da butunlay ishlatilmaydi) — bu holat
+  o'zgartirilmadi, alohida vazifa kerak bo'ladi. `mobile-app.blade.php`
+  (ishlatilmayotgan mobil maket) ga tegilmadi.
 
 ## 7. Ma'lum muammolar, cheklovlar va texnik qarzlar
 
