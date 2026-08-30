@@ -64,6 +64,7 @@ return [
     'trust_reviews_p' => 'Real ratings and experiences from parents.',
     'trust_fast_h' => 'Quick application',
     'trust_fast_p' => 'Get in touch in seconds via our Telegram bot.',
+    'verified_badge' => 'Verified',
 
     // cta-band.blade.php
     'cta_title' => 'Add your school to MaktabGID',

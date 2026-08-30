@@ -34,6 +34,7 @@
                     <th class="px-4 py-3">Egasi</th>
                     <th class="px-4 py-3">Reyting</th>
                     <th class="px-4 py-3">Holati</th>
+                    <th class="px-4 py-3">Tasdiqlangan</th>
                     <th class="px-4 py-3 text-right">Amallar</th>
                 </tr>
             </thead>
@@ -64,6 +65,24 @@
                             </span>
                         </td>
                         <td class="px-4 py-3">
+                            @can('institutions.update')
+                                <form method="POST" action="{{ route('admin.institutions.verified', $inst) }}">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full transition {{ $inst->is_verified ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}"
+                                            title="{{ $inst->is_verified ? 'Tasdiqni bekor qilish' : 'Tasdiqlash' }}">
+                                        <x-admin.icon name="shield" class="w-3.5 h-3.5" :solid="$inst->is_verified" />
+                                        {{ $inst->is_verified ? 'Tasdiqlangan' : 'Tasdiqlanmagan' }}
+                                    </button>
+                                </form>
+                            @else
+                                <span class="text-xs px-2.5 py-1 rounded-full {{ $inst->is_verified ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500' }}">
+                                    {{ $inst->is_verified ? 'Tasdiqlangan' : 'Tasdiqlanmagan' }}
+                                </span>
+                            @endcan
+                        </td>
+                        <td class="px-4 py-3">
                             <div class="flex items-center justify-end gap-1.5">
                                 @can('institutions.update')
                                     <a href="{{ route('admin.institutions.media.index', $inst) }}" title="Galereya va videolar"
@@ -83,7 +102,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="px-4 py-8 text-center text-slate-500">Tashkilotlar topilmadi.</td>
+                        <td colspan="9" class="px-4 py-8 text-center text-slate-500">Tashkilotlar topilmadi.</td>
                     </tr>
                 @endforelse
             </tbody>

@@ -245,6 +245,25 @@ svg { display: block; }
 .hero-stats .hero-cat-tabs { margin-top: 0; gap: 10px; }
 .hero-cat-tabs .cat-tab { cursor: default; }
 .hero-cat-tabs .cat-tab:hover { border-color: var(--line); color: var(--ink-2); }
+
+/* Uzluksiz aylanuvchi karusel — .hero-stats-track ichida bir xil kontent 2 marta
+   chiqadi (hero.blade.php), animatsiya -50% ga siljitib uzluksiz aylanish
+   illyuziyasini beradi. Hoverda to'xtaydi, prefers-reduced-motion'da o'chadi. */
+.hero-stats-marquee {
+  flex-wrap: nowrap; justify-content: flex-start; overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 4%, #000 96%, transparent);
+}
+.hero-stats-track { display: flex; align-items: center; gap: 10px; width: max-content; animation: hero-stats-scroll 24s linear infinite; }
+.hero-stats-marquee:hover .hero-stats-track { animation-play-state: paused; }
+.hero-stats-group { display: flex; align-items: center; gap: 10px; flex: none; }
+@keyframes hero-stats-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-stats-track { animation: none; }
+}
 .hstat {
   display: inline-flex; align-items: center; gap: 6px; height: 50px; padding: 0 18px;
   border-radius: var(--r-pill); border: 1.5px solid var(--line); background: var(--surface);
@@ -344,7 +363,13 @@ svg { display: block; }
 .fav:hover { color: #e5484d; transform: scale(1.08); }
 .fav.on { color: #e5484d; }
 .scard-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.scard-name-row { display: flex; align-items: center; gap: 5px; min-width: 0; }
 .scard-name { font-family: var(--font-display); font-weight: 700; font-size: 15.5px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scard-name-row .scard-name { flex: 1 1 auto; min-width: 0; }
+.tag-verified {
+  flex: none; display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px; border-radius: 50%; background: #e7f6ec; color: var(--ok);
+}
 .scard-rating { flex: none; display: inline-flex; align-items: center; gap: 4px; font-weight: 700; font-size: 13.5px; color: var(--ink); }
 .scard-rating .star { color: var(--accent); }
 .scard-rating em { color: var(--ink-3); font-weight: 600; font-style: normal; font-size: 12.5px; }

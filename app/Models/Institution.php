@@ -69,7 +69,7 @@ class Institution extends Model
         'stat_class_size', 'stat_experience_years', 'stat_admission_rate', 'stat_first_grade_seats',
         // Eski (Yii2) `telegram_object`dan import qilingan maydonlar (LegacyInstitutionSeeder).
         'legacy_id', 'phone_numbers', 'social_links', 'location_url', 'refer_point',
-        'slug', 'is_active', 'legacy_view_count', 'sort_order',
+        'slug', 'is_active', 'legacy_view_count', 'sort_order', 'is_verified',
     ];
 
     /**
@@ -120,6 +120,7 @@ class Institution extends Model
             'accepting' => 'boolean',
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'is_verified' => 'boolean',
             'rating' => 'decimal:1',
             'facilities' => 'array',
             'teachers' => 'array',

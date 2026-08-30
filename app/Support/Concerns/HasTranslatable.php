@@ -56,6 +56,12 @@ trait HasTranslatable
         return null;
     }
 
+    /** Ushbu modelda tarjima qilinadigan ustunlar ro'yxati (modeldan tashqarida ham foydalanish uchun). */
+    public function getTranslatable(): array
+    {
+        return $this->translatable ?? [];
+    }
+
     /** Berilgan ustunning barcha tillardagi variantlarini xom holda qaytaradi (admin forma uchun). */
     public function getTranslations(string $field): array
     {

@@ -80,9 +80,20 @@
             </div>
         </div>
 
-        <div class="hero-stats">
-            <x-maktabgid.cat-tabs-list :tabs="$catTabs" :active="$active" :interactive="false" class="hero-cat-tabs" />
-            <div class="hstat"><b>24/7</b> <span>{{ __('home.stat_online') }}</span></div>
+        <div class="hero-stats hero-stats-marquee">
+            <div class="hero-stats-track">
+                {{-- Ikkinchi nusxa uzluksiz aylanish (marquee) illyuziyasi uchun — ekran
+                     o'quvchilar takrorlanishni eshitmasin deb aria-hidden qilingan. --}}
+                @for ($i = 0; $i < 2; $i++)
+                    <div class="hero-stats-group" @if ($i === 1) aria-hidden="true" @endif>
+                        {{-- :active ataylab berilmaydi — bu shunchaki aylanuvchi statistika
+                             qatori (filtr emas), shuning uchun hech bir pill "tanlangan"
+                             (qora) ko'rinishda bo'lmasligi, barchasi bir xil chiqishi kerak. --}}
+                        <x-maktabgid.cat-tabs-list :tabs="$catTabs" :interactive="false" class="hero-cat-tabs" />
+                        <div class="hstat"><b>24/7</b> <span>{{ __('home.stat_online') }}</span></div>
+                    </div>
+                @endfor
+            </div>
         </div>
     </div>
 </section>
